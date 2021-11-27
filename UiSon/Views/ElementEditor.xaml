@@ -1,0 +1,280 @@
+﻿<TabItem x:Class="UiSon.Views.ElementEditor"
+         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+         xmlns:views="clr-namespace:UiSon.Views"
+         xmlns:elements="clr-namespace:UiSon.Element"
+         mc:Ignorable="d">
+    <TabItem.Resources>
+        <views:ElementTemplateSelector x:Key="dataTemplateSelectorDictionary"/>
+
+        <DataTemplate x:Key="TextEditElementTemplate">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="{Binding Name}" Margin="0,0,4,0" Visibility="{Binding IsNameVisible}"/>
+                <TextBox Text="{Binding Value, Mode=TwoWay}"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="SelectorElementTemplate">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="{Binding Name}" Margin="0,0,4,0" Visibility="{Binding IsNameVisible}"/>
+                <ComboBox ItemsSource="{Binding Options}" SelectedValue="{Binding Value, Mode=TwoWay}"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="CheckBoxElementTemplate">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="{Binding Name}" Margin="0,0,4,0" Visibility="{Binding IsNameVisible}"/>
+                <CheckBox IsChecked="{Binding Value}"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="ExpanderElementVerticalTemplate">
+            <Border BorderThickness="4" BorderBrush="#326496">
+                <Expander Header="{Binding Name}" IsExpanded="True">
+
+                    <ItemsControl ItemsSource="{Binding Members}"
+                                  Margin="4"
+                                  ItemTemplateSelector="{StaticResource dataTemplateSelectorDictionary}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Vertical" HorizontalAlignment="{Binding HorizontalAlignment}"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </Expander>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="ExpanderElementHorizontalTemplate">
+            <Border BorderThickness="4" BorderBrush="#326496">
+                <Expander Header="{Binding Name}" IsExpanded="True">
+
+                    <ItemsControl ItemsSource="{Binding Members}"
+                                  Margin="4"
+                                  ItemTemplateSelector="{StaticResource dataTemplateSelectorDictionary}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="{Binding HorizontalAlignment}"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </Expander>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="ExpanderElementWrapTemplate">
+            <Border BorderThickness="4" BorderBrush="#326496">
+                <Expander Header="{Binding Name}" IsExpanded="True">
+
+                    <ItemsControl ItemsSource="{Binding Members}"
+                                  Margin="4"
+                                  ItemTemplateSelector="{StaticResource dataTemplateSelectorDictionary}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Margin="4"  HorizontalAlignment="{Binding HorizontalAlignment}"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </Expander>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="BorderElementVerticalTemplate">
+            <Border BorderThickness="4" BorderBrush="#326496">
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="{Binding Name}" Margin="0,0,4,0" Visibility="{Binding IsNameVisible}"/>
+                    <ItemsControl ItemsSource="{Binding Members}"
+                                  Margin="4"
+                                  ItemTemplateSelector="{StaticResource dataTemplateSelectorDictionary}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Vertical" HorizontalAlignment="{Binding HorizontalAlignment}"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="BorderElementHorizontalTemplate">
+            <Border BorderThickness="4" BorderBrush="#326496">
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="{Binding Name}" Margin="0,0,4,0" Visibility="{Binding IsNameVisible}"/>
+                    <ItemsControl ItemsSource="{Binding Members}"
+                                  Margin="4"
+                                  ItemTemplateSelector="{StaticResource dataTemplateSelectorDictionary}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="{Binding HorizontalAlignment}"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="BorderElementWrapTemplate">
+            <Border BorderThickness="4" BorderBrush="#326496">
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="{Binding Name}" Margin="0,0,4,0" Visibility="{Binding IsNameVisible}"/>
+                    <ItemsControl ItemsSource="{Binding Members}"
+                                  Margin="4"
+                                  ItemTemplateSelector="{StaticResource dataTemplateSelectorDictionary}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Margin="4" HorizontalAlignment="{Binding HorizontalAlignment}"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="GroupElementVerticalTemplate">
+            <StackPanel Orientation="Vertical">
+                <TextBlock Text="{Binding Name}" Margin="0,0,4,0" Visibility="{Binding IsNameVisible}"/>
+                <ItemsControl ItemsSource="{Binding Members}"
+                                  Margin="4"
+                                  ItemTemplateSelector="{StaticResource dataTemplateSelectorDictionary}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Vertical" HorizontalAlignment="{Binding HorizontalAlignment}"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="GroupElementHorizontalTemplate">
+            <StackPanel Orientation="Vertical">
+                <TextBlock Text="{Binding Name}" Margin="0,0,4,0" Visibility="{Binding IsNameVisible}"/>
+                <ItemsControl ItemsSource="{Binding Members}"
+                                  Margin="4"
+                                  ItemTemplateSelector="{StaticResource dataTemplateSelectorDictionary}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="{Binding HorizontalAlignment}"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="GroupElementWrapTemplate">
+            <StackPanel Orientation="Vertical">
+                <TextBlock Text="{Binding Name}" Margin="0,0,4,0" Visibility="{Binding IsNameVisible}"/>
+                <ItemsControl ItemsSource="{Binding Members}"
+                                  Margin="4"
+                                  ItemTemplateSelector="{StaticResource dataTemplateSelectorDictionary}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Margin="4" HorizontalAlignment="{Binding HorizontalAlignment}"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="CollectionElementEntryTemplate">
+            <StackPanel Orientation="Horizontal">
+                <Button Content="X" Command="{Binding RemoveElement}" Margin="0,0,4,0" Visibility="{Binding ModifyVisibility}"/>
+                <ContentPresenter Content="{Binding Element}" ContentTemplateSelector="{StaticResource dataTemplateSelectorDictionary}"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="CollectionElementVerticalTemplate">
+            <StackPanel Orientation="Vertical">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="{Binding Name}" Margin="0,0,4,0" Visibility="{Binding IsNameVisible}"/>
+                    <Button Content="+" Command="{Binding AddElement}" Visibility="{Binding ModifyVisibility}"/>
+                </StackPanel>
+                <Border BorderThickness="4" BorderBrush="#326496">
+                    <ItemsControl ItemsSource="{Binding Members}" ItemTemplate="{StaticResource CollectionElementEntryTemplate}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Vertical" HorizontalAlignment="{Binding HorizontalAlignment}"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </Border>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="CollectionElementHorizontalTemplate">
+            <StackPanel Orientation="Vertical">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="{Binding Name}" Margin="0,0,4,0" Visibility="{Binding IsNameVisible}"/>
+                    <Button Content="+" Command="{Binding AddElement}" Visibility="{Binding ModifyVisibility}"/>
+                </StackPanel>
+                <Border BorderThickness="4" BorderBrush="#326496">
+                    <ItemsControl ItemsSource="{Binding Members}" ItemTemplate="{StaticResource CollectionElementEntryTemplate}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="{Binding HorizontalAlignment}"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </Border>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="CollectionElementWrapTemplate">
+            <StackPanel Orientation="Vertical">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="{Binding Name}" Margin="0,0,4,0" Visibility="{Binding IsNameVisible}"/>
+                    <Button Content="+" Command="{Binding AddElement}" Visibility="{Binding ModifyVisibility}"/>
+                </StackPanel>
+                <Border BorderThickness="4" BorderBrush="#326496">
+                    <ItemsControl ItemsSource="{Binding Members}" ItemTemplate="{StaticResource CollectionElementEntryTemplate}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel HorizontalAlignment="{Binding HorizontalAlignment}"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </Border>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="GridCollectionTemplate">
+            <StackPanel Orientation="Vertical">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="{Binding Name}" Margin="0,0,4,0" Visibility="{Binding IsNameVisible}"/>
+                    <Button Content="+" Command="{Binding AddElement}"/>
+                </StackPanel>
+                <DataGrid AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
+                          ItemTemplate="{StaticResource CollectionElementEntryTemplate}" ItemsSource="{Binding Members}" Initialized="DataGrid_Initialized">
+                    <DataGrid.Columns>
+                        <DataGridTemplateColumn Visibility="{Binding ModifyVisibility}">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Content="X" Command="{Binding RemoveElement}"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </StackPanel>
+        </DataTemplate>
+
+    </TabItem.Resources>
+    
+    <TabItem.Header>
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="{Binding Name}"/>
+            <Button Content="X" Click="Close" Margin="4,0,0,0"/>
+        </StackPanel>
+    </TabItem.Header>
+
+    <ScrollViewer>
+        <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Element Name" Margin="0,0,4,0"/>
+                <TextBox Text="{Binding Name}"/>
+            </StackPanel>
+            <ContentPresenter Content="{Binding Element}" ContentTemplateSelector="{StaticResource dataTemplateSelectorDictionary}"/>
+        </StackPanel>
+    </ScrollViewer>
+</TabItem>
