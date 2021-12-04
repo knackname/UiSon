@@ -12,10 +12,20 @@ using UiSon.Extensions;
 
 namespace UiSon
 {
+    /// <summary>
+    /// Creates elements
+    /// </summary>
     public class ElementFactory
     {
-        IEnumerable<ElementManager> _elementManagers;
+        /// <summary>
+        /// The collection of element managers
+        /// </summary>
+        private IEnumerable<ElementManager> _elementManagers;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="elementManagers">The collection of element managers</param>
         public ElementFactory(IEnumerable<ElementManager> elementManagers)
         {
             _elementManagers = elementManagers ?? throw new ArgumentNullException(nameof(elementManagers));
@@ -24,14 +34,14 @@ namespace UiSon
         /// <summary>
         /// Makes the main element for the class
         /// </summary>
-        /// <param name="type"></param>
-        /// <param name="initialValue"></param>
+        /// <param name="type">Type the element represents</param>
+        /// <param name="initialValue">Initial json string value of the element</param>
         /// <returns></returns>
         public GroupElement MakeMainElement(Type type, string initialValue = null)
         {
             var elements = new List<IElement>();
 
-            var mainElement = new GroupElement(null, 0, MakeGroups(type), DisplayMode.Vertial, Alignment.Stretch, GroupType.Basic);
+            var mainElement = new GroupElement(null, 0, MakeGroups(type));
 
             if (initialValue != null)
             {

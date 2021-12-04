@@ -1,8 +1,6 @@
 ﻿// UiSon, by Cameron Gale 2021
 
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
@@ -17,26 +15,44 @@ using UiSon.Views;
 
 namespace UiSon
 {
+    /// <summary>
+    /// Contains all of one type of UiSonElement
+    /// </summary>
     public class ElementManager
     {
+        /// <summary>
+        /// Name of the element
+        /// </summary>
         public string ElementName => _type.Name;
+
+        /// <summary>
+        /// Extension type of the elements file
+        /// </summary>
         public string Extension => _ele.Extension;
 
+        /// <summary>
+        /// The elemetns of this manager's type
+        /// </summary>
         public NotifyingCollection<ElementVM> Elements => _elementsVMs;
         private NotifyingCollection<ElementVM> _elementsVMs = new NotifyingCollection<ElementVM>();
 
         private UiSonElementAttribute _ele;
         private TabControl _controller;
-        private IEnumerable<ElementManager> _parent;
         private Type _type;
         private ElementFactory _factory;
         private ConstructorInfo _constructor;
 
-        public ElementManager(Type type, ConstructorInfo constructor, TabControl controller, IEnumerable<ElementManager> parent, ElementFactory factory)
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="type">Element type</param>
+        /// <param name="constructor">Constructor for the type</param>
+        /// <param name="controller">Tab controller for the main ui</param>
+        /// <param name="factory"></param>
+        public ElementManager(Type type, ConstructorInfo constructor, TabControl controller, ElementFactory factory)
         {
             _type = type ?? throw new ArgumentNullException(nameof(type));
             _controller = controller ?? throw new ArgumentNullException(nameof(controller));
-            _parent = parent ?? throw new ArgumentNullException(nameof(parent));
             _factory = factory ?? throw new ArgumentNullException(nameof(factory));
             _constructor = constructor ?? throw new ArgumentNullException(nameof(constructor));
 
@@ -68,6 +84,10 @@ namespace UiSon
             };
         }
 
+        /// <summary>
+        /// Adds a new element with the given name, corrected for uniqueness
+        /// </summary>
+        /// <param name="name"></param>
         public void NewElement(string name)
         {
             if (_elementsVMs.Any(x => x.Name == name))
@@ -85,8 +105,15 @@ namespace UiSon
             _elementsVMs.Add(new ElementVM(name, newElement, this));
         }
 
+        /// <summary>
+        /// Removes a specific element
+        /// </summary>
+        /// <param name="elementVM"></param>
         public void RemoveElement(ElementVM elementVM) => _elementsVMs.Remove(elementVM);
 
+        /// <summary>
+        /// Removes all elements of this manager's type
+        /// </summary>
         public void Clear()
         {
             foreach (var tab in _controller.Items)
@@ -102,8 +129,15 @@ namespace UiSon
             _elementsVMs.Clear();
         }
 
+        /// <summary>
+        /// Adds a new elements of the manager's type
+        /// </summary>
         public ICommand AddCommand => new Command((s) => NewElement($"new {_type.Name}"), (s) => true);
 
+        /// <summary>
+        /// Saves all elements to a folder at the given path
+        /// </summary>
+        /// <param name="path">Path to save to</param>
         public void Save(string path)
         {
             path = Path.Combine(path, ElementName);
@@ -127,6 +161,11 @@ namespace UiSon
             }
         }
 
+        /// <summary>
+        /// Loads data a specific eleemnts
+        /// </summary>
+        /// <param name="elementName">name of element to load into</param>
+        /// <param name="value">json string value</param>
         public void Load(string elementName, string value)
         {
             var options = new JsonSerializerOptions();

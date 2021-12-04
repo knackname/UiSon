@@ -5,6 +5,9 @@ using System.Windows.Input;
 
 namespace UiSon.Commands
 {
+    /// <summary>
+    /// Custom command
+    /// </summary>
     public class Command : ICommand
     {
         private readonly Action<object> _execute;

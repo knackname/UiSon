@@ -2,6 +2,9 @@
 
 namespace UiSon.Attribute
 {
+    /// <summary>
+    /// Type of collection Ui
+    /// </summary>
     public enum CollectionType
     {
         Template, Grid
