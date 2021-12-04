@@ -13,17 +13,36 @@ using UiSon.ViewModel;
 
 namespace UiSon
 {
+    /// <summary>
+    /// Project class, constains editor data for elements and assemblies
+    /// </summary>
     public class Project : NPCBase
     {
+        /// <summary>
+        /// Path to the logo
+        /// </summary>
         public string LogoPath => _projectSave.LogoPath;
+
+        /// <summary>
+        /// Discription displayed in editor
+        /// </summary>
         public string Description => _projectSave.Description;
 
+        /// <summary>
+        /// Assemblies uesd by this project
+        /// </summary>
         public IEnumerable<AssemblyVM> Assemblies => _assemblies;
         private ObservableCollection<AssemblyVM> _assemblies = new ObservableCollection<AssemblyVM>();
 
+        /// <summary>
+        /// Element managers used by this project
+        /// </summary>
         public IEnumerable<ElementManager> ElementManagers => _elementManagers;
         private ObservableCollection<ElementManager> _elementManagers = new ObservableCollection<ElementManager>();
 
+        /// <summary>
+        /// Wether or not this project has unsaved changes
+        /// </summary>
         public bool UnsavedChanges { get; private set; } = false;
 
         public string Name
@@ -40,11 +59,26 @@ namespace UiSon
         }
         private string _name = "New Project";
 
+        /// <summary>
+        /// Save file for the project
+        /// </summary>
         private ProjectSave _projectSave;
 
+        /// <summary>
+        /// Tab controller from the ui
+        /// </summary>
         private TabControl _controller;
+
+        /// <summary>
+        /// Eleemtn factory
+        /// </summary>
         private ElementFactory _elementFactory;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="projectSave">project save file</param>
+        /// <param name="controller">tab controller</param>
         public Project(ProjectSave projectSave, TabControl controller)
         {
             _projectSave = projectSave ?? throw new ArgumentNullException(nameof(projectSave));
@@ -52,6 +86,10 @@ namespace UiSon
             _elementFactory = new ElementFactory(_elementManagers);//move out
         }
 
+        /// <summary>
+        /// Adds the assembly from the given path to the project
+        /// </summary>
+        /// <param name="path">File path to the assembly</param>
         public void AddAssembly(string path)
         {
             var dll = Assembly.LoadFile(path);
@@ -75,11 +113,19 @@ namespace UiSon
             }
         }
 
+        /// <summary>
+        /// Removes an assembly from the project
+        /// </summary>
+        /// <param name="assembly"></param>
         public void RemoveAssembly(AssemblyVM assembly)
         {
             _assemblies.Remove(assembly);
         }
 
+        /// <summary>
+        /// Saves the project to the given path
+        /// </summary>
+        /// <param name="path">path to save the project to</param>
         public void Save(string path)
         {
             Name = Path.GetFileName(path);
@@ -93,6 +139,10 @@ namespace UiSon
             }
         }
 
+        /// <summary>
+        /// Loads the project from the given path
+        /// </summary>
+        /// <param name="path">path to save file</param>
         public void Load(string path)
         {
             Name = Path.GetFileName(path);

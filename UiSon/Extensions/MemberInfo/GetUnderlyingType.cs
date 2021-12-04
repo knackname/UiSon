@@ -5,6 +5,9 @@ using System.Reflection;
 
 namespace UiSon.Extensions
 {
+    /// <summary>
+    /// Gets the type of the member
+    /// </summary>
     public static partial class ExtendMemberInfo
     {
         public static Type GetUnderlyingType(this MemberInfo member)

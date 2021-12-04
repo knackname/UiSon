@@ -4,6 +4,10 @@ using System.ComponentModel;
 
 namespace UiSon.Events
 {
+    /// <summary>
+    /// Property changes event with old and new values for comparison
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class PropertyChangedExtendedEventArgs<T> : PropertyChangedEventArgs
     {
         public virtual T OldValue { get; private set; }

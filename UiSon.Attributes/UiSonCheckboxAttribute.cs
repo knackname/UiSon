@@ -11,7 +11,7 @@ namespace UiSon.Attribute
         /// </summary>
         /// <param name="groupName">The group this element belongs to</param>
         /// <param name="priority">The sorting priority for this eleemnt</param>
-        /// <param name="defaultValue"></param>
+        /// <param name="defaultValue">The default value</param>
         public UiSonCheckboxAttribute(string groupName = null, int priority = 0,
                                       bool defaultValue = false)
             :base(groupName, priority)

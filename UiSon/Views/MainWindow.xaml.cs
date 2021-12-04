@@ -20,24 +20,46 @@ namespace UiSon
     /// </summary>
     public partial class MainWindow : INotifyPropertyChanged
     {
+        /// <summary>
+        /// Name of the project
+        /// </summary>
         public string ProjectName => _project?.Name;
 
+        /// <summary>
+        /// Path to the project's logo
+        /// </summary>
         public string LogoPath => _project?.LogoPath;
 
+        /// <summary>
+        /// The project's description
+        /// </summary>
         public string Description => _project?.Description;
 
+        /// <summary>
+        /// The project's assemblies
+        /// </summary>
         public IEnumerable<AssemblyVM> Assemblies => _project?.Assemblies;
 
+        /// <summary>
+        /// The project's element managers
+        /// </summary>
         public IEnumerable<ElementManager> ElementManagers => _project?.ElementManagers;
 
+        /// <summary>
+        /// The current project
+        /// </summary>
         private Project _project;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public MainWindow()
         {
             DataContext = this;
 
             InitializeComponent();
 
+            //the project needs the TabControl, so we make it after inition wpf stuff
             NewProject();
 
             this.Closing += OnClosing;
@@ -45,12 +67,17 @@ namespace UiSon
             Refresh();
         }
 
+        /// <summary>
+        /// Opens a clean new project
+        /// </summary>
         private void NewProject()
         {
             if (_project?.UnsavedChanges ?? false)
             {
                 // prompt save
             }
+
+            this.TabControl.Items.Clear();
 
             _project = new Project(new ProjectSave(), this.TabControl);
             _project.PropertyChanged += (s, e) =>
@@ -62,6 +89,9 @@ namespace UiSon
             Refresh();
         }
 
+        /// <summary>
+        /// Opens a prompt for the user to save the project
+        /// </summary>
         private void Save()
         {
             var dlg = new SaveFileDialog();
@@ -74,6 +104,9 @@ namespace UiSon
             }
         }
 
+        /// <summary>
+        /// Refreshes for the UI
+        /// </summary>
         private void Refresh()
         {
             OnPropertyChanged(nameof(ElementManagers));
@@ -83,6 +116,10 @@ namespace UiSon
             OnPropertyChanged(nameof(Description));
         }
 
+        /// <summary>
+        /// Opens or focuses a tab for the target element
+        /// </summary>
+        /// <param name="element">The target element</param>
         private void DisplayElementEditor(ElementVM element)
         {
             if (element != null)
@@ -107,6 +144,9 @@ namespace UiSon
 
         #region Assemblies
 
+        /// <summary>
+        /// Opens a prompt to add an assembly to the project
+        /// </summary>
         public void AddAssembly()
         {
             var dlg = new OpenFileDialog();
@@ -126,8 +166,18 @@ namespace UiSon
 
         #region Menu Items
 
+        /// <summary>
+        /// Handler for newProject menu item
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void NewProject_Click(object sender, RoutedEventArgs e) => NewProject();
 
+        /// <summary>
+        /// Handler for OpenProject manu item
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OpenProject_Click(object sender, RoutedEventArgs e)
         {
             var dlg = new OpenFileDialog();
@@ -150,19 +200,40 @@ namespace UiSon
             }
         }
 
+        /// <summary>
+        /// Handler for save menu item
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Save_Click(object sender, RoutedEventArgs e) => Save();
 
+        /// <summary>
+        /// Handler for add assembly menu item
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void AddAssembly_Click(object sender, RoutedEventArgs e) => AddAssembly();
 
         #endregion
 
+        /// <summary>
+        /// Handler for double clicking on an item in one of the element manager displays
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void DataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             DisplayElementEditor((sender as DataGrid).SelectedValue as ElementVM);
         }
 
+        /// <summary>
+        /// Prompts save if nessisary on closing
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OnClosing(object sender, CancelEventArgs e)
         {
+            // prompt save
         }
 
         #endregion

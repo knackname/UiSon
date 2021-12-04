@@ -8,6 +8,9 @@ using UiSon.Element.Element.Interface;
 
 namespace UiSon.Views
 {
+    /// <summary>
+    /// Selects the template from ElementEditor.xaml depending on the element type
+    /// </summary>
     public class ElementTemplateSelector : DataTemplateSelector
     {
         public DataTemplate a { get; set; }

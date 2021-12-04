@@ -5,6 +5,10 @@ using System.Reflection;
 
 namespace UiSon.Element
 {
+    /// <summary>
+    /// An element representing a value type, or a string
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public abstract class ValElement<T> : BaseElement
     {
         public abstract T Value { get; set; }

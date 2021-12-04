@@ -5,6 +5,9 @@ using System.Runtime.CompilerServices;
 
 namespace UiSon
 {
+    /// <summary>
+    /// base implimentation of INotifyPropertyChanged
+    /// </summary>
     public abstract class NPCBase : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;

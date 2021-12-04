@@ -5,6 +5,9 @@ using System.Windows.Controls;
 
 namespace UiSon.Element.Element.Interface
 {
+    /// <summary>
+    /// And element displayable and readable and writable
+    /// </summary>
     public interface IElement
     {
         string Name { get; }

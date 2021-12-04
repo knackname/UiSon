@@ -2,6 +2,9 @@
 
 namespace UiSon.Attribute
 {
+    /// <summary>
+    /// Type of group Ui
+    /// </summary>
     public enum GroupType
     {
         Border, Expander, Basic

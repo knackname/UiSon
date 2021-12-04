@@ -21,7 +21,7 @@ namespace UiSon.Element
         public HorizontalAlignment HorizontalAlignment { get; private set; }
 
         public GroupElement(string name, int priority,
-            IEnumerable<IElement> members, DisplayMode displayMode = DisplayMode.Vertial, Alignment alignment = Alignment.Left, GroupType type = GroupType.Basic)
+            IEnumerable<IElement> members, DisplayMode displayMode = DisplayMode.Vertial, Alignment alignment = Alignment.Stretch, GroupType type = GroupType.Basic)
             :base(name, priority)
         {
             Members = members ?? throw new ArgumentNullException(nameof(members));
