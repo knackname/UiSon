@@ -1,6 +1,6 @@
 ﻿// UiSon, by Cameron Gale 2021
 
-namespace UiSon.Attribute.Enums
+namespace UiSon.Attribute
 {
     public enum CollectionType
     {

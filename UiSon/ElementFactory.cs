@@ -6,7 +6,6 @@ using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using UiSon.Attribute;
-using UiSon.Attribute.Enums;
 using UiSon.Element;
 using UiSon.Element.Element.Interface;
 using UiSon.Extensions;
@@ -32,7 +31,7 @@ namespace UiSon
         {
             var elements = new List<IElement>();
 
-            var mainElement = new GroupElement(null, 0, MakeGroups(type));
+            var mainElement = new GroupElement(null, 0, MakeGroups(type), DisplayMode.Vertial, Alignment.Stretch, GroupType.Basic);
 
             if (initialValue != null)
             {
@@ -67,9 +66,9 @@ namespace UiSon
                 {
                     elementAttribute = ele;
                 }
-                else if (att is UiSonGroupAttribute reg)
+                else if (att is UiSonGroupAttribute group)
                 {
-                    regionAttributes.Add(reg.Name, reg);
+                    regionAttributes.Add(group.Name, group);
                 }
             }
 
@@ -119,10 +118,10 @@ namespace UiSon
                     groupType = att.GroupType;
                 }
 
-                members.Add(new GroupElement(region.Key, priority, region.Value, displayMode, alignment, groupType));
+                members.Add(new GroupElement(region.Key, priority, region.Value.OrderBy(x => x.Priority), displayMode, alignment, groupType));
             }
 
-            return members;
+            return members.OrderBy(x => x.Priority);
         }
 
         /// <summary>
@@ -159,39 +158,39 @@ namespace UiSon
                 // val types
                 if (collection.EntryType.IsAssignableFrom(typeof(bool)))
                 {
-                    return new ValCollectionElement<bool>(collection.Name, collection.Priority,
+                    return new ValCollectionElement<bool>(memberInfo.Name, collection.Priority,
                                                           collection.DisplayMode, collection.Modifiable, collection.CollectionType, collection.Alignment,
                                                           attribute, memberInfo, this);
                 }
                 else if (collection.EntryType.IsAssignableFrom(typeof(char)))
                 {
-                    return new ValCollectionElement<char>(collection.Name, collection.Priority,
+                    return new ValCollectionElement<char>(memberInfo.Name, collection.Priority,
                                                           collection.DisplayMode, collection.Modifiable, collection.CollectionType, collection.Alignment,
                                                           attribute, memberInfo, this);
                 }
                 else if (collection.EntryType.IsAssignableFrom(typeof(int)))
                 {
-                    return new ValCollectionElement<int>(collection.Name, collection.Priority,
+                    return new ValCollectionElement<int>(memberInfo.Name, collection.Priority,
                                                           collection.DisplayMode, collection.Modifiable, collection.CollectionType, collection.Alignment,
                                                           attribute, memberInfo, this);
                 }
                 else if (collection.EntryType.IsAssignableFrom(typeof(float)))
                 {
-                    return new ValCollectionElement<float>(collection.Name, collection.Priority,
+                    return new ValCollectionElement<float>(memberInfo.Name, collection.Priority,
                                                            collection.DisplayMode, collection.Modifiable, collection.CollectionType, collection.Alignment,
                                                            attribute, memberInfo, this);
                 }
                 // and also string because it doesn't have a constructor
                 else if (collection.EntryType.IsAssignableFrom(typeof(string)))
                 {
-                    return new ValCollectionElement<string>(collection.Name, collection.Priority,
+                    return new ValCollectionElement<string>(memberInfo.Name, collection.Priority,
                                                             collection.DisplayMode, collection.Modifiable, collection.CollectionType, collection.Alignment,
                                                             attribute, memberInfo, this);
                 }
                 // ref types
                 else
                 {
-                    return new RefCollectionElement(collection.Name, collection.Priority,
+                    return new RefCollectionElement(memberInfo.Name, collection.Priority,
                                                     collection.DisplayMode, collection.Modifiable, collection.CollectionType, collection.Alignment,
                                                     collection.EntryType, memberInfo, this);
                 }
@@ -216,11 +215,11 @@ namespace UiSon
         {
             if (attribute is UiSonTextEditAttribute textEdit)
             {
-                return new TextEditElement(textEdit.Name, textEdit.Priority, info, textEdit.DefaultValue, textEdit.RegexValidation);
+                return new TextEditElement(info?.Name, textEdit.Priority, info, textEdit.DefaultValue, textEdit.RegexValidation);
             }
             else if (attribute is UiSonElementSelectorAttribute elesel)
             {
-                return new ElementSelectorElement(elesel.Name,
+                return new ElementSelectorElement(info?.Name,
                                                   elesel.Priority,
                                                   info,
                                                   elesel.Options,
@@ -228,11 +227,11 @@ namespace UiSon
             }
             else if (attribute is UiSonSelectorAttribute sel)
             {
-                return new SelectorElement(sel.Name, sel.Priority, info, sel.Options, sel.DefaultValue);
+                return new SelectorElement(info?.Name, sel.Priority, info, sel.Options, sel.DefaultValue);
             }
             else if (attribute is UiSonCheckboxAttribute chk)
             {
-                return new CheckboxElement(chk.Name, chk.Priority, chk.DefaultValue, info);
+                return new CheckboxElement(info?.Name, chk.Priority, chk.DefaultValue, info);
             }
 
             return null;

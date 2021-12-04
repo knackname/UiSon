@@ -6,7 +6,7 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using UiSon.Attribute.Enums;
+using UiSon.Attribute;
 using UiSon.Element.Element.Interface;
 
 namespace UiSon.Element

@@ -1,19 +1,22 @@
 ﻿// UiSon, by Cameron Gale 2021
 
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows.Input;
 using UiSon.Commands;
-using UiSon.Element;
 using UiSon.Element.Element.Interface;
+using UiSon.Events;
 
 namespace UiSon.ViewModel
 {
     /// <summary>
     /// A user creatable element
     /// </summary>
-    public class ElementVM : NPCBase
+    public class ElementVM : INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler PropertyChanged;
+
         public string Name
         {
             get => _name;
@@ -22,8 +25,10 @@ namespace UiSon.ViewModel
                 if (!string.IsNullOrWhiteSpace(value)
                     && !_parent.Elements.Any(x => x.Name == value))
                 {
+                    var old = _name;
                     _name = value;
-                    OnPropertyChanged();
+
+                    PropertyChanged.Invoke(this, new PropertyChangedExtendedEventArgs<string>(nameof(Name), old, _name));
                 }
             }
         }

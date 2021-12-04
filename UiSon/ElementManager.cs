@@ -19,11 +19,11 @@ namespace UiSon
 {
     public class ElementManager
     {
-        public string ElementName => _ele.Name;
+        public string ElementName => _type.Name;
         public string Extension => _ele.Extension;
 
-        public ObservableCollection<ElementVM> Elements => _elementsVMs;
-        private ObservableCollection<ElementVM> _elementsVMs = new ObservableCollection<ElementVM>();
+        public NotifyingCollection<ElementVM> Elements => _elementsVMs;
+        private NotifyingCollection<ElementVM> _elementsVMs = new NotifyingCollection<ElementVM>();
 
         private UiSonElementAttribute _ele;
         private TabControl _controller;
@@ -102,7 +102,7 @@ namespace UiSon
             _elementsVMs.Clear();
         }
 
-        public ICommand AddCommand => new Command((s) => NewElement($"new {_ele.Name}"), (s) => true);
+        public ICommand AddCommand => new Command((s) => NewElement($"new {_type.Name}"), (s) => true);
 
         public void Save(string path)
         {
@@ -118,7 +118,10 @@ namespace UiSon
                 // create the dir in case it doesn't exist
                 Directory.CreateDirectory(path);
 
-                var jsonStr = JsonSerializer.Serialize(instance);
+                var options = new JsonSerializerOptions();
+                options.IncludeFields = _ele.IncludeFields;
+
+                var jsonStr = JsonSerializer.Serialize(instance, options);
 
                 File.WriteAllText(path + $"/{elementVM.Name}{Extension}", jsonStr);
             }
@@ -126,7 +129,10 @@ namespace UiSon
 
         public void Load(string elementName, string value)
         {
-            var instance = JsonSerializer.Deserialize(value, _type);
+            var options = new JsonSerializerOptions();
+            options.IncludeFields = _ele.IncludeFields;
+
+            var instance = JsonSerializer.Deserialize(value, _type, options);
             var target = _elementsVMs.FirstOrDefault(x => x.Name == elementName);
 
             if (target != null && instance != null)

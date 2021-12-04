@@ -7,9 +7,9 @@ namespace UiSon.Attribute
         public string DefaultValue { get; private set; }
         public string RegexValidation { get; private set; }
 
-        public UiSonTextEditAttribute(string name = null, int priority = 0, string regionName = null,
+        public UiSonTextEditAttribute(int priority = 0, string regionName = null,
                                       string defaultValue = null, string regexValidation = null)
-            :base(name, regionName, priority)
+            :base(regionName, priority)
         {
             DefaultValue = defaultValue;
             RegexValidation = regexValidation;
