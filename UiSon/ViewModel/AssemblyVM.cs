@@ -51,7 +51,7 @@ namespace UiSon.ViewModel
                         // make sure it has the correct constructor, one without params is needed
                         var constructor = type.GetConstructor(new Type[] { });
 
-                        if (!_elementManagers.Any(x => x.ElementName == ele.Name)
+                        if (!_elementManagers.Any(x => x.ElementName == type.Name)
                             && constructor != null)
                         {
                             var newElementManager = new ElementManager(type, constructor, _controller, _myElementManagers, _elementFactory);

@@ -4,7 +4,7 @@ using System;
 using System.Collections;
 using System.Reflection;
 using System.Windows.Input;
-using UiSon.Attribute.Enums;
+using UiSon.Attribute;
 using UiSon.Commands;
 using UiSon.Extensions;
 

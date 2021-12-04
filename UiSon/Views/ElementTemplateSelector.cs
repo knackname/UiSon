@@ -2,7 +2,7 @@
 
 using System.Windows;
 using System.Windows.Controls;
-using UiSon.Attribute.Enums;
+using UiSon.Attribute;
 using UiSon.Element;
 using UiSon.Element.Element.Interface;
 

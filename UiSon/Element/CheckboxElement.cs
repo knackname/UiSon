@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Windows.Controls;
 using System.Windows.Data;
+using UiSon.Extensions;
 
 namespace UiSon.Element
 {
@@ -27,13 +28,10 @@ namespace UiSon.Element
         }
         private bool _value;
 
-        private MemberInfo _info;
-
         public CheckboxElement(string name, int priority, bool initialValue, MemberInfo info)
-            :base(name, priority)
+            :base(name, priority, info)
         {
             _value = initialValue;
-            _info = info;
         }
 
         public override IEnumerable<DataGridColumn> GenerateColumns(string path)
@@ -50,13 +48,35 @@ namespace UiSon.Element
 
         public override void Write(object instance)
         {
+            var memberType = _info.GetUnderlyingType();
+            object convertedValue = null;
+
+            if (memberType == typeof(bool))
+            {
+                convertedValue = Value;
+            }
+            else if (memberType == typeof(char))
+            {
+                convertedValue = Value ? 'T':'F';
+            }
+            else if (memberType == typeof(int)
+                || memberType == typeof(float)
+                || memberType == typeof(double))
+            {
+                convertedValue = Value ? 1 : 0;
+            }
+            else if (memberType == typeof(string))
+            {
+                convertedValue = Value.ToString();
+            }
+
             if (_info is PropertyInfo prop)
             {
-                prop.SetValue(instance, Value);
+                prop.SetValue(instance, convertedValue);
             }
             else if (_info is FieldInfo field)
             {
-                field.SetValue(instance, Value);
+                field.SetValue(instance, convertedValue);
             }
             else
             {
@@ -66,17 +86,51 @@ namespace UiSon.Element
 
         public override void Read(object instance)
         {
+            object instanceValue = null;
+
             if (_info is PropertyInfo prop)
             {
-                Value = (bool)prop.GetValue(instance);
+                instanceValue = prop.GetValue(instance);
             }
             else if (_info is FieldInfo field)
             {
-                Value = (bool)field.GetValue(instance);
+                instanceValue = field.GetValue(instance);
             }
             else
             {
                 throw new Exception("Attempting to read on an element without member info");
+            }
+
+            if (instanceValue is bool boolValue)
+            {
+                Value = boolValue;
+            }
+            else if (instanceValue is char charValue)
+            {
+                Value = charValue == 'T';
+            }
+            else if (instanceValue is int intValue)
+            {
+                Value = intValue > 0;
+            }
+            else if (instanceValue is float floatValue)
+            {
+                Value = floatValue > 0;
+            }
+            else if (instanceValue is double doubleValue)
+            {
+                Value = doubleValue > 0;
+            }
+            else if (instanceValue is string stringValue)
+            {
+                if (bool.TryParse(stringValue, out var asBool))
+                {
+                    Value = asBool;
+                }
+                else
+                {
+                    Value = false;
+                }
             }
         }
     }

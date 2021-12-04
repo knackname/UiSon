@@ -9,9 +9,9 @@ namespace UiSon.Attribute
         public string[] Options { get; private set; }
 
         public UiSonSelectorAttribute(string[] options,
-                                      string name = null, int priority = 0, string regionName = null, 
+                                      int priority = 0, string regionName = null, 
                                       string defaultValue = null)
-            : base(name, regionName, priority)
+            : base(regionName, priority)
         {
             DefaultValue = defaultValue;
             Options = options;

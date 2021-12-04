@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\UiSon.Attributes\UiSon.Attributes.csproj" />
+    <ProjectReference Include="..\UiSon.Attributes\UiSon.Attribute.csproj" />
   </ItemGroup>
 
   <ItemGroup>

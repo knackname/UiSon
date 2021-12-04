@@ -1,7 +1,7 @@
 ﻿// UiSon, by Cameron Gale 2021
 
 using System.Windows.Input;
-using UiSon.Attribute.Enums;
+using UiSon.Attribute;
 
 namespace UiSon.Element.Element.Interface
 {

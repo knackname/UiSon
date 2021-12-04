@@ -6,9 +6,15 @@ namespace UiSon.Attribute
     {
         public bool DefaultValue { get; private set; }
 
-        public UiSonCheckboxAttribute(string name = null, string regionName = null, int priority = 0,
+        /// <summary>
+        /// Creates a checkbox in the Ui to represent the member
+        /// </summary>
+        /// <param name="groupName">The group this element belongs to</param>
+        /// <param name="priority">The sorting priority for this eleemnt</param>
+        /// <param name="defaultValue"></param>
+        public UiSonCheckboxAttribute(string groupName = null, int priority = 0,
                                       bool defaultValue = false)
-            :base(name, regionName, priority)
+            :base(groupName, priority)
         {
             DefaultValue = defaultValue;
         }

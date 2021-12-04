@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using UiSon.Events;
 using UiSon.ViewModel;
 
 namespace UiSon.Element
@@ -19,22 +20,30 @@ namespace UiSon.Element
         public IEnumerable<string> Options => BaseOptions.Concat(ElementVMs.Select(x => x.Name));
 
         private string[] BaseOptions;
-        private ObservableCollection<ElementVM> ElementVMs;
+        private NotifyingCollection<ElementVM> ElementVMs;
 
-        public ElementSelectorElement(string name, int priority, MemberInfo info, string[] baseOptions, ObservableCollection<ElementVM> elementVMs)
+        public ElementSelectorElement(string name, int priority, MemberInfo info, string[] baseOptions, NotifyingCollection<ElementVM> elementVMs)
             :base(name, priority, info)
         {
             BaseOptions = baseOptions ?? new string[] { };
             ElementVMs = elementVMs;
 
-            elementVMs.CollectionChanged += (s, e) =>
+            elementVMs.PropertyChanged += (s, e) =>
             {
-                OnPropertyChanged(nameof(Options)); 
-                if (Value == null)
+                if (e.PropertyName == "Name" 
+                    && e is PropertyChangedExtendedEventArgs<string> extended)
                 {
-                    Value = Options.FirstOrDefault();
+                    var newVal = Value;
+                    
+                    if (Value == extended.OldValue)
+                    {
+                        newVal = extended.NewValue;
+                    }
+                    OnPropertyChanged(nameof(Options));
+                    Value = newVal;
                 }
             };
+            elementVMs.CollectionChanged += (s, e) => OnPropertyChanged(nameof(Options));
 
             Value = Options.FirstOrDefault();
         }
