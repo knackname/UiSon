@@ -60,8 +60,7 @@ namespace UiSon.ViewModel
         /// </summary>
         public void RefreshElements()
         {
-            var dll = Assembly.LoadFile(_path);
-
+            var dll = Assembly.LoadFrom(_path);
             foreach (Type type in dll.GetTypes())
             {
                 foreach (var attribute in System.Attribute.GetCustomAttributes(type))

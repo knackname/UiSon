@@ -61,13 +61,26 @@ namespace UiSon.Element
             }
             else if (memberType == typeof(int)
                 || memberType == typeof(float)
-                || memberType == typeof(double))
+                || memberType == typeof(double)
+                || memberType == typeof(short)
+                || memberType == typeof(ushort)
+                || memberType == typeof(uint)
+                || memberType == typeof(long)
+                || memberType == typeof(ulong))
             {
                 convertedValue = Value ? 1 : 0;
             }
             else if (memberType == typeof(string))
             {
                 convertedValue = Value.ToString();
+            }
+            else if (memberType == typeof(sbyte))
+            {
+                convertedValue = Convert.ToSByte(Value);
+            }
+            else if (memberType == typeof(byte))
+            {
+                convertedValue = Convert.ToByte(Value);
             }
 
             if (_info is PropertyInfo prop)
@@ -101,37 +114,7 @@ namespace UiSon.Element
                 throw new Exception("Attempting to read on an element without member info");
             }
 
-            if (instanceValue is bool boolValue)
-            {
-                Value = boolValue;
-            }
-            else if (instanceValue is char charValue)
-            {
-                Value = charValue == 'T';
-            }
-            else if (instanceValue is int intValue)
-            {
-                Value = intValue > 0;
-            }
-            else if (instanceValue is float floatValue)
-            {
-                Value = floatValue > 0;
-            }
-            else if (instanceValue is double doubleValue)
-            {
-                Value = doubleValue > 0;
-            }
-            else if (instanceValue is string stringValue)
-            {
-                if (bool.TryParse(stringValue, out var asBool))
-                {
-                    Value = asBool;
-                }
-                else
-                {
-                    Value = false;
-                }
-            }
+            Value = Convert.ToBoolean(instanceValue);
         }
     }
 }

@@ -72,9 +72,44 @@ namespace UiSon.Element
                 convertedValue = asFloat;
             }
             else if (memberType == typeof(double)
-                && float.TryParse(Value, out var asDouble))
+                && double.TryParse(Value, out var asDouble))
             {
                 convertedValue = asDouble;
+            }
+            else if (memberType == typeof(sbyte)
+                && sbyte.TryParse(Value, out var asSbyte))
+            {
+                convertedValue = asSbyte;
+            }
+            else if (memberType == typeof(byte)
+                && byte.TryParse(Value, out var asByte))
+            {
+                convertedValue = asByte;
+            }
+            else if (memberType == typeof(short)
+                && short.TryParse(Value, out var asShort))
+            {
+                convertedValue = asShort;
+            }
+            else if (memberType == typeof(ushort)
+                && ushort.TryParse(Value, out var asUshort))
+            {
+                convertedValue = asUshort;
+            }
+            else if (memberType == typeof(uint)
+                && uint.TryParse(Value, out var asUint))
+            {
+                convertedValue = asUint;
+            }
+            else if (memberType == typeof(long)
+                && long.TryParse(Value, out var asLong))
+            {
+                convertedValue = asLong;
+            }
+            else if (memberType == typeof(ulong)
+                && ulong.TryParse(Value, out var asUlong))
+            {
+                convertedValue = asUlong;
             }
             else if (memberType == typeof(string))
             {
@@ -112,30 +147,7 @@ namespace UiSon.Element
                 throw new Exception("Attempting to read on an element without member info");
             }
 
-            if (instanceValue is bool boolValue)
-            {
-                Value = boolValue.ToString();
-            }
-            else if (instanceValue is char charValue)
-            {
-                Value = charValue.ToString();
-            }
-            else if (instanceValue is int intValue)
-            {
-                Value = intValue.ToString();
-            }
-            else if (instanceValue is float floatValue)
-            {
-                Value = floatValue.ToString();
-            }
-            else if (instanceValue is double doubleValue)
-            {
-                Value = doubleValue.ToString();
-            }
-            else if (instanceValue is string stringValue)
-            {
-                Value = stringValue;
-            }
+            Value = instanceValue?.ToString();
         }
     }
 }
