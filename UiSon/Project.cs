@@ -1,14 +1,14 @@
 ﻿// UiSon, by Cameron Gale 2021
 
-using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.IO;
 using System.Text.Json;
-using System;
 using System.Windows.Controls;
+using UiSon.Notify.Interface;
 using UiSon.ViewModel;
 
 namespace UiSon
@@ -29,6 +29,11 @@ namespace UiSon
         public string Description => _projectSave.Description;
 
         /// <summary>
+        /// If assamblies are allowed to be added or removed from the project
+        /// </summary>
+        public bool AllowAssemblyMod => _projectSave.AllowAssemblyMod;
+
+        /// <summary>
         /// Assemblies uesd by this project
         /// </summary>
         public IEnumerable<AssemblyVM> Assemblies => _assemblies;
@@ -38,13 +43,28 @@ namespace UiSon
         /// Element managers used by this project
         /// </summary>
         public IEnumerable<ElementManager> ElementManagers => _elementManagers;
-        private ObservableCollection<ElementManager> _elementManagers = new ObservableCollection<ElementManager>();
+        private Collection<ElementManager> _elementManagers;
 
         /// <summary>
-        /// Wether or not this project has unsaved changes
+        /// if project has unsaved changes
         /// </summary>
-        public bool UnsavedChanges { get; private set; } = false;
+        public bool UnsavedChanges
+        {
+            get => _unsavedChanges;
+            set
+            {
+                if (_unsavedChanges != value)
+                {
+                    _unsavedChanges = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        private bool _unsavedChanges = false;
 
+        /// <summary>
+        /// The project's name
+        /// </summary>
         public string Name
         {
             get => _name;
@@ -67,23 +87,30 @@ namespace UiSon
         /// <summary>
         /// Tab controller from the ui
         /// </summary>
-        private TabControl _controller;
+        private TabControl _tabController;
 
         /// <summary>
-        /// Eleemtn factory
+        /// editor module factory
         /// </summary>
-        private ElementFactory _elementFactory;
+        private EditorModuleFactory _editorModuleFactory;
+
+        private INotifier _notifier;
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="projectSave">project save file</param>
-        /// <param name="controller">tab controller</param>
-        public Project(ProjectSave projectSave, TabControl controller)
+        /// <param name="tabController">tab controller</param>
+        /// <param name="editorModuleFactory">factory for making editor modules</param>
+        /// <param name="elementManagers">collection of element managers</param>
+        /// <param name="notifier">The notifier</param>
+        public Project(ProjectSave projectSave, TabControl tabController, EditorModuleFactory editorModuleFactory, Collection<ElementManager> elementManagers, INotifier notifier)
         {
             _projectSave = projectSave ?? throw new ArgumentNullException(nameof(projectSave));
-            _controller = controller ?? throw new ArgumentNullException(nameof(controller));
-            _elementFactory = new ElementFactory(_elementManagers);//move out
+            _tabController = tabController ?? throw new ArgumentNullException(nameof(tabController));
+            _elementManagers = elementManagers ?? throw new ArgumentNullException(nameof(elementManagers));
+            _editorModuleFactory = editorModuleFactory ?? throw new ArgumentNullException(nameof(editorModuleFactory));
+            _notifier = notifier ?? throw new ArgumentNullException(nameof(notifier));
         }
 
         /// <summary>
@@ -92,35 +119,22 @@ namespace UiSon
         /// <param name="path">File path to the assembly</param>
         public void AddAssembly(string path)
         {
-            var dll = Assembly.LoadFile(path);
-            if (dll == null)
+            // if assembly is already loaded just refresh it
+            var assembly = _assemblies.FirstOrDefault(x => x.Path == path);
+            if (assembly != null)
             {
-                // inform error
+                assembly.RefreshElements();
             }
-            else
-            {
-                var assembly = _assemblies.FirstOrDefault(x => x.Path == path);
-                if (assembly == null)
-                {
-                    assembly = new AssemblyVM(path, this, _elementManagers, _controller, _elementFactory);
 
-                    _assemblies.Add(assembly);
-                }
-                else
-                {
-                    assembly.RefreshElements();
-                }
-            }
+            // add new assembly VM
+            _assemblies.Add(new AssemblyVM(path, this, _elementManagers, _tabController, _editorModuleFactory, _notifier));
         }
 
         /// <summary>
         /// Removes an assembly from the project
         /// </summary>
         /// <param name="assembly"></param>
-        public void RemoveAssembly(AssemblyVM assembly)
-        {
-            _assemblies.Remove(assembly);
-        }
+        public void RemoveAssembly(AssemblyVM assembly) => _assemblies.Remove(assembly);
 
         /// <summary>
         /// Saves the project to the given path
@@ -149,33 +163,77 @@ namespace UiSon
 
             _projectSave = JsonSerializer.Deserialize<ProjectSave>(File.ReadAllText(path));
 
-            foreach (var assemby in _projectSave.Assemblies)
+            if (_projectSave == null)
             {
-                AddAssembly(assemby);
+                throw new Exception($"Failed to deserialize project {path}");
             }
+
+            foreach (var assembly in _projectSave.Assemblies)
+            {
+                AddAssembly(assembly);
+            }
+
+            var loads = new List<LoadStruct>();
 
             foreach (var elementManager in ElementManagers)
             {
-                //all managers need to load their elements, then load their information because elements reference one another
+                // all managers need to load their elements, then load their information because elements reference one another
                 var elementDir = Path.Combine(Path.GetDirectoryName(path), elementManager.ElementName);
 
                 if (Directory.Exists(elementDir))
                 {
+                    _notifier.StartCashe();
+
                     foreach (var file in Directory.GetFiles(elementDir))
                     {
                         var name = Path.GetFileName(file);
 
                         if (name.EndsWith(elementManager.Extension))
                         {
-                            name = name.Substring(0, name.Length - elementManager.Extension.Length);
+                            // make sure file is valid first
+                            var instance = JsonSerializer.Deserialize(File.ReadAllText(file), elementManager.ManagedType, new JsonSerializerOptions() { IncludeFields = elementManager.IncludesFields });
 
-                            elementManager.NewElement(name);
+                            // ignore bad files
+                            if (instance == null)
+                            {
+                                _notifier.Notify("Deserialize failure", $"Ignoring {name}");
+                            }
+                            else
+                            {
+                                name = name.Substring(0, name.Length - elementManager.Extension.Length);
 
-                            elementManager.Load(name, File.ReadAllText(file));
+                                elementManager.NewElement(name);
+
+                                loads.Add(new LoadStruct() { ElementManager = elementManager, Name = name, Instance = instance});
+                            }
                         }
                     }
+
+                    _notifier.EndCashe();
                 }
             }
+
+            // now that everything is created, load all the data. Some data includes the names of other elements so it's nessisary to load after they all exist.
+            foreach (var entry in loads)
+            {
+                entry.ElementManager.Load(entry.Name, entry.Instance);
+            }
+
+            // and now update refs
+            foreach (var manager in ElementManagers)
+            {
+                manager.UpdateRefs();
+            }
+        }
+        
+        /// <summary>
+        /// Helper struct for the load process
+        /// </summary>
+        private struct LoadStruct
+        {
+            public ElementManager ElementManager;
+            public string Name;
+            public object Instance;
         }
     }
 }
