@@ -34,7 +34,7 @@ namespace UiSon
         /// <summary>
         /// Paths to assemblies used by this project
         /// </summary>
-        [UiSonGenericEnumerable]
+        [UiSonCollection]
         [UiSonTextEditUi]
         public List<string> Assemblies { get; set; } = new List<string>();
     }

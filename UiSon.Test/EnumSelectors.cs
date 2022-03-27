@@ -5,7 +5,7 @@ using UiSon.Attribute;
 namespace UiSon.Test
 {
     public class EnumSelectors
-    {        
+    {
         [UiSonEnumSelectorUi(null)]
         public int EnumSelector_int_null;
 

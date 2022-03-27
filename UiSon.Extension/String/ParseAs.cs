@@ -61,7 +61,7 @@ namespace UiSon.Extension
                 case ValueishType._bool:
                     return bool.TryParse(value, out var asBool) ? asBool : null;
                 case ValueishType._char:
-                    return char.TryParse(value, out var asChar) ? asChar : null;
+                    return value[0];
                 case ValueishType._type:
                     return TypeDescriptor.GetConverter(type).ConvertFromInvariantString(value);
                 default:

@@ -33,7 +33,11 @@ namespace UiSon.ViewModel
 
         private Type _entryType;
 
-        private UiSonGenericEnumerableAttribute _enumerableAttribute;
+        private Type _collectionType;
+
+        private MethodInfo _collectionAdd;
+
+        private UiSonCollectionAttribute _enumerableAttribute;
 
         private IUiSonUiAttribute _uiAttribute;
 
@@ -51,29 +55,29 @@ namespace UiSon.ViewModel
         /// <param name="collectionStyle"></param>
         /// <param name="attribute"></param>
         public CollectionVM(ObservableCollection<CollectionEntryVM> members,
-                            Type entryType, EditorModuleFactory factory,
+                            Type entryType, Type collectionType, EditorModuleFactory factory,
                             IUiSonUiAttribute uiAttribute,
                             string name, int priority, MemberInfo info, 
                             bool modifiable = true,
                             DisplayMode displayMode = DisplayMode.Vertial,
                             CollectionStyle collectionStyle = CollectionStyle.Stack,
-                            UiSonGenericEnumerableAttribute attribute = null)
+                            UiSonCollectionAttribute attribute = null)
             : base(members, name, priority, displayMode)
         {
-            _members = members ?? throw new ArgumentNullException(nameof(members));
-
-            _factory = factory ?? throw new ArgumentNullException(nameof(factory));
-
+            _collectionType = collectionType ?? throw new ArgumentNullException(nameof(collectionType));
             _entryType = entryType ?? throw new ArgumentNullException(nameof(entryType));
 
+            _collectionAdd = _collectionType.GetInterfaces()
+                .FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ICollection<>))
+                .GetMethod("Add");
+
+            _members = members ?? throw new ArgumentNullException(nameof(members));
+            _factory = factory ?? throw new ArgumentNullException(nameof(factory));
+
             _uiAttribute = uiAttribute;
-
             ModifyVisibility = modifiable ? Visibility.Visible : Visibility.Collapsed;
-
             _enumerableAttribute = attribute;
-
             _info = info;
-
             Style = collectionStyle;
         }
 
@@ -119,13 +123,20 @@ namespace UiSon.ViewModel
 
         public override void Write(object instance)
         {
+            var value = Activator.CreateInstance(_collectionType);
+
+            foreach (var member in _members)
+            {
+                _collectionAdd.Invoke(value, new[] { member.GetValueAs(_entryType) });
+            }
+
             if (_info is PropertyInfo prop)
             {
-                prop.SetValue(instance, _members.Select(x => x.GetValueAs(_entryType)));
+                prop.SetValue(instance, value);
             }
             else if (_info is FieldInfo field)
             {
-                field.SetValue(instance, _members.Select(x => x.GetValueAs(_entryType)));
+                field.SetValue(instance, value);
             }
             else
             {
@@ -135,7 +146,7 @@ namespace UiSon.ViewModel
 
         public override bool SetValue(object value)
         {
-            if (value.GetType().GetInterface(nameof(IEnumerable)) != null)
+            if (value != null && value.GetType().GetInterface(nameof(IEnumerable)) != null)
             {
                 _members.Clear();
 
@@ -202,22 +213,27 @@ namespace UiSon.ViewModel
                         _gridColumnsUpdated = true;
 
                         // make a new sub data grid column thing woot
-                        var valCol = new DataGridTemplateColumn();
-                        valCol.Header = Name;
+                        //var valCol = new DataGridTemplateColumn();
+                        //valCol.Header = Name;
 
-                        var dt = new DataTemplate();
-                        var valBind = new Binding("Decorated.Decorated");
-                        valBind.Mode = BindingMode.OneWay;
-                        valBind.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
-                        var contentPresenter = new FrameworkElementFactory(typeof(ContentPresenter));
-                        contentPresenter.SetBinding(ContentPresenter.ContentProperty, valBind);
-                        contentPresenter.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Stretch);
-                        contentPresenter.SetValue(ContentPresenter.ContentTemplateSelectorProperty, new ElementTemplateSelector());
+                        //var dt = new DataTemplate();
+                        //var valBind = new Binding("Decorated.Decorated");
+                        //valBind.Mode = BindingMode.OneWay;
+                        //valBind.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+                        //var contentPresenter = new FrameworkElementFactory(typeof(ContentPresenter));
+                        //contentPresenter.SetBinding(ContentPresenter.ContentProperty, valBind);
+                        //contentPresenter.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Stretch);
+                        //contentPresenter.SetValue(ContentPresenter.ContentTemplateSelectorProperty, new ElementTemplateSelector());
 
-                        dt.VisualTree = contentPresenter;
-                        valCol.CellTemplate = dt;
+                        //dt.VisualTree = contentPresenter;
+                        //valCol.CellTemplate = dt;
 
-                        dataGrid.Columns.Add(valCol);
+                        //dataGrid.Columns.Add(valCol);
+
+                        foreach (var column in collectionEntry.GenerateColumns("").Skip(1))
+                        {
+                            dataGrid.Columns.Add(column);
+                        }
                     }
                 };
             }

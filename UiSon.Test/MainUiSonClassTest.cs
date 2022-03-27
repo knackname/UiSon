@@ -8,6 +8,9 @@ namespace UiSon.Test
     [UiSonElement]
     public class UiSonClassTest
     {
+        [UiSonMultiChoiceUi(new string[] { "A","B","C"})]
+        public List<string> poop;
+
         [UiSonMemberElement(0, null, DisplayMode.Vertial)]
         public Attribulteless attribulteless;
 
@@ -30,7 +33,7 @@ namespace UiSon.Test
         public Groups _groups;
 
         [UiSonMemberElement(0, null, DisplayMode.Vertial)]
-        public Enumerables _collections;
+        public Collections _collections;
 
         [UiSonMemberElement(0, null, DisplayMode.Vertial)]
         public SelfRef _selfRef;

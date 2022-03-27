@@ -1,7 +1,6 @@
 ﻿// UiSon, by Cameron Gale 2021
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -62,11 +61,10 @@ namespace UiSon.ViewModel
             return mainElement;
         }
 
-        public CollectionEntryVM MakeCollectionEntryVM(Collection<CollectionEntryVM> parent, Type entryType, Visibility modifyVisability, UiSonGenericEnumerableAttribute enumerableAttribute, IUiSonUiAttribute uiAttribute)
+        public CollectionEntryVM MakeCollectionEntryVM(Collection<CollectionEntryVM> parent, Type entryType, Visibility modifyVisability, UiSonCollectionAttribute enumerableAttribute, IUiSonUiAttribute uiAttribute)
         {
-            // don't apply enumerable attributes to types witout parameterless constructors or that aren't enumerables
-            if (entryType.GetConstructor(new Type[] { }) == null
-                || entryType.GetInterfaces().FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IEnumerable<>)) == null)
+            // don't apply enumerable attributes to non-collections
+            if (entryType.GetInterfaces().FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ICollection<>)) == null)
             {
                 enumerableAttribute = null;
             }
@@ -133,8 +131,8 @@ namespace UiSon.ViewModel
                 }
             }
 
-            // enumerables
-            if (type.GetInterfaces().FirstOrDefault(x => x.GetGenericTypeDefinition() == typeof(IEnumerable<>)) != null)
+            // collections
+            if (type.GetInterfaces().FirstOrDefault(x => x.GetGenericTypeDefinition() == typeof(ICollection<>)) != null)
             {
                 return MakeCollection(type, name, priority, info);
             }
@@ -149,24 +147,30 @@ namespace UiSon.ViewModel
         /// <param name="attribute">The attribute</param>
         /// <param name="info">The member info</param>
         /// <returns>An IEditorModule selected based on the attribute</returns>
-        private IEditorModule MakeEditorModule(IUiSonUiAttribute attribute, Type type, MemberInfo info = null, UiSonGenericEnumerableAttribute enumerableAttribute = null)
+        private IEditorModule MakeEditorModule(IUiSonUiAttribute attribute, Type type, MemberInfo info = null, UiSonCollectionAttribute enumerableAttribute = null)
         {
             // first check for enumerables
-            var enumerableInterface = type.GetInterfaces().FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+            var hasCollectionInterface = type.GetInterfaces()
+                .FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ICollection<>)) != null;
             var hasParamaterlessConstructor = type.GetConstructor(new Type[] { }) != null;
 
             // enumerable attributes
             if (enumerableAttribute != null)
             {
-                if (enumerableInterface == null)
+                if (!hasCollectionInterface)
                 {
-                    _notifier.Notify($"{info} has a {nameof(UiSonGenericEnumerableAttribute)} but its type doesn't impliment a generic IEnumerable<T>",
-                                     $"Invalid {nameof(UiSonGenericEnumerableAttribute)}");
+                    _notifier.Notify($"{info} has a {nameof(UiSonCollectionAttribute)} but its type doesn't impliment a generic ICollection<T>",
+                                     $"Invalid {nameof(UiSonCollectionAttribute)}");
                 }
                 else if (!hasParamaterlessConstructor)
                 {
-                    _notifier.Notify($"{info ?? type} has a {nameof(UiSonGenericEnumerableAttribute)} but doesn't impliment a parameterless constructor",
-                    $"Invalid {nameof(UiSonGenericEnumerableAttribute)}");
+                    _notifier.Notify($"{info ?? type} has a {nameof(UiSonCollectionAttribute)} but doesn't impliment a parameterless constructor",
+                    $"Invalid {nameof(UiSonCollectionAttribute)}");
+                }
+                else if (attribute is UiSonMultiChoiceUiAttribute)
+                {
+                    _notifier.Notify($"{info ?? type} has a {nameof(UiSonCollectionAttribute)} and a {nameof(UiSonMultiChoiceUiAttribute)}, defaulting to the {nameof(UiSonMultiChoiceUiAttribute)}",
+                    $"Invalid {nameof(UiSonCollectionAttribute)}");
                 }
                 else
                 {
@@ -181,10 +185,39 @@ namespace UiSon.ViewModel
                         enumerableAttribute.CollectionType);
                 }
             }
-            // enumerable interfaces with paramaterless constructors
-            else if (hasParamaterlessConstructor && enumerableInterface != null)
+            // collection interfaces with paramaterless constructors
+            else if (hasParamaterlessConstructor && hasCollectionInterface)
             {
-                enumerableAttribute = new UiSonGenericEnumerableAttribute();
+                // attributes for collections
+                if (attribute is UiSonMultiChoiceUiAttribute multi)
+                {
+                    var entryType = type.GetInterfaces().FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ICollection<>)).GetGenericArguments().FirstOrDefault();
+
+                    if (entryType == null)
+                    {
+                        _notifier.Notify($"Unable to find entry type for {type}", "Multi Choice Element");
+                        return null;
+                    }
+                    else if (!entryType.IsValueType && !entryType.IsAssignableFrom(typeof(string)) && entryType.GetConstructor(new Type[] { }) == null)
+                    {
+                        _notifier.Notify($"{type}'s entry type lacks a parameterless constructor.", "Multi Choice Element");
+                        return null;
+                    }
+
+                    var optionUi = new List<CheckboxVM>();
+
+                    // make checkboxes for each option
+                    foreach (var option in multi.Options)
+                    {
+                        optionUi.Add(new CheckboxVM(new ValueElement<bool>(type, null), option, 0));
+                    }
+
+                    return new MultiChoiceVM(optionUi, type, entryType, info,
+                                             info?.Name, multi.Priority, multi.DisplayMode);
+                }
+
+                // default to using a normal collection ui
+                enumerableAttribute = new UiSonCollectionAttribute();
 
                 return MakeCollection(type,
                                       info?.Name,
@@ -247,6 +280,15 @@ namespace UiSon.ViewModel
             {
                 return MakeMemberElement(type, info?.Name, member.Priority, info);
             }
+            else if (attribute is UiSonMultiChoiceUiAttribute)
+            {
+                _notifier.Notify($"{nameof(UiSonMultiChoiceUiAttribute)} on a property or field without ICollection implimentation",
+                $"Invalid {nameof(UiSonMultiChoiceUiAttribute)}");
+            }
+            else
+            {
+                throw new Exception($"Unhandled {nameof(IUiSonUiAttribute)}");
+            }
 
             return null;
         }
@@ -255,7 +297,11 @@ namespace UiSon.ViewModel
         {
             if (type.IsValueType)
             {
-                return MakeMainElement(type);
+                return new RefVM(MakeGroups(type),
+                                            type,
+                                            info,
+                                            name ?? type.Name,
+                                            priority);
             }
 
             if (type.GetConstructor(new Type[] { }) == null)
@@ -265,13 +311,17 @@ namespace UiSon.ViewModel
             }
 
             return new NullableVM(() =>
-            {
-                _notifier.StartCashe();
-                var newRefVM = new RefVM(MakeGroups(type), info, name ?? type.Name, priority);
-                _notifier.EndCashe();
-                return newRefVM;
-            },
-            type, name ?? type.Name, priority, info);
+                {
+                    _notifier.StartCashe();
+                    var newRefVM = new RefVM(MakeGroups(type),
+                                             type,
+                                             info,
+                                             name ?? type.Name,
+                                             priority);
+                    _notifier.EndCashe();
+                    return newRefVM;
+                },
+                type, name ?? type.Name, priority, info);
         }
 
         private NullableVM MakeCollection(Type type,
@@ -279,32 +329,33 @@ namespace UiSon.ViewModel
             int priority = 0,
             MemberInfo info = null,
             bool modifiable = true,
-            UiSonGenericEnumerableAttribute enumerableAttribute = null,
+            UiSonCollectionAttribute enumerableAttribute = null,
             IUiSonUiAttribute uiAttribute = null,
             DisplayMode displayMode = DisplayMode.Vertial,
             CollectionStyle collectionStyle = CollectionStyle.Stack)
         {
             if (type.GetConstructor(new Type[] { }) == null)
             {
-                _notifier.Notify($"{type} lacks a parameterless constructor.", "Enumerable Element");
+                _notifier.Notify($"{type} lacks a parameterless constructor.", "Collection Element");
                 return null;
             }
 
-            var entryType = type.GetInterfaces().FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IEnumerable<>)).GetGenericArguments().FirstOrDefault();
+            var entryType = type.GetInterfaces().FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ICollection<>)).GetGenericArguments().FirstOrDefault();
 
             if (entryType == null)
             {
-                _notifier.Notify($"Unable to find entry type for {type}", "Enumerable Element");
+                _notifier.Notify($"Unable to find entry type for {type}", "Collection Element");
                 return null;
             }
             else if (!entryType.IsValueType && !entryType.IsAssignableFrom(typeof(string)) && entryType.GetConstructor(new Type[] { }) == null)
             {
-                _notifier.Notify($"{type}'s entry type lacks a parameterless constructor.", "Enumerable Element");
+                _notifier.Notify($"{type}'s entry type lacks a parameterless constructor.", "Collection Element");
                 return null;
             }
 
             return new NullableVM(() => new CollectionVM(new ObservableCollection<CollectionEntryVM>(),
                                               entryType,
+                                              type,
                                               this,
                                               uiAttribute,
                                               name ?? type.Name,
@@ -441,17 +492,23 @@ namespace UiSon.ViewModel
             // Read properties with attributes
             var editors = new List<IEditorModule>();
             var groups = new Dictionary<string, List<IEditorModule>>();
-            var members = type.GetMembers().Where(x => x is PropertyInfo || x is FieldInfo).ToArray();
+
+            var members = type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                              .Where(x => x.CanWrite && x.CanRead)
+                              .OfType<MemberInfo>()
+                              .Concat(type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                                          .OfType<MemberInfo>())
+                              .ToArray();
 
             foreach (var member in members)
             {
-                UiSonGenericEnumerableAttribute enumerableAttribute = null;
+                UiSonCollectionAttribute enumerableAttribute = null;
                 IUiSonUiAttribute uiAttribute = null;
 
                 // grab attributes
                 foreach (var att in member.GetCustomAttributes())
                 {
-                    if (att is UiSonGenericEnumerableAttribute enumAtt)
+                    if (att is UiSonCollectionAttribute enumAtt)
                     {
                         enumerableAttribute = enumAtt;
                     }

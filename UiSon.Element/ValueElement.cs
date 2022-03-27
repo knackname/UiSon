@@ -73,13 +73,16 @@ namespace UiSon.Element
         {
             if (instance == null) { return; }
 
+            object casted = null;
+            _value?.TryCast(_valueType, out casted);
+
             if (_info is PropertyInfo prop)
             {
-                prop.SetValue(instance, _value == null ? null : Convert.ChangeType(_value, _valueType));
+                prop.GetSetMethod(true).Invoke(instance, new[] { casted });
             }
             else if (_info is FieldInfo field)
             {
-                field.SetValue(instance, _value == null ? null : Convert.ChangeType(_value, _valueType));
+                field.SetValue(instance, casted);
             }
             else
             {
@@ -117,7 +120,7 @@ namespace UiSon.Element
                 }
             }
 
-            // make sure value can be set to _valyeType from the element's type
+            // make sure value can be set from the element's type
             if (input.TryCast(typeof(T), out var asT)
                 && asT.TryCast(_valueType, out var _))
             {

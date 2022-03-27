@@ -21,7 +21,7 @@ namespace UiSon
         /// <summary>
         /// Path to the logo
         /// </summary>
-        public string LogoPath => _projectSave.LogoPath;
+        public string LogoPath => Path.Combine(_projectFilePath, _projectSave.LogoPath);
 
         /// <summary>
         /// Discription displayed in editor
@@ -83,6 +83,8 @@ namespace UiSon
         /// Save file for the project
         /// </summary>
         private ProjectSave _projectSave;
+
+        private string _projectFilePath = string.Empty;
 
         /// <summary>
         /// Tab controller from the ui
@@ -159,8 +161,6 @@ namespace UiSon
         /// <param name="path">path to save file</param>
         public void Load(string path)
         {
-            Name = Path.GetFileName(path);
-
             _projectSave = JsonSerializer.Deserialize<ProjectSave>(File.ReadAllText(path));
 
             if (_projectSave == null)
@@ -168,9 +168,12 @@ namespace UiSon
                 throw new Exception($"Failed to deserialize project {path}");
             }
 
+            Name = Path.GetFileName(path);
+            _projectFilePath = Path.GetDirectoryName(path);
+
             foreach (var assembly in _projectSave.Assemblies)
             {
-                AddAssembly(assembly);
+                AddAssembly(Path.Combine(path,assembly));
             }
 
             var loads = new List<LoadStruct>();

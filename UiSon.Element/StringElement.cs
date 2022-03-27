@@ -76,11 +76,11 @@ namespace UiSon.Element
 
             if (_info is PropertyInfo prop)
             {
-                prop.SetValue(instance, _value == null ? null : _value.ParseAs(_memberType));
+                prop.GetSetMethod(true).Invoke(instance, new[] { _value?.ParseAs(_memberType) });
             }
             else if (_info is FieldInfo field)
             {
-                field.SetValue(instance, _value == null ? null : _value.ParseAs(_memberType));
+                field.SetValue(instance, _value?.ParseAs(_memberType));
             }
             else
             {
@@ -138,5 +138,12 @@ namespace UiSon.Element
         }
 
         public object GetValueAs(Type type) => _value.ParseAs(type);
+
+        private struct poopy
+        {
+            public string Key => _key;
+            private string _key;
+        }
+
     }
 }

@@ -24,8 +24,7 @@ namespace UiSon.Extension
                 value is int enumInt
                 && Enum.IsDefined(type, enumInt))
             {
-                // no need to actually cast to the enum... it'll just have to be cast again on the other side.
-                result = enumInt;
+                result = Enum.ToObject(type, enumInt);
                 return true;
             }
             else if (value is string parseString)
@@ -72,6 +71,11 @@ namespace UiSon.Extension
                         if (value is int asInt)
                         {
                             result = asInt;
+                            return true;
+                        }
+                        else if (value.GetType().IsEnum)
+                        {
+                            result = (int)value;
                             return true;
                         }
                         break;
