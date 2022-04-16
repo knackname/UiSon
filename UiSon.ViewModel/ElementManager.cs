@@ -50,23 +50,14 @@ namespace UiSon
         /// Constructor
         /// </summary>
         /// <param name="type">Element type</param>
-        /// <param name="constructor">Constructor for the type</param>
         /// <param name="controller">Tab controller for the main ui</param>
         /// <param name="factory"></param>
-        public ElementManager(Type type, TabControl controller, EditorModuleFactory factory)
+        public ElementManager(Type type, TabControl controller, EditorModuleFactory factory, UiSonElementAttribute ele)
         {
             _type = type ?? throw new ArgumentNullException(nameof(type));
             _controller = controller ?? throw new ArgumentNullException(nameof(controller));
             _factory = factory ?? throw new ArgumentNullException(nameof(factory));
-
-            foreach (var attribute in System.Attribute.GetCustomAttributes(type))
-            {
-                if (attribute is UiSonElementAttribute ele)
-                {
-                    _ele = ele;
-                    break;
-                }
-            }
+            _ele = ele ?? throw new ArgumentNullException(nameof(ele));
 
             _elementsVMs.CollectionChanged += (s, e) =>
             {

@@ -5,7 +5,11 @@ using System;
 namespace UiSon.Attribute
 {
     /// <summary>
-    /// Designates the member to be represented by a textedit Ui in UiSon.
+    /// Designates the member to be represented by a textedit Ui 
+    /// in UiSon. The input string will be parsed to the represented 
+    /// field/property's type. Also includes an optional string 'regexValidation' 
+    /// paramiter which will validate all input and only allow those satisfying 
+    /// the regex.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
     public class UiSonTextEditUiAttribute : System.Attribute, IUiSonUiAttribute

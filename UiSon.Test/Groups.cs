@@ -7,6 +7,7 @@ namespace UiSon.Test
     [UiSonGroup("Vertical", 0, DisplayMode.Vertial)]
     [UiSonGroup("Horizontal", 0, DisplayMode.Horizontal)]
     [UiSonGroup("Wrap", 0, DisplayMode.Wrap)]
+    [UiSonGroup("Grid", 0, DisplayMode.Grid)]
     public class Groups
     {
         // undefined members
@@ -39,5 +40,11 @@ namespace UiSon.Test
 
         [UiSonCheckboxUi(0, "Wrap")]
         public bool W_member_B;
+
+        [UiSonCheckboxUi(0, "Grid")]
+        public bool G_member_A;
+
+        [UiSonCheckboxUi(0, "Grid")]
+        public bool G_member_B;
     }
 }

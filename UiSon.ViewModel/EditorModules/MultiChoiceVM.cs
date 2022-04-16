@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UiSon.Attribute;
+using UiSon.Element;
+using UiSon.Extension;
 
 namespace UiSon.ViewModel
 {
@@ -12,15 +14,16 @@ namespace UiSon.ViewModel
         private Type _collectionType;
         private Type _memberType;
         private MethodInfo _collectionAdd;
-        private MemberInfo _info;
+        private ValueMemberInfo _info;
         private List<CheckboxVM> _members;
 
-        public MultiChoiceVM(List<CheckboxVM> members, Type collectionType, Type memberType, MemberInfo info = null, string name = null, int priority = 0,
-                             DisplayMode displayMode = DisplayMode.Vertial)
-            :base(members,name,priority,displayMode)
+        public MultiChoiceVM(List<CheckboxVM> members, Type collectionType, Type memberType, ValueMemberInfo info = null, string name = null, int priority = 0,
+                             DisplayMode displayMode = DisplayMode.Horizontal)
+            :base(members,name,priority,displayMode, true)
         {
             _members = members ?? throw new ArgumentNullException(nameof(members));
             _collectionType = collectionType ?? throw new ArgumentNullException(nameof(collectionType));
+            _memberType = memberType ?? throw new ArgumentNullException(nameof(memberType));
             _info = info;
 
             _collectionAdd = _collectionType.GetInterfaces()
@@ -28,47 +31,21 @@ namespace UiSon.ViewModel
                 .GetMethod("Add");
         }
 
-        public override void Read(object instance)
-        {
-            if (instance == null) { return; }
-
-            if (_info is PropertyInfo prop)
-            {
-                SetValue(prop.GetValue(instance));
-            }
-            else if (_info is FieldInfo field)
-            {
-                SetValue(field.GetValue(instance));
-            }
-            else
-            {
-                throw new Exception("Attempting to read on an element without member info");
-            }
-        }
+        public override void Read(object instance) => SetValue(_info.GetValue(instance));
 
         public override void Write(object instance)
         {
-            if (instance == null) { return; }
-
             var value = Activator.CreateInstance(_collectionType);
 
             foreach (var member in _members.Where(x => x.Value))
             {
-                _collectionAdd.Invoke(value, new[] { member.GetValueAs(_memberType)});
+                if ((bool)member.GetValueAs(typeof(bool)))
+                {
+                    _collectionAdd.Invoke(value, new[] { member.Name.ParseAs(_memberType) });
+                }
             }
 
-            if (_info is PropertyInfo prop)
-            {
-                prop.GetSetMethod(true).Invoke(instance, new[] { value });
-            }
-            else if (_info is FieldInfo field)
-            {
-                field.SetValue(instance, value);
-            }
-            else
-            {
-                throw new Exception("Attempting to write on an element without member info");
-            }
+            _info.SetValue(instance, value);
         }
 
         public override bool SetValue(object value)
@@ -84,7 +61,7 @@ namespace UiSon.ViewModel
                 // set the ones in the list to true
                 foreach (var n in value as IEnumerable)
                 {
-                    var found = _members.FirstOrDefault(x => x.Name == n.ToString());
+                    _members.FirstOrDefault(x => x.Name == n.ToString())?.SetValue(true);
                 }
 
                 OnPropertyChanged(nameof(Members));

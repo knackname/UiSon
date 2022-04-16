@@ -1,5 +1,6 @@
 ﻿// UiSon, by Cameron Gale 2021
 
+using System.Windows;
 using System.Windows.Input;
 using UiSon.Attribute;
 
@@ -11,11 +12,6 @@ namespace UiSon.ViewModel.Interface
     public interface ICollectionVM
     {
         /// <summary>
-        /// entry type
-        /// </summary>
-        public CollectionStyle Style { get; }
-
-        /// <summary>
         /// Type of display
         /// </summary>
         public DisplayMode DisplayMode { get; }
@@ -24,5 +20,10 @@ namespace UiSon.ViewModel.Interface
         /// Adds a new element to the collection
         /// </summary>
         ICommand AddEntry { get; }
+
+        /// <summary>
+        /// visiablity of collection modifying components.
+        /// </summary>
+        public Visibility ModifyVisibility { get; }
     }
 }

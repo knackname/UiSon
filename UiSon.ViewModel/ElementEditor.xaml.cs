@@ -35,24 +35,38 @@ namespace UiSon.ViewModel
 
         #endregion
 
-        // Generates columns
-        private void DataGrid_Initialized(object sender, EventArgs e)
+        private void DataGridCollection_Initialized(object sender, EventArgs e)
         {
             var dataGrid = sender as DataGrid;
+            var collectionVM = dataGrid.DataContext as ICollectionVM;
 
             // Because elements are dynamically constructed, collections must be inited with
             // one entry to use as a template for this step
-            (dataGrid.DataContext as ICollectionVM).AddEntry.Execute(dataGrid);
+            collectionVM.AddEntry.Execute(dataGrid);
 
-            var collectionEntry = (dataGrid.Items[dataGrid.Items.Count - 1] as ICollectionEntry);
+            var collectionEntry = dataGrid.Items[dataGrid.Items.Count - 1] as ICollectionEntry;
 
-            foreach (var column in collectionEntry.Decorated.GenerateColumns(nameof(collectionEntry.Decorated)))
+            foreach (var column in collectionEntry.GenerateColumns(string.Empty))
             {
                 dataGrid.Columns.Add(column);
             }
 
             // remove template entry
             collectionEntry.RemoveElement.Execute(null);
+
+            // also, template columns have quirky bindings and I don't like them, so let's set the modify vis here as well
+            dataGrid.Columns[0].Visibility = collectionVM.ModifyVisibility;
+        }
+
+        private void GridGroup_Initialized(object sender, EventArgs e)
+        {
+            var dataGrid = sender as DataGrid;
+            var groupVM = dataGrid.DataContext as GroupVM;
+
+            foreach (var column in groupVM.GenerateColumns(string.Empty))
+            {
+                dataGrid.Columns.Add(column);
+            }
         }
     }
 }

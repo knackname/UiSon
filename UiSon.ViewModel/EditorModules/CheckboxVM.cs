@@ -45,6 +45,7 @@ namespace UiSon.ViewModel
         public IEnumerable<DataGridColumn> GenerateColumns(string path)
         {
             var valCol = new DataGridCheckBoxColumn();
+            valCol.Width = new DataGridLength(1, DataGridLengthUnitType.Star);
             valCol.Header = Name;
 
             var valBinding = new Binding(path + $".{nameof(Value)}");

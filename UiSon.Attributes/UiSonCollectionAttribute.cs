@@ -20,11 +20,6 @@ namespace UiSon.Attribute
         public bool IsModifiable { get; private set; }
 
         /// <summary>
-        /// The collection type
-        /// </summary>
-        public CollectionStyle CollectionType { get; private set; }
-
-        /// <summary>
         /// The display mode
         /// </summary>
         public DisplayMode DisplayMode { get; private set; }
@@ -33,14 +28,11 @@ namespace UiSon.Attribute
         /// Constructor
         /// </summary>
         /// <param name="isModifiable">If the collection can have elements added to or removed from within UiSon</param>
-        /// <param name="collectionStyle">The collection style</param>
         /// <param name="displayMode">The display mode</param>
         public UiSonCollectionAttribute(bool isModifiable = true,
-                                        CollectionStyle collectionStyle = CollectionStyle.Stack,
                                         DisplayMode displayMode = DisplayMode.Vertial)
         {
             IsModifiable = isModifiable;
-            CollectionType = collectionStyle;
             DisplayMode = displayMode;
         }
     }

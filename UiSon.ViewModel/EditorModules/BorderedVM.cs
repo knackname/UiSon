@@ -41,9 +41,6 @@ namespace UiSon.ViewModel
 
         public object GetValueAs(Type type) => _decorated.GetValueAs(type);
 
-        public void UpdateRefs()
-        {
-            // no refs to update
-        }
+        public void UpdateRefs() => _decorated.UpdateRefs();
     }
 }

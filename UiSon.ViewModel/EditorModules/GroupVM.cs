@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using UiSon.Attribute;
@@ -23,15 +22,18 @@ namespace UiSon.ViewModel
 
         public DisplayMode DisplayMode { get; private set; }
 
-        public Visibility IsNameVisible => string.IsNullOrWhiteSpace(Name) ? Visibility.Collapsed : Visibility.Visible;
+        public Visibility IsNameVisible => (_hideName || string.IsNullOrWhiteSpace(Name)) ? Visibility.Collapsed : Visibility.Visible;
+
+        private bool _hideName;
 
         /// <summary>
         /// Constructor
         /// </summary>
         public GroupVM(IEnumerable<IEditorModule> members, string name = null, int priority = 0,
-                       DisplayMode displayMode = DisplayMode.Vertial)
+                       DisplayMode displayMode = DisplayMode.Vertial, bool hideName = true)
         {
             Name = name;
+            _hideName = hideName;
             Priority = priority;
             Members = members ?? throw new ArgumentNullException(nameof(members));
             DisplayMode = displayMode;

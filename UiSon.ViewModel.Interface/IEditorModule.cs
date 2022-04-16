@@ -34,12 +34,12 @@ namespace UiSon.ViewModel.Interface
         public IEnumerable<DataGridColumn> GenerateColumns(string path);
 
         /// <summary>
-        /// Writes this editor's element's value to the instance
+        /// Reads data from instance and set's this editor's element's value to it
         /// </summary>
         public void Read(object instance);
 
         /// <summary>
-        /// Reads data from instance and set's this editor's element's value to it
+        /// Writes this editor's element's value to the instance
         /// </summary>
         public void Write(object instance);
 

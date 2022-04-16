@@ -16,7 +16,11 @@ namespace UiSon.ViewModel
         {
             if (container is FrameworkElement frameworkElement)
             {
-                if (item is BorderedVM)
+                if (item is BadDataVM)
+                {
+                    return frameworkElement.FindResource("BadDataTemplate") as DataTemplate;
+                }
+                else if (item is BorderedVM)
                 {
                     return frameworkElement.FindResource("BorderedTemplate") as DataTemplate;
                 }
@@ -36,23 +40,18 @@ namespace UiSon.ViewModel
                 {
                     return frameworkElement.FindResource("CheckBoxElementTemplate") as DataTemplate;
                 }
-                // Sub types of GroupVM, must be identified first
+                // types inheriting GroupVM must be identified first
                 else if (item is ICollectionVM col)
                 {
-                    switch (col.Style)
+                    switch (col.DisplayMode)
                     {
-                        case CollectionStyle.Stack:
-                            switch (col.DisplayMode)
-                            {
-                                case DisplayMode.Vertial:
-                                    return frameworkElement.FindResource("CollectionElementVerticalTemplate") as DataTemplate;
-                                case DisplayMode.Horizontal:
-                                    return frameworkElement.FindResource("CollectionElementHorizontalTemplate") as DataTemplate;
-                                case DisplayMode.Wrap:
-                                    return frameworkElement.FindResource("CollectionElementWrapTemplate") as DataTemplate;
-                            }
-                            break;
-                        case CollectionStyle.Grid:
+                        case DisplayMode.Vertial:
+                            return frameworkElement.FindResource("CollectionElementVerticalTemplate") as DataTemplate;
+                        case DisplayMode.Horizontal:
+                            return frameworkElement.FindResource("CollectionElementHorizontalTemplate") as DataTemplate;
+                        case DisplayMode.Wrap:
+                            return frameworkElement.FindResource("CollectionElementWrapTemplate") as DataTemplate;
+                        case DisplayMode.Grid:
                             return frameworkElement.FindResource("GridCollectionTemplate") as DataTemplate;
                     }
                 }
@@ -66,6 +65,8 @@ namespace UiSon.ViewModel
                             return frameworkElement.FindResource("HorizontalGroupTemplate") as DataTemplate;
                         case DisplayMode.Wrap:
                             return frameworkElement.FindResource("WrapGroupTemplate") as DataTemplate;
+                        case DisplayMode.Grid:
+                            return frameworkElement.FindResource("GridGroupTemplate") as DataTemplate;
                     }
                 }
             }

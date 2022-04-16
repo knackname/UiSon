@@ -63,9 +63,8 @@ namespace UiSon.ViewModel
         /// </summary>
         public IEnumerable<DataGridColumn> GenerateColumns(string path)
         {
-            var columns = new List<DataGridColumn>();
-
             var valCol = new DataGridTemplateColumn();
+            valCol.Width = new DataGridLength(1, DataGridLengthUnitType.Star);
             valCol.Header = Name;
 
             var dt = new DataTemplate();
@@ -76,14 +75,13 @@ namespace UiSon.ViewModel
             valBind.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
             comboBox.SetBinding(ComboBox.SelectedValueProperty, valBind);
             comboBox.SetBinding(ComboBox.ItemsSourceProperty, new Binding(path + $".{nameof(Options)}"));
+            comboBox.SetBinding(ComboBox.ForegroundProperty, new Binding(path + $".{nameof(TextColor)}"));
 
             dt.VisualTree = comboBox;
 
             valCol.CellTemplate = dt;
 
-            columns.Add(valCol);
-
-            return columns;
+            return new List<DataGridColumn>() { valCol };
         }
 
         /// <summary>
@@ -149,7 +147,7 @@ namespace UiSon.ViewModel
             {
                 result = true;
 
-                // having been set from the converters options, the value can no longer be bad
+                // having been set from the converter's options, the value can no longer be bad
                 _badValue = false;
             }
 

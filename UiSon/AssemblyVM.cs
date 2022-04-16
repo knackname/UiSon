@@ -75,7 +75,7 @@ namespace UiSon
                         if (!_elementManagers.Any(x => x.ElementName == type.Name)
                             && type.GetConstructor(new Type[] { }) != null)
                         {
-                            var newElementManager = new ElementManager(type, _controller, _elementFactory);
+                            var newElementManager = new ElementManager(type, _controller, _elementFactory, ele);
                             _elementManagers.Add(newElementManager);
                             _myElementManagers.Add(newElementManager);
                         }

@@ -47,9 +47,8 @@ namespace UiSon.ViewModel
         /// </summary>
         public IEnumerable<DataGridColumn> GenerateColumns(string path)
         {
-            var columns = new List<DataGridColumn>();
-
             var valCol = new DataGridTemplateColumn();
+            valCol.Width = new DataGridLength(1, DataGridLengthUnitType.Star);
             valCol.Header = Name;
 
             var dt = new DataTemplate();
@@ -65,8 +64,7 @@ namespace UiSon.ViewModel
 
             valCol.CellTemplate = dt;
 
-            columns.Add(valCol);
-            return columns;
+            return new List<DataGridColumn>() { valCol };
         }
 
         /// <summary>

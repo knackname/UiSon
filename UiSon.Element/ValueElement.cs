@@ -1,7 +1,6 @@
 ﻿// UiSon, by Cameron Gale 2022
 
 using System;
-using System.Reflection;
 using UiSon.Extension;
 
 namespace UiSon.Element
@@ -24,7 +23,7 @@ namespace UiSon.Element
         /// </summary>
         public bool IsNullable { get; private set; }
 
-        private MemberInfo _info;
+        private ValueMemberInfo _info;
         private Type _memberType;
         protected Type _valueType;
 
@@ -33,7 +32,7 @@ namespace UiSon.Element
         /// </summary>
         /// <param name="memberType">The type this element writes to</param>
         /// <param name="info">Member info for member this represents</param>
-        public ValueElement(Type memberType, MemberInfo info = null)
+        public ValueElement(Type memberType, ValueMemberInfo info = null)
         {
             _memberType = memberType ?? throw new ArgumentNullException(nameof(memberType));
             _info = info;
@@ -47,23 +46,7 @@ namespace UiSon.Element
         /// Reads data from instance and set's this element's value to it
         /// </summary>
         /// <param name="instance">The instance</param>
-        public void Read(object instance)
-        {
-            if (instance == null) { return; }
-
-            if (_info is PropertyInfo prop)
-            {
-                SetValue(prop.GetValue(instance));
-            }
-            else if (_info is FieldInfo field)
-            {
-                SetValue(field.GetValue(instance));
-            }
-            else
-            {
-                throw new Exception("Attempting to read on an element without member info");
-            }
-        }
+        public void Read(object instance) => SetValue(_info.GetValue(instance));
 
         /// <summary>
         /// Writes this element's value to the instance
@@ -71,23 +54,9 @@ namespace UiSon.Element
         /// <param name="instance">The instance</param>
         public void Write(object instance)
         {
-            if (instance == null) { return; }
-
             object casted = null;
             _value?.TryCast(_valueType, out casted);
-
-            if (_info is PropertyInfo prop)
-            {
-                prop.GetSetMethod(true).Invoke(instance, new[] { casted });
-            }
-            else if (_info is FieldInfo field)
-            {
-                field.SetValue(instance, casted);
-            }
-            else
-            {
-                throw new Exception("Attempting to write on an element without member info");
-            }
+            _info.SetValue(instance, casted);
         }
 
         /// <summary>
@@ -121,8 +90,8 @@ namespace UiSon.Element
             }
 
             // make sure value can be set from the element's type
-            if (input.TryCast(typeof(T), out var asT)
-                && asT.TryCast(_valueType, out var _))
+            else if (input.TryCast(typeof(T), out var asT)
+                     && asT.TryCast(_valueType, out var _))
             {
                 _value = (T)asT;
                 return true;

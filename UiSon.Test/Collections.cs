@@ -7,23 +7,23 @@ namespace UiSon.Test
 {
     public class Collections
     {
-        [UiSonCollection(true, CollectionStyle.Stack, DisplayMode.Vertial)]
+        [UiSonCollection(true, DisplayMode.Vertial)]
         [UiSonTextEditUi]
         public List<string> stack;
 
-        [UiSonCollection(true, CollectionStyle.Grid, DisplayMode.Vertial)]
+        [UiSonCollection(true, DisplayMode.Grid)]
         [UiSonTextEditUi]
         public List<string> grid;
 
-        [UiSonCollection(true, CollectionStyle.Grid, DisplayMode.Vertial)]
+        [UiSonCollection(true, DisplayMode.Grid)]
         [UiSonTextEditUi]
         public List<List<string>> nestedGrid;
 
-        [UiSonCollection(true, CollectionStyle.Stack, DisplayMode.Vertial)]
+        [UiSonCollection(true, DisplayMode.Vertial)]
         [UiSonTextEditUi]
         public List<string> collection;
 
-        [UiSonCollection(true, CollectionStyle.Stack, DisplayMode.Vertial)]
+        [UiSonCollection(true, DisplayMode.Vertial)]
         [UiSonTextEditUi]
         public List<List<string>> nestedCollection;
 
@@ -47,25 +47,33 @@ namespace UiSon.Test
         [UiSonMemberElement]
         public List<SelfRef> selfRefing_members;
 
-        [UiSonCollection(true, CollectionStyle.Grid, DisplayMode.Vertial)]
+        [UiSonCollection(true, DisplayMode.Grid)]
         [UiSonMemberElement]
         public List<SelfRef> selfRefing_members_grid;
 
-        [UiSonCollection(true, CollectionStyle.Stack, DisplayMode.Vertial)]
+        [UiSonCollection(true, DisplayMode.Vertial)]
         [UiSonMemberElement]
         public Dictionary<string, string> dict_stack;
 
-        [UiSonCollection(true, CollectionStyle.Grid, DisplayMode.Vertial)]
+        [UiSonCollection(true, DisplayMode.Grid)]
         [UiSonMemberElement]
         public Dictionary<string, string> dict_grid;
 
-        [UiSonCollection(true, CollectionStyle.Stack, DisplayMode.Vertial)]
+        [UiSonCollection(true, DisplayMode.Vertial)]
         [UiSonMemberElement]
         public List<UnparameteredClass> unparam_stack;
 
-        [UiSonCollection(true, CollectionStyle.Grid, DisplayMode.Vertial)]
+        [UiSonCollection(true, DisplayMode.Grid)]
         [UiSonMemberElement]
         public List<UnparameteredClass> unparam_grid;
+
+        [UiSonCollection(false, DisplayMode.Grid)]
+        [UiSonElementSelectorUi(nameof(ReferencedUiSonClass))]
+        public List<string> eleSelector_grid = new List<string> {"null",null,"null"};
+
+        [UiSonCollection(false, DisplayMode.Vertial)]
+        [UiSonElementSelectorUi(nameof(ReferencedUiSonClass))]
+        public List<string> eleSelector_stack = new List<string> { "null", null, "null" };
     }
 
     public class ParameteredClass

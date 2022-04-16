@@ -12,6 +12,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 using UiSon.Attribute;
 using UiSon.Command;
+using UiSon.Element;
 using UiSon.ViewModel.Interface;
 
 namespace UiSon.ViewModel
@@ -21,13 +22,11 @@ namespace UiSon.ViewModel
     /// </summary>
     public class CollectionVM : GroupVM, ICollectionVM
     {
-        public CollectionStyle Style { get; private set; }
-
         public Visibility ModifyVisibility { get; private set; }
 
         private EditorModuleFactory _factory;
 
-        private MemberInfo _info;
+        private ValueMemberInfo _info;
 
         private ObservableCollection<CollectionEntryVM> _members;
 
@@ -57,10 +56,9 @@ namespace UiSon.ViewModel
         public CollectionVM(ObservableCollection<CollectionEntryVM> members,
                             Type entryType, Type collectionType, EditorModuleFactory factory,
                             IUiSonUiAttribute uiAttribute,
-                            string name, int priority, MemberInfo info, 
+                            string name, int priority, ValueMemberInfo info, 
                             bool modifiable = true,
                             DisplayMode displayMode = DisplayMode.Vertial,
-                            CollectionStyle collectionStyle = CollectionStyle.Stack,
                             UiSonCollectionAttribute attribute = null)
             : base(members, name, priority, displayMode)
         {
@@ -78,50 +76,13 @@ namespace UiSon.ViewModel
             ModifyVisibility = modifiable ? Visibility.Visible : Visibility.Collapsed;
             _enumerableAttribute = attribute;
             _info = info;
-            Style = collectionStyle;
         }
 
-        public override void Read(object instance)
-        {
-            if (instance == null) { return; }
+        public override void Read(object instance) => SetValue(_info.GetValue(instance));
 
-            // read info
-            IEnumerable collection = null;
+        public override void Write(object instance) => _info.SetValue(instance, GetValue());
 
-            if (_info is PropertyInfo prop)
-            {
-                collection = prop.GetValue(instance) as IEnumerable;
-            }
-            else if (_info is FieldInfo field)
-            {
-                collection = field.GetValue(instance) as IEnumerable;
-            }
-            else
-            {
-                throw new Exception("Attempting to read on an editor module without member info");
-            }
-
-            // insert
-            _members.Clear();
-
-            if (collection != null)
-            {
-                foreach (var item in collection)
-                {
-                    var newEntry = MakeNewEntry();
-
-                    if (newEntry != null)
-                    {
-                        newEntry.SetValue(item);
-                        _members.Add(newEntry);
-                    }
-                }
-            }
-
-            OnPropertyChanged(nameof(Members));
-        }
-
-        public override void Write(object instance)
+        private object GetValue()
         {
             var value = Activator.CreateInstance(_collectionType);
 
@@ -130,18 +91,7 @@ namespace UiSon.ViewModel
                 _collectionAdd.Invoke(value, new[] { member.GetValueAs(_entryType) });
             }
 
-            if (_info is PropertyInfo prop)
-            {
-                prop.SetValue(instance, value);
-            }
-            else if (_info is FieldInfo field)
-            {
-                field.SetValue(instance, value);
-            }
-            else
-            {
-                throw new Exception("Attempting to write on an element without member info");
-            }
+            return value;
         }
 
         public override bool SetValue(object value)
@@ -169,11 +119,20 @@ namespace UiSon.ViewModel
             return false;
         }
 
+        public override object GetValueAs(Type type)
+        {
+            if (type == _collectionType)
+            {
+                return GetValue();
+            }
+
+            return null;
+        }
+
         public override IEnumerable<DataGridColumn> GenerateColumns(string path)
         {
-            var columns = new List<DataGridColumn>();
-
             var valCol = new DataGridTemplateColumn();
+            valCol.Width = new DataGridLength(1, DataGridLengthUnitType.Star);
             valCol.Header = Name;
 
             var dt = new DataTemplate();
@@ -183,60 +142,36 @@ namespace UiSon.ViewModel
             var contentPresenter = new FrameworkElementFactory(typeof(ContentPresenter));
             contentPresenter.SetBinding(ContentPresenter.ContentProperty, valBind);
             contentPresenter.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Stretch);
-            contentPresenter.SetValue(ContentPresenter.ContentTemplateSelectorProperty, new ElementTemplateSelector());
+            contentPresenter.SetValue(ContentPresenter.ContentTemplateSelectorProperty, new ElementTemplateSelector());// don't make a new one, pass it in TODO
 
             dt.VisualTree = contentPresenter;
             valCol.CellTemplate = dt;
 
-            columns.Add(valCol);
-
-            return columns;
+            return new List<DataGridColumn>() { valCol };
         }
 
         private CollectionEntryVM MakeNewEntry(object source = null)
         {
             var newEntry = _factory.MakeCollectionEntryVM(_members, _entryType, ModifyVisibility, _enumerableAttribute, _uiAttribute);
 
-            if (newEntry == null) { return null; }
-
-            if (source is Button button
-                && button.Parent is StackPanel mainPanel
-                && mainPanel.Children[1] is DataGrid dataGrid)
-            {
-                // When a nullable becomes not null for the first time, it changes its Decorated, so columns need to be regenrated
-                newEntry.PropertyChanged += (e, a) =>
-                {
-                    if (!_gridColumnsUpdated
-                        && e is CollectionEntryVM collectionEntry
-                        && a.PropertyName == "Decorated")
-                    {
-                        _gridColumnsUpdated = true;
-
-                        // make a new sub data grid column thing woot
-                        //var valCol = new DataGridTemplateColumn();
-                        //valCol.Header = Name;
-
-                        //var dt = new DataTemplate();
-                        //var valBind = new Binding("Decorated.Decorated");
-                        //valBind.Mode = BindingMode.OneWay;
-                        //valBind.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
-                        //var contentPresenter = new FrameworkElementFactory(typeof(ContentPresenter));
-                        //contentPresenter.SetBinding(ContentPresenter.ContentProperty, valBind);
-                        //contentPresenter.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Stretch);
-                        //contentPresenter.SetValue(ContentPresenter.ContentTemplateSelectorProperty, new ElementTemplateSelector());
-
-                        //dt.VisualTree = contentPresenter;
-                        //valCol.CellTemplate = dt;
-
-                        //dataGrid.Columns.Add(valCol);
-
-                        foreach (var column in collectionEntry.GenerateColumns("").Skip(1))
-                        {
-                            dataGrid.Columns.Add(column);
-                        }
-                    }
-                };
-            }
+            //if (source is Button button
+            //    && button.Parent is StackPanel mainPanel
+            //    && mainPanel.Children[1] is DataGrid dataGrid)
+            //{
+            //    // When a nullable becomes not null for the first time, it changes its Decorated, so columns need to be regenrated
+            //    newEntry.PropertyChanged += (e, a) =>
+            //    {
+            //        if (!_gridColumnsUpdated
+            //            && e is CollectionEntryVM collectionEntry
+            //            && a.PropertyName == nameof(CollectionEntryVM.Decorated))
+            //        {
+            //            foreach (var column in collectionEntry.GenerateColumns(string.Empty))
+            //            {
+            //                dataGrid.Columns.Add(column);
+            //            }
+            //        }
+            //    };
+            //}
 
             return newEntry;
         }

@@ -4,10 +4,12 @@
          xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
          xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
          xmlns:viewModel="clr-namespace:UiSon.ViewModel"
+         xmlns:converter="clr-namespace:UiSon.Converter;assembly=UiSon.Converter"
          mc:Ignorable="d">
     <TabItem.Resources>
         <viewModel:ElementTemplateSelector x:Key="dataTemplateSelectorDictionary"/>
-
+        <converter:DebugConverter x:Key="debugConverter"/>
+        <converter:PutInCollectionConverter x:Key="putInCollectionConverter"/>
         <!--borders-->
         
         <DataTemplate x:Key="NullableTemplate">
@@ -69,44 +71,76 @@
         <!--groups-->
 
         <DataTemplate x:Key="VerticalGroupTemplate">
-            <ItemsControl ItemsSource="{Binding Members}"
-                                  HorizontalAlignment="Stretch"
-                                  Margin="4"
-                                  ItemTemplateSelector="{StaticResource dataTemplateSelectorDictionary}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch"  Margin="4"/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-            </ItemsControl>
+            <Grid Margin="4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{Binding Name}" Visibility="{Binding IsNameVisible}"
+                           Margin="0,0,4,0"  Grid.Column="0" VerticalAlignment="Center"/>
+                <ItemsControl ItemsSource="{Binding Members}"
+                              HorizontalAlignment="Stretch"
+                              ItemTemplateSelector="{StaticResource dataTemplateSelectorDictionary}"
+                              Grid.Column="1">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch"  Margin="4"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+            </Grid>
         </DataTemplate>
 
         <DataTemplate x:Key="HorizontalGroupTemplate">
-            <ItemsControl ItemsSource="{Binding Members}"
-                                  HorizontalAlignment="Stretch"
-                                  Margin="4"
-                                  ItemTemplateSelector="{StaticResource dataTemplateSelectorDictionary}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch"  Margin="4"/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-            </ItemsControl>
+            <Grid Margin="4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{Binding Name}" Visibility="{Binding IsNameVisible}"
+                           Margin="0,0,4,0"  Grid.Column="0" VerticalAlignment="Center"/>
+                <ItemsControl ItemsSource="{Binding Members}"
+                              HorizontalAlignment="Stretch"
+                              ItemTemplateSelector="{StaticResource dataTemplateSelectorDictionary}"
+                              Grid.Column="1">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch"  Margin="4"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+            </Grid>
         </DataTemplate>
 
         <DataTemplate x:Key="WrapGroupTemplate">
-            <ItemsControl ItemsSource="{Binding Members}"
-                                  HorizontalAlignment="Stretch"
-                                  Margin="4"
-                                  ItemTemplateSelector="{StaticResource dataTemplateSelectorDictionary}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <WrapPanel HorizontalAlignment="Stretch"  Margin="4"/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-            </ItemsControl>
+            <Grid Margin="4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{Binding Name}" Visibility="{Binding IsNameVisible}"
+                           Margin="0,0,4,0"  Grid.Column="0" VerticalAlignment="Center"/>
+                <ItemsControl ItemsSource="{Binding Members}"
+                              HorizontalAlignment="Stretch"
+                              ItemTemplateSelector="{StaticResource dataTemplateSelectorDictionary}"
+                              Grid.Column="1">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel HorizontalAlignment="Stretch" Margin="4"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+            </Grid>
         </DataTemplate>
-        
+
+        <DataTemplate x:Key="GridGroupTemplate">
+            <DataGrid AutoGenerateColumns="False"
+                      CanUserAddRows="False" CanUserDeleteRows="False"
+                      HorizontalAlignment="Stretch"
+                      ItemsSource="{Binding Converter={StaticResource putInCollectionConverter}}"
+                      Initialized="GridGroup_Initialized"/>
+        </DataTemplate>
+
         <!--collections-->
 
         <DataTemplate x:Key="CollectionElementVerticalTemplate">
@@ -158,12 +192,12 @@
             <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch">
                 <Button Content="+" Command="{Binding AddEntry}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"  Visibility="{Binding ModifyVisibility}" HorizontalAlignment="Left"/>
                 <DataGrid AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" HorizontalAlignment="Stretch"
-                          ItemTemplate="{StaticResource CollectionElementEntryTemplate}" ItemsSource="{Binding Members}" Initialized="DataGrid_Initialized">
+                          ItemTemplate="{StaticResource CollectionElementEntryTemplate}" ItemsSource="{Binding Members}" Initialized="DataGridCollection_Initialized">
                     <DataGrid.Columns>
-                        <DataGridTemplateColumn Visibility="{Binding ModifyVisibility}">
+                        <DataGridTemplateColumn>
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Button Content="X" Command="{Binding RemoveElement}"/>
+                                    <Button Content="X" Command="{Binding RemoveElement}" Visibility="{Binding ModifyVisibility}"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -173,7 +207,10 @@
         </DataTemplate>
 
         <!--editors-->
-        
+        <DataTemplate x:Key="BadDataTemplate">
+            <TextBlock Text="{Binding Name}" Foreground="Red" Margin="4"/>
+        </DataTemplate>
+
         <DataTemplate x:Key="TextEditElementTemplate">
             <Grid Margin="4">
                 <Grid.ColumnDefinitions>
@@ -211,7 +248,6 @@
                 <CheckBox IsChecked="{Binding Value}" Grid.Column="1"/>
             </Grid>
         </DataTemplate>
-
     </TabItem.Resources>
      
     <TabItem.Header>

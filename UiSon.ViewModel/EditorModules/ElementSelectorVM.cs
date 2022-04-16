@@ -9,6 +9,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using UiSon.Element;
 using UiSon.Event;
+using UiSon.Extension;
 using UiSon.ViewModel.Interface;
 
 namespace UiSon.ViewModel
@@ -38,13 +39,13 @@ namespace UiSon.ViewModel
         private ISelectorVM _selector;
         private IElement _element;
         private ElementManager _manager;
-        private MemberInfo _identifingMember;
-        private MemberInfo _info;
+        private ValueMemberInfo _identifingMember;
+        private ValueMemberInfo _info;
 
         /// <summary>
         /// Constructor
         /// </summary>
-        public ElementSelectorVM(IElement element, ISelectorVM selector, MemberInfo identifingMember, MemberInfo info, ElementManager manager)
+        public ElementSelectorVM(IElement element, ISelectorVM selector, ValueMemberInfo identifingMember, ValueMemberInfo info, ElementManager manager)
         {
             _selector = selector ?? throw new ArgumentNullException(nameof(selector));
             _element = element ?? throw new ArgumentNullException(nameof(element));
@@ -73,64 +74,23 @@ namespace UiSon.ViewModel
             manager.Elements.CollectionChanged += (s, e) => OnPropertyChanged(nameof(Options));
         }
 
-        /// <summary>
-        /// Reads data from instance and set's this editor's element's value to it
-        /// </summary>
-        public void Write(object instance)
-        {
-            if (_value != null)
-            {
-                if (_identifingMember != null)
-                {
-                    var element = _manager.Elements.FirstOrDefault(x => x.Name == _value);
-
-                    // set value to value of identifying member
-                    var hold = Activator.CreateInstance(_manager.ManagedType);
-
-                    // lazy way of doing this, maybe make a more direct path to the value later
-                    element.Write(hold);
-
-                    if (_identifingMember is PropertyInfo prop)
-                    {
-                        _element.SetValue(prop.GetValue(hold));
-                    }
-                    else if (_identifingMember is FieldInfo field)
-                    {
-                        _element.SetValue(field.GetValue(hold));
-                    }
-                    else
-                    {
-                        throw new Exception("Attempting to read on an element without member info");
-                    }
-                }
-                // if no identifying member, default to using the name of the element
-                else
-                {
-                    _element.SetValue(_value);
-                }
-            }
-
-            _selector.Write(instance);
-        }
-
         public bool SetValue(object value)
         {
-            var strValue = value?.ToString();
+            var strValue = value as string;
 
-            // check to see if it's the name of an open element
+            // see if it's the name of an element
             var element = _manager.Elements.FirstOrDefault(x => x.Name == strValue);
-
             if (element != null)
             {
-                // Record the value here in the case of a ref ele so we know what to look up later
                 _value = strValue;
                 OnPropertyChanged(nameof(Value));
                 OnPropertyChanged(nameof(TextColor));
                 return true;
             }
+            // otherwise try to have the decorated selector take care of it
             else if (_selector.SetValue(value))
             {
-                // clear out ref value so get defaults to the _selector instead
+                //if succesfull clear all the the ele selector data so the _selector is used
                 _value = null;
                 OnPropertyChanged(nameof(Value));
                 OnPropertyChanged(nameof(TextColor));
@@ -140,37 +100,63 @@ namespace UiSon.ViewModel
             return false;
         }
 
-        public object GetValueAs(Type type) => _selector.GetValueAs(type);
-
-        public IEnumerable<DataGridColumn> GenerateColumns(string path) => _selector.GenerateColumns(path);
-
+        /// <summary>
+        /// Reads data from instance and set's this editor's element's value to it
+        /// Reading for this module won't update the direct value. UpdateRefs must also be called after it's
+        /// dependant modules are updated.
+        /// </summary>
         public void Read(object instance)
         {
-            if (_info == null)
+            _readValue = _info.GetValue(instance);
+        }
+
+        private object _readValue;
+
+        /// <summary>
+        /// Writes this editor's element's value to the instance
+        /// </summary>
+        public void Write(object instance)
+        {
+            if (_value == null)
             {
-                _selector.Read(instance);
+                _selector.Write(instance);
             }
             else
             {
-                if (_info is PropertyInfo prop)
-                {
-                    _readValue = prop.GetValue(instance);
-                }
-                else if (_info is FieldInfo field)
-                {
-                    _readValue = field.GetValue(instance);
-                }
+                var value = _identifingMember == null 
+                    ? _value 
+                    : GetElementValue(_manager.Elements.FirstOrDefault(x => x.Name == _value));
+
+                _info.SetValue(instance, value);
             }
+        }
+
+        private object GetElementValue(ElementVM element)
+        {
+            if (_identifingMember == null)
+            {
+                return _value;
+            }
+
+            // set value to value of identifying member
+            var hold = Activator.CreateInstance(_manager.ManagedType);
+
+            // lazy way of doing this, maybe make a more direct path to the value later
+            element.Write(hold);
+
+            return _identifingMember.GetValue(hold);
         }
 
         public void UpdateRefs()
         {
-            // without an identifier, a name is recorded, makes things easy
-            if (_identifingMember == null
-                && _readValue is string readValueString
-                && _manager.Elements.Any(x => x.Name == readValueString))
+            if (_identifingMember == null)
             {
-                _value = readValueString;
+                // without an identifier, a name is recorded, makes things easy
+                if (_readValue is string readValueString
+                    && _manager.Elements.Any(x => x.Name == readValueString))
+                {
+                    Value = readValueString;
+                }
             }
             // else find the name of the first manager that has the id we're looking for 
             else
@@ -179,31 +165,40 @@ namespace UiSon.ViewModel
                 // Finding just the first one with the same information makes it functionally the same on save, but could change the exact selection. Make a note of this in user docs.
                 // That extra info could theoretically be saved in the project file, but i'd like to avaid that and allow the user to edit the jsons in any way they wish and not have to worry
                 // about making sure they update the project file.
-                _value = _manager.Elements.FirstOrDefault(x =>
+                Value = _manager.Elements.FirstOrDefault(x =>
                 {
-                    object id = null;
-
                     var hold = Activator.CreateInstance(_manager.ManagedType);
 
                     x.Write(hold);
 
-                    if (_identifingMember is PropertyInfo prop)
-                    {
-                        id = prop.GetValue(hold);
-                    }
-                    else if (_identifingMember is FieldInfo field)
-                    {
-                        id = field.GetValue(hold);
-                    }
-
                     // the string cast makes them comparable. Probably a better way...
-                    return id?.ToString() == _readValue?.ToString();
+                    return _identifingMember.GetValue(hold)?.ToString() == _readValue?.ToString();
                 })?.Name;
             }
-
-            OnPropertyChanged(nameof(Value));
         }
 
-        private object _readValue;
+        public IEnumerable<DataGridColumn> GenerateColumns(string path) => _selector.GenerateColumns(path);
+
+        public object GetValueAs(Type type)
+        { 
+            if (_value == null)
+            {
+                return _selector.GetValueAs(type);
+            }
+
+            var value = GetElementValue(_manager.Elements.FirstOrDefault(x => x.Name == _value));
+
+            if (value is string asStr)
+            {
+                return asStr.ParseAs(type);
+            }
+
+            if (value.TryCast(type, out object cast))
+            {
+                return cast;
+            }
+
+            return null;
+        }
     }
 }

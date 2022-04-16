@@ -1,7 +1,6 @@
 ﻿// UiSon, by Cameron Gale 2021
 
 using System;
-using System.Reflection;
 using System.Text.RegularExpressions;
 using UiSon.Extension;
 
@@ -23,7 +22,7 @@ namespace UiSon.Element
         /// </summary>
         public bool IsNullable { get; private set; }
 
-        private MemberInfo _info;
+        private ValueMemberInfo _info;
         private Type _memberType;
         private Type _valueType;
         private string _regexValidation;
@@ -33,7 +32,7 @@ namespace UiSon.Element
         /// </summary>
         /// <param name="info">Member info for member this represents</param>
         /// <param name="regexValidation">validation string to scrub input</param>
-        public StringElement(Type memberType, MemberInfo info = null, string regexValidation = null)
+        public StringElement(Type memberType, ValueMemberInfo info = null, string regexValidation = null)
         {
             _memberType = memberType ?? throw new ArgumentNullException(nameof(memberType));
             _info = info;
@@ -48,45 +47,13 @@ namespace UiSon.Element
         /// Reads data from instance and set's this element's value to it
         /// </summary>
         /// <param name="instance">The instance</param>
-        public void Read(object instance)
-        {
-            if (instance == null) { return; }
-
-            if (_info is PropertyInfo prop)
-            {
-                SetValue(prop.GetValue(instance));
-            }
-            else if (_info is FieldInfo field)
-            {
-                SetValue(field.GetValue(instance));
-            }
-            else
-            {
-                throw new Exception("Attempting to read on an element without member info");
-            }
-        }
+        public void Read(object instance) => SetValue(_info.GetValue(instance));
 
         /// <summary>
         /// Writes this element's value to the instance
         /// </summary>
         /// <param name="instance">The instance</param>
-        public void Write(object instance)
-        {
-            if (instance == null) { return; }
-
-            if (_info is PropertyInfo prop)
-            {
-                prop.GetSetMethod(true).Invoke(instance, new[] { _value?.ParseAs(_memberType) });
-            }
-            else if (_info is FieldInfo field)
-            {
-                field.SetValue(instance, _value?.ParseAs(_memberType));
-            }
-            else
-            {
-                throw new Exception("Attempting to write on an element without member info");
-            }
-        }
+        public void Write(object instance) => _info.SetValue(instance, _value?.ParseAs(_memberType));
 
         /// <summary>
         /// Attempts to set the value to the input. The string "null" is a keyword that will
@@ -138,12 +105,5 @@ namespace UiSon.Element
         }
 
         public object GetValueAs(Type type) => _value.ParseAs(type);
-
-        private struct poopy
-        {
-            public string Key => _key;
-            private string _key;
-        }
-
     }
 }

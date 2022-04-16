@@ -5,8 +5,9 @@ using System;
 namespace UiSon.Attribute
 {
     /// <summary>
-    /// Designates the member to be represented by a checkbox Ui in UiSon
-    /// This Ui is only effective for string, bool and bool? members.
+    /// Designates the member to be represented by a checkbox Ui
+    /// in UiSon. This Ui is only effective for string, bool and bool? values
+    /// or user defined types assignable by bool.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
     public class UiSonCheckboxUiAttribute : System.Attribute, IUiSonUiAttribute

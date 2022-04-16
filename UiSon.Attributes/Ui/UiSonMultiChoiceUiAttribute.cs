@@ -29,6 +29,11 @@ namespace UiSon.Attribute
         public string[] Options { get; private set; }
 
         /// <summary>
+        /// enum type to generate options from
+        /// </summary>
+        public Type EnumType { get; private set; }
+
+        /// <summary>
         /// The display mode
         /// </summary>
         public DisplayMode DisplayMode { get; private set; }
@@ -39,13 +44,28 @@ namespace UiSon.Attribute
         /// <param name="options">Options to be selected</param>
         /// <param name="priority">The display priority of this Ui</param>
         /// <param name="groupName">The name of the group this Ui belongs to</param>
-        /// <param name="identifiers">identifiers to be paired with the additional options</param>
         public UiSonMultiChoiceUiAttribute(string[] options,
                                            int priority = 0, string groupName = null,
-                                           DisplayMode displayMode = DisplayMode.Horizontal)
+                                           DisplayMode displayMode = DisplayMode.Wrap)
         {
             Options = options;
 
+            GroupName = groupName;
+            Priority = priority;
+            DisplayMode = displayMode;
+        }
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="enumType">Options to be selected</param>
+        /// <param name="priority">The display priority of this Ui</param>
+        /// <param name="groupName">The name of the group this Ui belongs to</param>
+        public UiSonMultiChoiceUiAttribute(Type enumType,
+                                           int priority = 0, string groupName = null,
+                                           DisplayMode displayMode = DisplayMode.Wrap)
+        {
+            EnumType = enumType;
             GroupName = groupName;
             Priority = priority;
             DisplayMode = displayMode;

@@ -1,13 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0-windows</TargetFramework>
+    <TargetFramework>net6.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\UiSon.Attributes\UiSon.Attribute.csproj" />
     <ProjectReference Include="..\UiSon.Command\UiSon.Command.csproj" />
+    <ProjectReference Include="..\UiSon.Converter\UiSon.Converter.csproj" />
     <ProjectReference Include="..\UiSon.Element\UiSon.Element.csproj" />
     <ProjectReference Include="..\UiSon.Event\UiSon.Event.csproj" />
     <ProjectReference Include="..\UiSon.Notifier\UiSon.Notify.csproj" />

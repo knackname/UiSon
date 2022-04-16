@@ -7,6 +7,6 @@ namespace UiSon.Attribute
     /// </summary>
     public enum DisplayMode
     {
-        Vertial, Horizontal, Wrap
+        Vertial, Horizontal, Wrap, Grid
     }
 }

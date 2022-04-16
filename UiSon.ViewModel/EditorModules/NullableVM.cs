@@ -2,12 +2,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
-using UiSon.Extension;
+using UiSon.Element;
 using UiSon.ViewModel.Interface;
 
 namespace UiSon.ViewModel
@@ -52,16 +51,10 @@ namespace UiSon.ViewModel
                 {
                     _isNull = value;
 
-                    // only create the decorated the first time its opened to prevent infinite loops from a element having an instance of itself
+                    // if decorated is null, init it
                     if (!value && Decorated == null)
                     {
-                        Decorated = MakeEditor?.Invoke();
-
-                        // set to null so this can be cleaned up, it'll only be used once
-                        MakeEditor = null;
-
-                        Decorated?.SetValue(Activator.CreateInstance(_type));
-                        OnPropertyChanged(nameof(Decorated));
+                        SetValue(Activator.CreateInstance(_type));
                     }
 
                     OnPropertyChanged();
@@ -97,7 +90,7 @@ namespace UiSon.ViewModel
         /// <summary>
         /// info for member this module represents
         /// </summary>
-        private MemberInfo _info;
+        private ValueMemberInfo _info;
 
         private Type _type;
 
@@ -106,7 +99,7 @@ namespace UiSon.ViewModel
         /// </summary>
         /// <param name="makeEditor">function to make the decorated editor</param>
         /// <param name="info">info for member this module represents</param>
-        public NullableVM(Func<IEditorModule> makeEditor, Type type, string name, int priority, MemberInfo info)
+        public NullableVM(Func<IEditorModule> makeEditor, Type type, string name, int priority, ValueMemberInfo info)
         {
             MakeEditor = makeEditor ?? throw new ArgumentNullException(nameof(makeEditor));
             _type = type ?? throw new ArgumentNullException(nameof(type));
@@ -122,26 +115,23 @@ namespace UiSon.ViewModel
         /// <returns></returns>
         public IEnumerable<DataGridColumn> GenerateColumns(string path)
         {
-            var valCol = new DataGridCheckBoxColumn();
-            valCol.Header = "null";
+            var valCol = new DataGridTemplateColumn();
+            valCol.Width = new DataGridLength(1, DataGridLengthUnitType.Star);
+            valCol.Header = Name;
 
-            var valBinding = new Binding(path + $".{nameof(IsNull)}");
-            valBinding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
-            valCol.Binding = valBinding;
+            var dt = new DataTemplate();
+            var valBind = new Binding(path);
+            valBind.Mode = BindingMode.OneWay;
+            valBind.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+            var contentPresenter = new FrameworkElementFactory(typeof(ContentPresenter));
+            contentPresenter.SetBinding(ContentPresenter.ContentProperty, valBind);
+            contentPresenter.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Stretch);
+            contentPresenter.SetValue(ContentPresenter.ContentTemplateSelectorProperty, new ElementTemplateSelector());// don't make a new one, pass it in TODO
 
-            var columns = new List<DataGridColumn>() { valCol };
+            dt.VisualTree = contentPresenter;
+            valCol.CellTemplate = dt;
 
-            var decoratedColumns = Decorated?.GenerateColumns(path + $".{nameof(Decorated)}");
-
-            if (decoratedColumns != null)
-            {
-                foreach (var column in decoratedColumns)
-                {
-                    columns.Add(column);
-                }
-            }
-
-            return columns;
+            return new List<DataGridColumn>() { valCol };
         }
 
         /// <summary>
@@ -150,27 +140,8 @@ namespace UiSon.ViewModel
         /// <param name="instance">instance to read from</param>
         public void Read(object instance)
         {
-            //set IsNull
-            if (instance == null) { IsNull = true; }
+            IsNull = _info.GetValue(instance) == null;
 
-            object read = null;
-
-            if (_info is PropertyInfo prop)
-            {
-                read = prop.GetValue(instance);
-            }
-            else if (_info is FieldInfo field)
-            {
-                read = field.GetValue(instance);
-            }
-            else
-            {
-                throw new Exception("Attempting to read on an element without member info");
-            }
-
-            IsNull = read == null;
-
-            // process element
             if (!IsNull)
             {
                 Decorated.Read(instance);
@@ -183,7 +154,11 @@ namespace UiSon.ViewModel
         /// <param name="instance">instance to write to</param>
         public void Write(object instance)
         {
-            if (!IsNull)
+            if (IsNull)
+            {
+                _info.SetValue(instance, null);
+            }
+            else
             {
                 Decorated.Write(instance);
             }
@@ -198,9 +173,26 @@ namespace UiSon.ViewModel
             }
             else
             {
-                IsNull = false;
-                return Decorated.SetValue(value);
+                //generate the decorated if nessisary
+                if (Decorated == null)
+                {
+                    Decorated = MakeEditor.Invoke();
+
+                    // set to null so this can be cleaned up, it'll only be used this once
+                    MakeEditor = null;
+
+                    OnPropertyChanged(nameof(Decorated));
+                }
+
+                //attempt to set value
+                if (Decorated.SetValue(value))
+                {
+                    IsNull = false;
+                    return true;
+                }
             }
+
+            return false;
         }
 
         public object GetValueAs(Type type) => Decorated?.GetValueAs(type);

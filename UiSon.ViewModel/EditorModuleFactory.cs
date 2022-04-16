@@ -73,8 +73,7 @@ namespace UiSon.ViewModel
 
             if (editor == null)
             {
-                _notifier.Notify($"Failed to create an entry of type {entryType}", "Entry Fail");
-                return null;
+                return new CollectionEntryVM(parent, new BadDataVM($"Failed to create an entry of type {entryType}"), modifyVisability);
             }
             else
             {
@@ -90,10 +89,10 @@ namespace UiSon.ViewModel
         /// <param name="priority">The priority of the editor</param>
         /// <param name="info">Info for the editor</param>
         /// <returns>An IEditorModule selected based on the type</returns>
-        public IEditorModule MakeEditorModule(Type type, string name = null, int priority = 0, MemberInfo info = null)
+        public IEditorModule MakeEditorModule(Type type, string name = null, int priority = 0, MemberInfo info = null, DisplayMode? displayMode = null)
         {
             // null
-            if (type == null) { return null; }
+            if (type == null) { return new BadDataVM("Attempt to make editor module from type null"); }
 
             // strip nullables for value types
             var strippedType = Nullable.GetUnderlyingType(type) ?? type;
@@ -125,9 +124,9 @@ namespace UiSon.ViewModel
                     case ValueishType._double:
                     case ValueishType._decimal:
                     case ValueishType._char:
-                        return new TextEditVM(new StringElement(type, info), name, priority);
+                        return new TextEditVM(new StringElement(type, info == null ? null : new ValueMemberInfo(info)), name, priority);
                     case ValueishType._bool:
-                        return new CheckboxVM(new ValueElement<bool>(type, info), name, priority);
+                        return new CheckboxVM(new ValueElement<bool>(type, info == null ? null : new ValueMemberInfo(info)), name, priority);
                 }
             }
 
@@ -138,7 +137,7 @@ namespace UiSon.ViewModel
             }
 
             // other classes and structs
-            return MakeMemberElement(type, name, priority, info);
+            return MakeMemberElement(type, name, priority, info, displayMode ?? DisplayMode.Vertial);
         }
 
         /// <summary>
@@ -149,6 +148,8 @@ namespace UiSon.ViewModel
         /// <returns>An IEditorModule selected based on the attribute</returns>
         private IEditorModule MakeEditorModule(IUiSonUiAttribute attribute, Type type, MemberInfo info = null, UiSonCollectionAttribute enumerableAttribute = null)
         {
+            var name = info?.Name ?? type.Name;
+
             // first check for enumerables
             var hasCollectionInterface = type.GetInterfaces()
                 .FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ICollection<>)) != null;
@@ -159,30 +160,26 @@ namespace UiSon.ViewModel
             {
                 if (!hasCollectionInterface)
                 {
-                    _notifier.Notify($"{info} has a {nameof(UiSonCollectionAttribute)} but its type doesn't impliment a generic ICollection<T>",
-                                     $"Invalid {nameof(UiSonCollectionAttribute)}");
+                    return new BadDataVM($"{name}: has a {nameof(UiSonCollectionAttribute)} but type {type} doesn't impliment a generic ICollection<T>");
                 }
                 else if (!hasParamaterlessConstructor)
                 {
-                    _notifier.Notify($"{info ?? type} has a {nameof(UiSonCollectionAttribute)} but doesn't impliment a parameterless constructor",
-                    $"Invalid {nameof(UiSonCollectionAttribute)}");
+                    return new BadDataVM($"{name}: has a {nameof(UiSonCollectionAttribute)} but doesn't impliment a parameterless constructor");
                 }
                 else if (attribute is UiSonMultiChoiceUiAttribute)
                 {
-                    _notifier.Notify($"{info ?? type} has a {nameof(UiSonCollectionAttribute)} and a {nameof(UiSonMultiChoiceUiAttribute)}, defaulting to the {nameof(UiSonMultiChoiceUiAttribute)}",
-                    $"Invalid {nameof(UiSonCollectionAttribute)}");
+                    return new BadDataVM($"{name}: has a {nameof(UiSonCollectionAttribute)} and a {nameof(UiSonMultiChoiceUiAttribute)}");
                 }
                 else
                 {
                     return MakeCollection(type,
-                        info?.Name,
+                        name,
                         attribute.Priority,
                         info,
                         enumerableAttribute.IsModifiable,
                         enumerableAttribute,
                         attribute,
-                        enumerableAttribute.DisplayMode,
-                        enumerableAttribute.CollectionType);
+                        enumerableAttribute.DisplayMode);
                 }
             }
             // collection interfaces with paramaterless constructors
@@ -195,71 +192,84 @@ namespace UiSon.ViewModel
 
                     if (entryType == null)
                     {
-                        _notifier.Notify($"Unable to find entry type for {type}", "Multi Choice Element");
-                        return null;
+                        return new BadDataVM($"{nameof(UiSonMultiChoiceUiAttribute)} {name}: Unable to find entry type for {type}");
                     }
                     else if (!entryType.IsValueType && !entryType.IsAssignableFrom(typeof(string)) && entryType.GetConstructor(new Type[] { }) == null)
                     {
-                        _notifier.Notify($"{type}'s entry type lacks a parameterless constructor.", "Multi Choice Element");
-                        return null;
+                        return new BadDataVM($"{nameof(UiSonMultiChoiceUiAttribute)} {name}: {type}'s entry type lacks a parameterless constructor.");
                     }
 
                     var optionUi = new List<CheckboxVM>();
 
-                    // make checkboxes for each option
-                    foreach (var option in multi.Options)
+                    var options = multi.Options;
+                    if (options == null)
                     {
-                        optionUi.Add(new CheckboxVM(new ValueElement<bool>(type, null), option, 0));
+                        if (multi.EnumType == null
+                            || !multi.EnumType.IsEnum)
+                        {
+                            return new BadDataVM($"{nameof(UiSonMultiChoiceUiAttribute)} {name}: {multi.EnumType?.ToString() ?? "null"} is not an Enum type");
+                        }
+                        else
+                        {
+                            options = Enum.GetNames(multi.EnumType).ToArray();
+                        }
                     }
 
-                    return new MultiChoiceVM(optionUi, type, entryType, info,
-                                             info?.Name, multi.Priority, multi.DisplayMode);
+                    // make checkboxes for each option
+                    foreach (var option in options)
+                    {
+                        optionUi.Add(new CheckboxVM(new ValueElement<bool>(typeof(bool), null), option, 0));
+                    }
+
+                    return new BorderedVM( new MultiChoiceVM(optionUi, type, entryType, info == null ? null : new ValueMemberInfo(info),
+                                             name, multi.Priority, multi.DisplayMode));
                 }
 
                 // default to using a normal collection ui
                 enumerableAttribute = new UiSonCollectionAttribute();
 
                 return MakeCollection(type,
-                                      info?.Name,
+                                      name,
                                       attribute.Priority,
                                       info,
                                       enumerableAttribute.IsModifiable,
                                       enumerableAttribute,
                                       attribute,
-                                      enumerableAttribute.DisplayMode,
-                                      enumerableAttribute.CollectionType);
+                                      enumerableAttribute.DisplayMode);
             }
 
             // then go by ui attribute
             if (attribute is UiSonTextEditUiAttribute textEdit)
             {
-                return new TextEditVM(new StringElement(type, info, textEdit.RegexValidation), info?.Name, textEdit.Priority);
+                return new TextEditVM(new StringElement(type, info == null ? null : new ValueMemberInfo(info), textEdit.RegexValidation), name, textEdit.Priority);
             }
             else if (attribute is UiSonElementSelectorUiAttribute eleSel)
             {
                 // find manager
                 var manager = _elementManagers.FirstOrDefault(x => x.ElementName == eleSel.ElementName);
 
-                // ignore if invalid, needs warning
-                if (manager == null) { return null; }
+                if (manager == null)
+                {
+                    return new BadDataVM($"{nameof(UiSonElementSelectorUiAttribute)}: Unable to find UiSonElement {eleSel.ElementName}");
+                }
 
                 return MakeElementSelector(manager, type, eleSel.IdentifierTagName, eleSel.Options, eleSel.Identifiers, eleSel.Priority, info);
             }
             else if (attribute is UiSonSelectorUiAttribute sel)
             {
-                return new SelectorVM<string>(new StringElement(type, info),
-                                             info?.Name, sel.Priority,
+                return new SelectorVM<string>(new StringElement(type, info == null ? null : new ValueMemberInfo(info)),
+                                             name, sel.Priority,
                                              MakeStringSelectorMap(sel.Options, sel.Identifiers ?? sel.Options, type));
             }
             else if (attribute is UiSonCheckboxUiAttribute chk)
             {
                 if (type.IsAssignableFrom(typeof(string)) || type.IsAssignableFrom(typeof(bool)))
                 {
-                    return new CheckboxVM(new ValueElement<bool>(type, info), info?.Name, chk.Priority);
+                    return new CheckboxVM(new ValueElement<bool>(type, info == null ? null : new ValueMemberInfo(info)), name, chk.Priority);
                 }
                 else
                 {
-                    _notifier.Notify($"{type?.ToString() ?? "null"} is not compatable with {nameof(UiSonCheckboxUiAttribute)}", "Checkbox");
+                    return new BadDataVM($"{nameof(UiSonCheckboxUiAttribute)} {name}: {type?.ToString() ?? "null"} is not compatable");
                 }
             }
             else if (attribute is UiSonEnumSelectorUiAttribute enums)
@@ -270,44 +280,41 @@ namespace UiSon.ViewModel
 
                     if (strippedType.IsEnum)
                     {
-                        return MakeEnumSelector(enums.EnumType, type, info?.Name, enums.Priority, info);
+                        return MakeEnumSelector(enums.EnumType, type, name, enums.Priority, info);
                     }
                 }
 
-                _notifier.Notify($"{info} has {nameof(UiSonEnumSelectorUiAttribute.EnumType)} {enums.EnumType?.ToString() ?? "null"} which is not a valid enum type", "Enum Selector");
+                return new BadDataVM($"{nameof(UiSonEnumSelectorUiAttribute)} {name}: {type?.ToString() ?? "null"} is not an enum type");
             }
             else if (attribute is UiSonMemberElementAttribute member)
             {
-                return MakeMemberElement(type, info?.Name, member.Priority, info);
+                return MakeMemberElement(type, name, member.Priority, info, member.DisplayMode);
             }
             else if (attribute is UiSonMultiChoiceUiAttribute)
             {
-                _notifier.Notify($"{nameof(UiSonMultiChoiceUiAttribute)} on a property or field without ICollection implimentation",
-                $"Invalid {nameof(UiSonMultiChoiceUiAttribute)}");
-            }
-            else
-            {
-                throw new Exception($"Unhandled {nameof(IUiSonUiAttribute)}");
+                return new BadDataVM($"{nameof(UiSonMultiChoiceUiAttribute)} {name}: Member lacks ICollection implimentation");
             }
 
-            return null;
+            return new BadDataVM($"Unhandled Ui Attribute {attribute}");
         }
 
-        private IEditorModule MakeMemberElement(Type type, string name, int priority, MemberInfo info)
+        private IEditorModule MakeMemberElement(Type type, string name, int priority, MemberInfo info, DisplayMode displayMode)
         {
+            name = name ?? type.Name;
+
             if (type.IsValueType)
             {
                 return new RefVM(MakeGroups(type),
                                             type,
-                                            info,
-                                            name ?? type.Name,
-                                            priority);
+                                            info == null ? null : new ValueMemberInfo(info),
+                                            name,
+                                            priority,
+                                            displayMode);
             }
 
             if (type.GetConstructor(new Type[] { }) == null)
             {
-                _notifier.Notify($"{type} lacks a parameterless constructor.", "Member Element");
-                return null;
+                return new BadDataVM($"Member Element {name}: {type} lacks a parameterless constructor.");
             }
 
             return new NullableVM(() =>
@@ -315,13 +322,14 @@ namespace UiSon.ViewModel
                     _notifier.StartCashe();
                     var newRefVM = new RefVM(MakeGroups(type),
                                              type,
-                                             info,
+                                             info == null ? null : new ValueMemberInfo(info),
                                              name ?? type.Name,
-                                             priority);
+                                             priority,
+                                             displayMode);
                     _notifier.EndCashe();
                     return newRefVM;
                 },
-                type, name ?? type.Name, priority, info);
+                type, name ?? type.Name, priority, info == null ? null : new ValueMemberInfo(info));
         }
 
         private NullableVM MakeCollection(Type type,
@@ -331,41 +339,45 @@ namespace UiSon.ViewModel
             bool modifiable = true,
             UiSonCollectionAttribute enumerableAttribute = null,
             IUiSonUiAttribute uiAttribute = null,
-            DisplayMode displayMode = DisplayMode.Vertial,
-            CollectionStyle collectionStyle = CollectionStyle.Stack)
+            DisplayMode displayMode = DisplayMode.Vertial)
         {
+            Func<IEditorModule> makeEditorFunc = null;
+
+            name = name ?? type.Name;
+
             if (type.GetConstructor(new Type[] { }) == null)
             {
-                _notifier.Notify($"{type} lacks a parameterless constructor.", "Collection Element");
-                return null;
+                makeEditorFunc = () => new BadDataVM($"Collection Element for {name}: {type} lacks a parameterless constructor.");
             }
-
-            var entryType = type.GetInterfaces().FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ICollection<>)).GetGenericArguments().FirstOrDefault();
-
-            if (entryType == null)
+            else
             {
-                _notifier.Notify($"Unable to find entry type for {type}", "Collection Element");
-                return null;
-            }
-            else if (!entryType.IsValueType && !entryType.IsAssignableFrom(typeof(string)) && entryType.GetConstructor(new Type[] { }) == null)
-            {
-                _notifier.Notify($"{type}'s entry type lacks a parameterless constructor.", "Collection Element");
-                return null;
+                var entryType = type.GetInterfaces().FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ICollection<>)).GetGenericArguments().FirstOrDefault();
+
+                if (entryType == null)
+                {
+                    makeEditorFunc = () => new BadDataVM($"Collection Element for {name}: Unable to find entry type for {type}");
+                }
+                else if (!entryType.IsValueType && !entryType.IsAssignableFrom(typeof(string)) && entryType.GetConstructor(new Type[] { }) == null)
+                {
+                    makeEditorFunc = () => new BadDataVM($"Collection Element for {name}: {type}'s entry type lacks a parameterless constructor.");
+                }
+                else
+                {
+                    makeEditorFunc = () => new CollectionVM(new ObservableCollection<CollectionEntryVM>(),
+                                                            entryType,
+                                                            type,
+                                                            this,
+                                                            uiAttribute,
+                                                            name,
+                                                            priority,
+                                                            info == null ? null : new ValueMemberInfo(info),
+                                                            modifiable,
+                                                            displayMode,
+                                                            enumerableAttribute);
+                }
             }
 
-            return new NullableVM(() => new CollectionVM(new ObservableCollection<CollectionEntryVM>(),
-                                              entryType,
-                                              type,
-                                              this,
-                                              uiAttribute,
-                                              name ?? type.Name,
-                                              priority,
-                                              info,
-                                              modifiable,
-                                              displayMode,
-                                              collectionStyle,
-                                              enumerableAttribute),
-                                   type, name ?? type.Name, priority, info);
+            return new NullableVM(makeEditorFunc, type, name ?? type.Name, priority, info == null ? null : new ValueMemberInfo(info));
         }
 
         /// <summary>
@@ -389,7 +401,7 @@ namespace UiSon.ViewModel
                 map.Add(names[nameIndex++], (int)value);
             }
 
-            return new SelectorVM<int>(new ValueElement<int>(valueType, info),
+            return new SelectorVM<int>(new ValueElement<int>(valueType, info == null ? null : new ValueMemberInfo(info)),
                                 name, priority,
                                 map ?? new Map<string, int>());
         }
@@ -436,37 +448,37 @@ namespace UiSon.ViewModel
             // make the selector
             if (identifierType == typeof(bool))
             {
-                var newElement = new StringElement(valueType, info);
+                var newElement = new StringElement(valueType, info == null ? null : new ValueMemberInfo(info));
 
                 return new ElementSelectorVM(newElement,
                                            new SelectorVM<bool>(newElement, info?.Name, priority,
                                                 MakeTSelectorMap<bool>(options, identifiers ?? options)),
-                                           identifingMember,
-                                           info,
+                                           identifingMember == null ? null : new ValueMemberInfo(identifingMember),
+                                           info == null ? null : new ValueMemberInfo(info),
                                            manager);
             }
             // treat enums as ints for common handling
             else if (identifierType == typeof(int)
                      || (identifierType?.IsEnum ?? false))
             {
-                var newElement = new StringElement(valueType, info);
+                var newElement = new StringElement(valueType, info == null ? null : new ValueMemberInfo(info));
 
                 return new ElementSelectorVM(newElement,
                                            new SelectorVM<int>(newElement, info?.Name, priority,
                                                 MakeTSelectorMap<int>(options, identifiers ?? options)),
-                                           identifingMember,
-                                           info,
+                                           identifingMember == null ? null : new ValueMemberInfo(identifingMember),
+                                           info == null ? null : new ValueMemberInfo(info),
                                            manager);
             }
             // default to using strings
             else
             {
-                var newElement = new StringElement(valueType, info);
+                var newElement = new StringElement(valueType, info == null ? null : new ValueMemberInfo(info));
                 return new ElementSelectorVM(newElement,
                                             new SelectorVM<string>(newElement, info?.Name, priority,
                                                 MakeStringSelectorMap(options, identifiers ?? options, identifierType ?? valueType)),
-                                            identifingMember,
-                                            info,
+                                            identifingMember == null ? null : new ValueMemberInfo(identifingMember),
+                                            info == null ? null : new ValueMemberInfo(info),
                                             manager);
             }
         }
