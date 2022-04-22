@@ -406,6 +406,9 @@ namespace UiSon.ViewModel
         /// <returns>A selector with options from the enumType</returns>
         private SelectorVM<int> MakeEnumSelector(Type enumType, Type valueType, string name, int priority, MemberInfo info = null)
         {
+            // strip off nullable layers
+            enumType = Nullable.GetUnderlyingType(enumType) ?? enumType;
+
             // make map
             var map = new Map<string, int>();
 

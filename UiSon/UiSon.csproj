@@ -11,7 +11,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\UiSon.Attributes\UiSon.Attribute.csproj" />
     <ProjectReference Include="..\UiSon.Element\UiSon.Element.csproj" />
     <ProjectReference Include="..\UiSon.Notifier\UiSon.Notify.csproj" />
     <ProjectReference Include="..\UiSon.ViewModel.Interface\UiSon.ViewModel.Interface.csproj" />

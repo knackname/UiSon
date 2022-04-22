@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\UiSon.Attributes\UiSon.Attribute.csproj" />
+    <ProjectReference Include="..\UiSon.Attribute\UiSon.Attribute.csproj" />
   </ItemGroup>
 
 </Project>

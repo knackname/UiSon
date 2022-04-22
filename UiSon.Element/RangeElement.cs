@@ -21,7 +21,7 @@ namespace UiSon.Element
             Max = max;
             _precision = percision;
 
-            _formatString = '{' + $"0:{new string('0', Math.Max(Math.Round(Min, 0, MidpointRounding.ToNegativeInfinity).ToString().Length, Math.Round(Max, 0, MidpointRounding.ToPositiveInfinity).ToString().Length))}";
+            _formatString = '{' + $"0:{new string('0', Math.Max(Math.Round(Min, 0, MidpointRounding.ToNegativeInfinity).ToString().Length - (Min < 0 ? 1 : 0), Math.Round(Max, 0, MidpointRounding.ToPositiveInfinity).ToString().Length - (Max < 0 ? 1 : 0)))}";
 
             if (_precision > 0)
             {
@@ -29,15 +29,14 @@ namespace UiSon.Element
             }
 
             _formatString += '}';
-
-            SetValue((Min+Max)/2d);
         }
 
         public override object GetValueAs(Type type)
         {
             if (type == typeof(string))
             {
-                return string.Format(_formatString, base.GetValueAs(typeof(double)));
+                var asDouble = base.GetValueAs(typeof(double?));
+                return asDouble == null ? null : string.Format(_formatString, asDouble);
             }
 
             return base.GetValueAs(type);
@@ -45,10 +44,15 @@ namespace UiSon.Element
 
         public override bool SetValue(object value)
         {
-            if (value.TryCast(typeof(double), out var asDouble))
+            if (value is string asString && asString == "null")
+            {
+                return base.SetValue(null);
+            }
+            else if (value.TryCast(typeof(double), out var asDouble))
             {
                 return base.SetValue(Math.Round(Math.Max(Min, Math.Min(Max, (double)asDouble)), _precision));
             }
+
             return false;
         }
     }

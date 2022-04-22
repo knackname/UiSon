@@ -15,7 +15,7 @@ namespace UiSon.Extension
         /// <returns>True if successful, false otherwise</returns>
         public static bool TryCast(this object value, Type type, out object result)
         {
-            if (type == null)
+            if (type == null || value == null)
             {
                 result = null;
                 return false;
@@ -32,142 +32,19 @@ namespace UiSon.Extension
                 result = parseString.ParseAs(type);
                 return result != null;
             }
-            else if (TypeLookup.TypeToId.ContainsKey(type))
+            else if (type == typeof(string))
             {
-                switch (TypeLookup.TypeToId[type])
-                {
-                    case ValueishType._string:
-                        result = value.ToString();
-                        return true;
-                    case ValueishType._sbyte:
-                        if (value is sbyte asSbyte)
-                        {
-                            result = asSbyte;
-                            return true;
-                        }
-                        break;
-                    case ValueishType._byte:
-                        if (value is byte asByte)
-                        {
-                            result = asByte;
-                            return true;
-                        }
-                        break;
-                    case ValueishType._short:
-                        if (value is short asShort)
-                        {
-                            result = asShort;
-                            return true;
-                        }
-                        break;
-                    case ValueishType._ushort:
-                        if (value is ushort asUshort)
-                        {
-                            result = asUshort;
-                            return true;
-                        }
-                        break;
-                    case ValueishType._int:
-                        if (value is int asInt)
-                        {
-                            result = asInt;
-                            return true;
-                        }
-                        else if (value.GetType().IsEnum)
-                        {
-                            result = (int)value;
-                            return true;
-                        }
-                        else if (value is float floatToInt)
-                        {
-                            result = (int)floatToInt;
-                            return true;
-                        }
-                        else if (value is double doubleToInt)
-                        {
-                            result = (int)doubleToInt;
-                            return true;
-                        }
-                        break;
-                    case ValueishType._uint:
-                        if (value is uint asUint)
-                        {
-                            result = asUint;
-                            return true;
-                        }
-                        break;
-                    case ValueishType._long:
-                        if (value is long asLong)
-                        {
-                            result = asLong;
-                            return true;
-                        }
-                        break;
-                    case ValueishType._ulong:
-                        if (value is ulong asUlong)
-                        {
-                            result = asUlong;
-                            return true;
-                        }
-                        break;
-                    case ValueishType._nint:
-                        if (value is nint asNint)
-                        {
-                            result = asNint;
-                            return true;
-                        }
-                        break;
-                    case ValueishType._nuint:
-                        if (value is nuint asNuint)
-                        {
-                            result = asNuint;
-                            return true;
-                        }
-                        break;
-                    case ValueishType._float:
-                        if (value is float asFloat)
-                        {
-                            result = asFloat;
-                            return true;
-                        }
-                        else if (value is double doubleToFloat)
-                        {
-                            result = (float)doubleToFloat;
-                            return true;
-                        }
-                        break;
-                    case ValueishType._double:
-                        if (value is double asDouble)
-                        {
-                            result = asDouble;
-                            return true;
-                        }
-                        break;
-                    case ValueishType._decimal:
-                        if (value is decimal asDecimal)
-                        {
-                            result = asDecimal;
-                            return true;
-                        }
-                        break;
-                    case ValueishType._bool:
-                        if (value is bool asBool)
-                        {
-                            result = asBool;
-                            return true;
-                        }
-                        break;
-                    case ValueishType._char:
-                        if (value is char asChar)
-                        {
-                            result = asChar;
-                            return true;
-                        }
-                        break;
-                }
+                result = value.ToString();
+                return true;
+            }
+            else if (type.IsValueType && value.GetType().IsValueType)
+            {
+                type = Nullable.GetUnderlyingType(type) ?? type;
+                result = Convert.ChangeType(value, type);
+                return true;
             }
 
-            result = value;
+            result = null;
             return false;
         }
     }

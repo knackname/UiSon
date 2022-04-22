@@ -137,8 +137,7 @@
                       CanUserAddRows="False" CanUserDeleteRows="False"
                       HorizontalAlignment="Stretch"
                       ItemsSource="{Binding Converter={StaticResource putInCollectionConverter}}"
-                      Initialized="GridGroup_Initialized"
-                      IsHitTestVisible="False"/>
+                      Initialized="GridGroup_Initialized"/>
         </DataTemplate>
 
         <!--collections-->
@@ -192,8 +191,7 @@
             <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch">
                 <Button Content="+" Command="{Binding AddEntry}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"  Visibility="{Binding ModifyVisibility}" HorizontalAlignment="Left"/>
                 <DataGrid AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" HorizontalAlignment="Stretch"
-                          ItemTemplate="{StaticResource CollectionElementEntryTemplate}" ItemsSource="{Binding Members}" Initialized="DataGridCollection_Initialized"
-                          IsHitTestVisible="False">
+                          ItemTemplate="{StaticResource CollectionElementEntryTemplate}" ItemsSource="{Binding Members}" Initialized="DataGridCollection_Initialized">
                     <DataGrid.Columns>
                         <DataGridTemplateColumn>
                             <DataGridTemplateColumn.CellTemplate>

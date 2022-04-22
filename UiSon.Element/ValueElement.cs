@@ -64,9 +64,15 @@ namespace UiSon.Element
         /// </summary>
         /// <param name="type">The type to retreieve the value as</param>
         /// <returns>The element's value as the type</returns>
-        public virtual object GetValueAs(Type type) => _value == null
-            ? null
-            : Convert.ChangeType(_value, type);
+        public virtual object GetValueAs(Type type)
+        {
+            if (_value?.TryCast(type, out var cast) ?? false)
+            {
+                return cast;
+            }
+
+            return null;
+        }
 
         /// <summary>
         /// Attempts to set the value to the input.

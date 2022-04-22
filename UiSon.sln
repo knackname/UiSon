@@ -1,11 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31727.386
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32414.318
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UiSon", "UiSon\UiSon.csproj", "{ED973E69-F2E1-40B2-AD64-A03411CB798E}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UiSon.Attribute", "UiSon.Attributes\UiSon.Attribute.csproj", "{391F3508-67AF-493C-AB87-C45FD24BCB23}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UiSon.Element", "UiSon.Element\UiSon.Element.csproj", "{ABB7984A-741C-49ED-971E-E6D854660E10}"
 EndProject
@@ -25,7 +23,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UiSon.Notify", "UiSon.Notif
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UiSon.Notify.Interface", "UiSon.Notifier.Interface\UiSon.Notify.Interface.csproj", "{C40513FD-F8EF-4C32-92D4-B33AE79C1B3E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UiSon.Converter", "UiSon.Converter\UiSon.Converter.csproj", "{954A41A3-50BD-45F3-BDF6-FE65D8258743}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UiSon.Converter", "UiSon.Converter\UiSon.Converter.csproj", "{954A41A3-50BD-45F3-BDF6-FE65D8258743}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UiSon.Attribute", "UiSon.Attribute\UiSon.Attribute.csproj", "{6FBD1806-A9BD-40F2-96CD-752901AB54FE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,10 +37,6 @@ Global
 		{ED973E69-F2E1-40B2-AD64-A03411CB798E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ED973E69-F2E1-40B2-AD64-A03411CB798E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ED973E69-F2E1-40B2-AD64-A03411CB798E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{391F3508-67AF-493C-AB87-C45FD24BCB23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{391F3508-67AF-493C-AB87-C45FD24BCB23}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{391F3508-67AF-493C-AB87-C45FD24BCB23}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{391F3508-67AF-493C-AB87-C45FD24BCB23}.Release|Any CPU.Build.0 = Release|Any CPU
 		{ABB7984A-741C-49ED-971E-E6D854660E10}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{ABB7984A-741C-49ED-971E-E6D854660E10}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ABB7984A-741C-49ED-971E-E6D854660E10}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -81,6 +77,10 @@ Global
 		{954A41A3-50BD-45F3-BDF6-FE65D8258743}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{954A41A3-50BD-45F3-BDF6-FE65D8258743}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{954A41A3-50BD-45F3-BDF6-FE65D8258743}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6FBD1806-A9BD-40F2-96CD-752901AB54FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6FBD1806-A9BD-40F2-96CD-752901AB54FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6FBD1806-A9BD-40F2-96CD-752901AB54FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6FBD1806-A9BD-40F2-96CD-752901AB54FE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
