@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -181,7 +182,9 @@ namespace UiSon.ViewModel
                     // set to null so this can be cleaned up, it'll only be used this once
                     MakeEditor = null;
 
-                    OnPropertyChanged(nameof(Decorated));
+                    Decorated.PropertyChanged += Refresh;
+
+                    Refresh(null, null);
                 }
 
                 //attempt to set value
@@ -198,5 +201,10 @@ namespace UiSon.ViewModel
         public object GetValueAs(Type type) => Decorated?.GetValueAs(type);
 
         public void UpdateRefs() => Decorated?.UpdateRefs();
+
+        private void Refresh(object? sender, PropertyChangedEventArgs e)
+        {
+            OnPropertyChanged(nameof(Decorated));
+        }
     }
 }

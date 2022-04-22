@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -37,6 +38,8 @@ namespace UiSon.ViewModel
             Name = name ?? "bool";
             Priority = priority;
             _element = element ?? throw new ArgumentNullException(nameof(element));
+
+            _element.PropertyChanged += Refresh;
         }
 
         /// <summary>
@@ -72,20 +75,18 @@ namespace UiSon.ViewModel
         /// <returns>converted value</returns>
         public object GetValueAs(Type type) => _element.GetValueAs(type);
 
-        public bool SetValue(object value)
-        {
-            if (_element.SetValue(value as bool?))
-            {
-                OnPropertyChanged();
-                return true;
-            }
-
-            return false;
-        }
+        public bool SetValue(object value) => _element.SetValue(value as bool?);
 
         public void UpdateRefs()
         {
             // no refs to update
+        }
+
+        private void Refresh(object? sender, PropertyChangedEventArgs e)
+        {
+            OnPropertyChanged(nameof(Name));
+            OnPropertyChanged(nameof(IsNameVisible));
+            OnPropertyChanged(nameof(Value));
         }
     }
 }

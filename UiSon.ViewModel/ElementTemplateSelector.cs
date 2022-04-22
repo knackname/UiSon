@@ -28,6 +28,16 @@ namespace UiSon.ViewModel
                 {
                     return frameworkElement.FindResource("NullableTemplate") as DataTemplate;
                 }
+                else if (item is SliderVM slider)
+                {
+                    switch(slider.IsVertical)
+                    {
+                        case true:
+                            return frameworkElement.FindResource("SliderElementVerticalTemplate") as DataTemplate;
+                        case false:
+                            return frameworkElement.FindResource("SliderElementHorizontalTemplate") as DataTemplate;
+                    }
+                }
                 else if (item is TextEditVM)
                 {
                     return frameworkElement.FindResource("TextEditElementTemplate") as DataTemplate;

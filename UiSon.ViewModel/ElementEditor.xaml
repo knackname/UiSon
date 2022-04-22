@@ -72,16 +72,15 @@
 
         <DataTemplate x:Key="VerticalGroupTemplate">
             <Grid Margin="4">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="auto"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
                 <TextBlock Text="{Binding Name}" Visibility="{Binding IsNameVisible}"
-                           Margin="0,0,4,0"  Grid.Column="0" VerticalAlignment="Center"/>
+                           Margin="0,0,4,0"  Grid.Row="0" VerticalAlignment="Center"/>
                 <ItemsControl ItemsSource="{Binding Members}"
-                              HorizontalAlignment="Stretch"
                               ItemTemplateSelector="{StaticResource dataTemplateSelectorDictionary}"
-                              Grid.Column="1">
+                              Grid.Row="1">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch"  Margin="4"/>
@@ -138,7 +137,8 @@
                       CanUserAddRows="False" CanUserDeleteRows="False"
                       HorizontalAlignment="Stretch"
                       ItemsSource="{Binding Converter={StaticResource putInCollectionConverter}}"
-                      Initialized="GridGroup_Initialized"/>
+                      Initialized="GridGroup_Initialized"
+                      IsHitTestVisible="False"/>
         </DataTemplate>
 
         <!--collections-->
@@ -192,7 +192,8 @@
             <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch">
                 <Button Content="+" Command="{Binding AddEntry}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"  Visibility="{Binding ModifyVisibility}" HorizontalAlignment="Left"/>
                 <DataGrid AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" HorizontalAlignment="Stretch"
-                          ItemTemplate="{StaticResource CollectionElementEntryTemplate}" ItemsSource="{Binding Members}" Initialized="DataGridCollection_Initialized">
+                          ItemTemplate="{StaticResource CollectionElementEntryTemplate}" ItemsSource="{Binding Members}" Initialized="DataGridCollection_Initialized"
+                          IsHitTestVisible="False">
                     <DataGrid.Columns>
                         <DataGridTemplateColumn>
                             <DataGridTemplateColumn.CellTemplate>
@@ -248,8 +249,32 @@
                 <CheckBox IsChecked="{Binding Value}" Grid.Column="1"/>
             </Grid>
         </DataTemplate>
+
+        <DataTemplate x:Key="SliderElementHorizontalTemplate">
+            <Grid Margin="4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{Binding Name}" Visibility="{Binding IsNameVisible}"
+                           Margin="0,0,4,0" Grid.Column="0"/>
+                <Slider Minimum="{Binding Min}" Maximum="{Binding Max}" Value="{Binding Value}" MinWidth="100" HorizontalAlignment="Stretch" Orientation="Horizontal" Grid.Column="1"/>
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="SliderElementVerticalTemplate">
+            <Grid Margin="4">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <TextBlock Text="{Binding Name}" Visibility="{Binding IsNameVisible}"
+                           Margin="0,0,4,0" Grid.Row="0"/>
+                <Slider Minimum="{Binding Min}" Maximum="{Binding Max}" Value="{Binding Value}" MinHeight="100" Orientation="Vertical" Grid.Row="1"/>
+            </Grid>
+        </DataTemplate>
     </TabItem.Resources>
-     
+      
     <TabItem.Header>
         <StackPanel Orientation="Horizontal">
             <TextBlock Text="{Binding Name}"/>

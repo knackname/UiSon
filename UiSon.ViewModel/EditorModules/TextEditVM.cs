@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -30,16 +31,18 @@ namespace UiSon.ViewModel
 
         public Visibility IsNameVisible => string.IsNullOrWhiteSpace(Name) ? Visibility.Collapsed : Visibility.Visible;
 
-        private StringElement _element;
+        private IUiSonElement _element;
 
         /// <summary>
         /// Constructor
         /// </summary>
-        public TextEditVM(StringElement element, string name, int priority)
+        public TextEditVM(IUiSonElement element, string name, int priority)
         {
             Name = name;
             Priority = priority;
             _element = element ?? throw new ArgumentNullException(nameof(element));
+
+            _element.PropertyChanged += Refresh;
         }
 
         /// <summary>
@@ -85,21 +88,19 @@ namespace UiSon.ViewModel
         /// <returns>converted value</returns>
         public object GetValueAs(Type type) => _element.GetValueAs(type);
 
-        public bool SetValue(object value)
-        {
-            if (_element.SetValue(value))
-            {
-                OnPropertyChanged(nameof(Value));
-                OnPropertyChanged(nameof(TextColor));
-                return true;
-            }
-
-            return false;
-        }
+        public bool SetValue(object value) => _element.SetValue(value);
 
         public void UpdateRefs()
         {
             // no refs to update
+        }
+
+        private void Refresh(object? sender, PropertyChangedEventArgs e)
+        {
+            OnPropertyChanged(nameof(Name));
+            OnPropertyChanged(nameof(IsNameVisible));
+            OnPropertyChanged(nameof(Value));
+            OnPropertyChanged(nameof(TextColor));
         }
     }
 }

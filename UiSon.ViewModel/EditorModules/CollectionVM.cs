@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
@@ -38,39 +39,45 @@ namespace UiSon.ViewModel
 
         private UiSonCollectionAttribute _enumerableAttribute;
 
-        private IUiSonUiAttribute _uiAttribute;
+        private UiSonUiAttribute _uiAttribute;
+
+        private ElementTemplateSelector _templateSelector;
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="members"></param>
         /// <param name="entryType"></param>
+        /// <param name="collectionType"></param>
         /// <param name="factory"></param>
+        /// <param name="uiAttribute"></param>
         /// <param name="name"></param>
         /// <param name="priority"></param>
         /// <param name="info"></param>
         /// <param name="modifiable"></param>
         /// <param name="displayMode"></param>
-        /// <param name="collectionStyle"></param>
         /// <param name="attribute"></param>
+        /// <param name="templateSelector"></param>
+        /// <exception cref="ArgumentNullException"></exception>
         public CollectionVM(ObservableCollection<CollectionEntryVM> members,
                             Type entryType, Type collectionType, EditorModuleFactory factory,
-                            IUiSonUiAttribute uiAttribute,
+                            UiSonUiAttribute uiAttribute,
                             string name, int priority, ValueMemberInfo info, 
-                            bool modifiable = true,
-                            DisplayMode displayMode = DisplayMode.Vertial,
-                            UiSonCollectionAttribute attribute = null)
+                            bool modifiable,
+                            DisplayMode displayMode,
+                            UiSonCollectionAttribute attribute,
+                            ElementTemplateSelector templateSelector)
             : base(members, name, priority, displayMode)
         {
             _collectionType = collectionType ?? throw new ArgumentNullException(nameof(collectionType));
             _entryType = entryType ?? throw new ArgumentNullException(nameof(entryType));
+            _members = members ?? throw new ArgumentNullException(nameof(members));
+            _factory = factory ?? throw new ArgumentNullException(nameof(factory));
+            _templateSelector = templateSelector ?? throw new ArgumentNullException(nameof(templateSelector));
 
             _collectionAdd = _collectionType.GetInterfaces()
                 .FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ICollection<>))
                 .GetMethod("Add");
-
-            _members = members ?? throw new ArgumentNullException(nameof(members));
-            _factory = factory ?? throw new ArgumentNullException(nameof(factory));
 
             _uiAttribute = uiAttribute;
             ModifyVisibility = modifiable ? Visibility.Visible : Visibility.Collapsed;
@@ -82,18 +89,6 @@ namespace UiSon.ViewModel
 
         public override void Write(object instance) => _info.SetValue(instance, GetValue());
 
-        private object GetValue()
-        {
-            var value = Activator.CreateInstance(_collectionType);
-
-            foreach (var member in _members)
-            {
-                _collectionAdd.Invoke(value, new[] { member.GetValueAs(_entryType) });
-            }
-
-            return value;
-        }
-
         public override bool SetValue(object value)
         {
             if (value != null && value.GetType().GetInterface(nameof(IEnumerable)) != null)
@@ -102,13 +97,9 @@ namespace UiSon.ViewModel
 
                 foreach (var entry in (IEnumerable)value)
                 {
-                    var newEntry = MakeNewEntry();
-
-                    if (newEntry != null)
-                    {
-                        newEntry.SetValue(entry);
-                        _members.Add(newEntry);
-                    }
+                    var newEntry = _factory.MakeCollectionEntryVM(_members, _entryType, ModifyVisibility, _enumerableAttribute, _uiAttribute);
+                    newEntry.SetValue(entry);
+                    _members.Add(newEntry);
                 }
 
                 OnPropertyChanged(nameof(Members));
@@ -131,18 +122,22 @@ namespace UiSon.ViewModel
 
         public override IEnumerable<DataGridColumn> GenerateColumns(string path)
         {
-            var valCol = new DataGridTemplateColumn();
-            valCol.Width = new DataGridLength(1, DataGridLengthUnitType.Star);
-            valCol.Header = Name;
+            var valCol = new DataGridTemplateColumn
+            {
+                Width = new DataGridLength(1, DataGridLengthUnitType.Star),
+                Header = Name
+            };
 
             var dt = new DataTemplate();
-            var valBind = new Binding(path);
-            valBind.Mode = BindingMode.OneWay;
-            valBind.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+            var valBind = new Binding(path)
+            {
+                Mode = BindingMode.OneWay,
+                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+            };
             var contentPresenter = new FrameworkElementFactory(typeof(ContentPresenter));
             contentPresenter.SetBinding(ContentPresenter.ContentProperty, valBind);
             contentPresenter.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Stretch);
-            contentPresenter.SetValue(ContentPresenter.ContentTemplateSelectorProperty, new ElementTemplateSelector());// don't make a new one, pass it in TODO
+            contentPresenter.SetValue(ContentPresenter.ContentTemplateSelectorProperty, _templateSelector);
 
             dt.VisualTree = contentPresenter;
             valCol.CellTemplate = dt;
@@ -150,41 +145,18 @@ namespace UiSon.ViewModel
             return new List<DataGridColumn>() { valCol };
         }
 
-        private CollectionEntryVM MakeNewEntry(object source = null)
+        public ICommand AddEntry => new UiSonActionCommand((s) => _members.Add(_factory.MakeCollectionEntryVM(_members, _entryType, ModifyVisibility, _enumerableAttribute, _uiAttribute)));
+
+        private object GetValue()
         {
-            var newEntry = _factory.MakeCollectionEntryVM(_members, _entryType, ModifyVisibility, _enumerableAttribute, _uiAttribute);
+            var value = Activator.CreateInstance(_collectionType);
 
-            //if (source is Button button
-            //    && button.Parent is StackPanel mainPanel
-            //    && mainPanel.Children[1] is DataGrid dataGrid)
-            //{
-            //    // When a nullable becomes not null for the first time, it changes its Decorated, so columns need to be regenrated
-            //    newEntry.PropertyChanged += (e, a) =>
-            //    {
-            //        if (!_gridColumnsUpdated
-            //            && e is CollectionEntryVM collectionEntry
-            //            && a.PropertyName == nameof(CollectionEntryVM.Decorated))
-            //        {
-            //            foreach (var column in collectionEntry.GenerateColumns(string.Empty))
-            //            {
-            //                dataGrid.Columns.Add(column);
-            //            }
-            //        }
-            //    };
-            //}
-
-            return newEntry;
-        }
-
-        private bool _gridColumnsUpdated = false;
-
-        public ICommand AddEntry => new UiSonActionCommand((s) =>
-        {
-            var newEntry = MakeNewEntry(s);
-            if (newEntry != null)
+            foreach (var member in _members)
             {
-                _members.Add(newEntry);
+                _collectionAdd.Invoke(value, new[] { member.GetValueAs(_entryType) });
             }
-        });
+
+            return value;
+        }
     }
 }

@@ -94,7 +94,7 @@ namespace UiSon
                 name = $"{name} {i}";
             }
 
-            var newElement = _factory.MakeMainElement(_type, _ele.InitialValue);
+            var newElement = _factory.MakeMainElement(_type);
 
             _elementsVMs.Add(new ElementVM(name, newElement, this));
         }

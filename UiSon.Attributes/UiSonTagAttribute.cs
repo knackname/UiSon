@@ -11,17 +11,17 @@ namespace UiSon.Attribute
     public class UiSonTagAttribute : System.Attribute
     {
         /// <summary>
-        /// The tag's name
+        /// The tag's name.
         /// </summary>
         public string Name { get; private set; }
 
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="name">The tag's name</param>
+        /// <param name="name">The tag's name.</param>
         public UiSonTagAttribute(string name)
         {
-            Name = name ?? throw new ArgumentNullException(nameof(name));
+            Name = name;
         }
     }
 }

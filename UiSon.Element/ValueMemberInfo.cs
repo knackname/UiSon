@@ -14,6 +14,7 @@ namespace UiSon.Element
         public override Type ReflectedType => _decorated.ReflectedType;
 
         private MemberInfo _decorated;
+
         // one will be set, the other will be null
         private FieldInfo _asField;
         private PropertyInfo _asProperty;

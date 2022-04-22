@@ -6,10 +6,10 @@ using UiSon.Extension;
 namespace UiSon.Element
 {
     /// <summary>
-    /// A value type <see cref="IElement"/>
+    /// A value type <see cref="IUiSonElement"/>
     /// </summary>
     /// <typeparam name="T">a Value type</typeparam>
-    public class ValueElement<T> : IElement
+    public class ValueElement<T> : NPCBase, IUiSonElement
         where T : struct
     {
         /// <summary>
@@ -23,7 +23,7 @@ namespace UiSon.Element
         /// </summary>
         public bool IsNullable { get; private set; }
 
-        private ValueMemberInfo _info;
+        protected ValueMemberInfo _info;
         private Type _memberType;
         protected Type _valueType;
 
@@ -64,7 +64,7 @@ namespace UiSon.Element
         /// </summary>
         /// <param name="type">The type to retreieve the value as</param>
         /// <returns>The element's value as the type</returns>
-        public object GetValueAs(Type type) => _value == null
+        public virtual object GetValueAs(Type type) => _value == null
             ? null
             : Convert.ChangeType(_value, type);
 
@@ -73,7 +73,7 @@ namespace UiSon.Element
         /// </summary>
         /// <param name="input">input value</param>
         /// <returns>True if set successfully, false otherwise</returns>
-        public bool SetValue(object input)
+        public virtual bool SetValue(object input)
         {
             // null
             if (input == null)
@@ -81,6 +81,7 @@ namespace UiSon.Element
                 if (IsNullable)
                 {
                     _value = null;
+                    OnPropertyChanged(nameof(Value));
                     return true;
                 }
                 else
@@ -94,6 +95,7 @@ namespace UiSon.Element
                      && asT.TryCast(_valueType, out var _))
             {
                 _value = (T)asT;
+                OnPropertyChanged(nameof(Value));
                 return true;
             }
 

@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using UiSon.ViewModel.Interface;
 using System.Collections.Generic;
 using System.Windows.Controls;
+using System.ComponentModel;
 
 namespace UiSon.ViewModel
 {
@@ -35,7 +36,7 @@ namespace UiSon.ViewModel
             _decorated = decorated ?? throw new ArgumentNullException(nameof(decorated));
             ModifyVisibility = modifyVisibility;
 
-            _decorated.PropertyChanged += (s,b) => OnPropertyChanged(b.PropertyName);
+            _decorated.PropertyChanged += Refresh;
         }
 
         public ICommand RemoveElement => new UiSonActionCommand((s) => _parent.Remove(this));
@@ -51,5 +52,12 @@ namespace UiSon.ViewModel
         public bool SetValue(object value) => _decorated.SetValue(value);
 
         public void UpdateRefs() => _decorated.UpdateRefs();
+
+        private void Refresh(object? sender, PropertyChangedEventArgs e)
+        {
+            OnPropertyChanged(nameof(Name));
+            OnPropertyChanged(nameof(IsNameVisible));
+            OnPropertyChanged(nameof(Decorated));
+        }
     }
 }

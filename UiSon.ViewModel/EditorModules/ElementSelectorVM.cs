@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
@@ -37,7 +38,7 @@ namespace UiSon.ViewModel
         public Visibility IsNameVisible => _selector.IsNameVisible;
 
         private ISelectorVM _selector;
-        private IElement _element;
+        private IUiSonElement _element;
         private ElementManager _manager;
         private ValueMemberInfo _identifingMember;
         private ValueMemberInfo _info;
@@ -45,7 +46,7 @@ namespace UiSon.ViewModel
         /// <summary>
         /// Constructor
         /// </summary>
-        public ElementSelectorVM(IElement element, ISelectorVM selector, ValueMemberInfo identifingMember, ValueMemberInfo info, ElementManager manager)
+        public ElementSelectorVM(IUiSonElement element, ISelectorVM selector, ValueMemberInfo identifingMember, ValueMemberInfo info, ElementManager manager)
         {
             _selector = selector ?? throw new ArgumentNullException(nameof(selector));
             _element = element ?? throw new ArgumentNullException(nameof(element));
@@ -72,6 +73,8 @@ namespace UiSon.ViewModel
                 }
             };
             manager.Elements.CollectionChanged += (s, e) => OnPropertyChanged(nameof(Options));
+
+            _element.PropertyChanged += Refresh;
         }
 
         public bool SetValue(object value)
@@ -199,6 +202,14 @@ namespace UiSon.ViewModel
             }
 
             return null;
+        }
+
+        private void Refresh(object? sender, PropertyChangedEventArgs e)
+        {
+            OnPropertyChanged(nameof(Name));
+            OnPropertyChanged(nameof(IsNameVisible));
+            OnPropertyChanged(nameof(Value));
+            OnPropertyChanged(nameof(Options));
         }
     }
 }

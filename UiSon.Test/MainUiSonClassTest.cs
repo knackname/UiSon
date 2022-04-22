@@ -8,45 +8,37 @@ namespace UiSon.Test
     [UiSonElement]
     public class UiSonClassTest
     {
-        [UiSonCollection(true, DisplayMode.Grid)]
-        [UiSonMemberElement(0, null, DisplayMode.Grid)]
-        public List<SelfRef> selfref_grid;
+        [UiSonMemberElement(0, null, DisplayMode.Vertial)]
+        public Sliders _sliders;
 
-        [UiSonCollection(true, DisplayMode.Grid)]
-        [UiSonTextEditUi]
-        public List<List<string>> nested_grid;
+        [UiSonMemberElement(0, null, DisplayMode.Vertial)]
+        public Attribulteless attribulteless;
 
-        [UiSonMemberElement(0, null, DisplayMode.Grid)]
-        public SelfRef selfref;
+        [UiSonMemberElement(0, null, DisplayMode.Vertial)]
+        public TextEdits _textEdits;
 
-        //[UiSonMemberElement(0, null, DisplayMode.Vertial)]
-        //public Attribulteless attribulteless;
+        [UiSonMemberElement(0, null, DisplayMode.Vertial)]
+        public Checkboxes _checkboxes;
 
-        //[UiSonMemberElement(0, null, DisplayMode.Vertial)]
-        //public TextEdits _textEdits;
+        [UiSonMemberElement(0, null, DisplayMode.Vertial)]
+        public Selectors _selectors;
 
-        //[UiSonMemberElement(0, null, DisplayMode.Vertial)]
-        //public Checkboxes _checkboxes;
+        [UiSonMemberElement(0, null, DisplayMode.Vertial)]
+        public EnumSelectors _enumSelectors;
 
-        //[UiSonMemberElement(0, null, DisplayMode.Vertial)]
-        //public Selectors _selectors;
+        [UiSonMemberElement(0, null, DisplayMode.Vertial)]
+        public ClassSelectors _classSelectors;
 
-        //[UiSonMemberElement(0, null, DisplayMode.Vertial)]
-        //public EnumSelectors _enumSelectors;
+        [UiSonMemberElement(0, null, DisplayMode.Vertial)]
+        public Groups _groups;
 
-        //[UiSonMemberElement(0, null, DisplayMode.Vertial)]
-        //public ClassSelectors _classSelectors;
+        [UiSonMemberElement(0, null, DisplayMode.Vertial)]
+        public Collections _collections;
 
-        //[UiSonMemberElement(0, null, DisplayMode.Vertial)]
-        //public Groups _groups;
+        [UiSonMemberElement(0, null, DisplayMode.Vertial)]
+        public SelfRef _selfRef;
 
-        //[UiSonMemberElement(0, null, DisplayMode.Vertial)]
-        //public Collections _collections;
-
-        //[UiSonMemberElement(0, null, DisplayMode.Vertial)]
-        //public SelfRef _selfRef;
-
-        //[UiSonMemberElement(0, null, DisplayMode.Vertial)]
-        //public MultiChoiceUi multiChoice;
+        [UiSonMemberElement(0, null, DisplayMode.Vertial)]
+        public MultiChoiceUi multiChoice;
     }
 }

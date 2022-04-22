@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using UiSon.ViewModel.Interface;
@@ -29,6 +30,8 @@ namespace UiSon.ViewModel
         public BorderedVM(IEditorModule decorated)
         {
             _decorated = decorated ?? throw new ArgumentNullException(nameof(decorated));
+
+            _decorated.PropertyChanged += Refresh;
         }
 
         public IEnumerable<DataGridColumn> GenerateColumns(string path) => _decorated.GenerateColumns(path + $".{nameof(Decorated)}");
@@ -42,5 +45,12 @@ namespace UiSon.ViewModel
         public object GetValueAs(Type type) => _decorated.GetValueAs(type);
 
         public void UpdateRefs() => _decorated.UpdateRefs();
+
+        private void Refresh(object? sender, PropertyChangedEventArgs e)
+        {
+            OnPropertyChanged(nameof(Name));
+            OnPropertyChanged(nameof(IsNameVisible));
+            OnPropertyChanged(nameof(Decorated));
+        }
     }
 }

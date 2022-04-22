@@ -7,9 +7,9 @@ using UiSon.Extension;
 namespace UiSon.Element
 {
     /// <summary>
-    /// A string <see cref="IElement"/>
+    /// A string <see cref="IUiSonElement"/>
     /// </summary>
-    public class StringElement : IElement
+    public class StringElement : NPCBase, IUiSonElement
     {
         /// <summary>
         /// The element's value
@@ -73,6 +73,7 @@ namespace UiSon.Element
                 else
                 {
                     _value = null;
+                    OnPropertyChanged(nameof(Value));
                     return true;
                 }
             }
@@ -84,6 +85,7 @@ namespace UiSon.Element
                 if (inputString == "null" && !_memberType.IsValueType)
                 {
                     _value = null;
+                    OnPropertyChanged(nameof(Value));
                     return true;
                 }
                 // validate input with regex, reject those failing
@@ -98,6 +100,7 @@ namespace UiSon.Element
             if (asString?.ParseAs(_valueType) != null)
             {
                 _value = asString;
+                OnPropertyChanged(nameof(Value));
                 return true;
             }
 

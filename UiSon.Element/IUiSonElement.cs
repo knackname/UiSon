@@ -1,13 +1,14 @@
 ﻿// UiSon, by Cameron Gale 2022
 
 using System;
+using System.ComponentModel;
 
 namespace UiSon.Element
 {
     /// <summary>
     /// Designates a class that holds a value and validates and manages the reading, writing, setting and getting of said value as any type.
     /// </summary>
-    public interface IElement
+    public interface IUiSonElement : INotifyPropertyChanged
     {
         /// <summary>
         /// If the element's value is nullable

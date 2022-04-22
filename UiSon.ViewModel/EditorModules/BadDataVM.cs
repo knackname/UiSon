@@ -9,7 +9,7 @@ using UiSon.ViewModel.Interface;
 namespace UiSon.ViewModel
 {
     /// <summary>
-    /// Dummy moduel, returned in the case of a failed ui moduel creation
+    /// Dummy moduel, returned in the case of a failed ui module creation
     /// </summary>
     public class BadDataVM : NPCBase, IEditorModule
     {

@@ -60,17 +60,24 @@ namespace UiSon
         private Notifier _notifier;
 
         /// <summary>
+        /// The template selector
+        /// </summary>
+        private ElementTemplateSelector _templateSelector;
+
+        /// <summary>
         /// Constructor
         /// </summary>
         public MainWindow()
         {
             _notifier = new Notifier();
 
+            _templateSelector = new ElementTemplateSelector();
+
             DataContext = this;
 
             InitializeComponent();
 
-            // the project needs the TabControl, so we make it after inition wpf stuff
+            // the project needs the TabControl, so we make it after inition wpf stuff. Causes wpf to throw a couple warnings until it updates
             NewProject();
 
             this.Closing += OnClosing;
@@ -88,7 +95,12 @@ namespace UiSon
             this.TabControl.Items.Clear();
 
             var elementManagers = new ObservableCollection<ElementManager>();
-            _project = new Project(new ProjectSave(), this.TabControl, new EditorModuleFactory(elementManagers, _notifier), elementManagers, _notifier);
+            _project = new Project(new ProjectSave(),
+                                   this.TabControl,
+                                   new EditorModuleFactory(elementManagers, _notifier, _templateSelector),
+                                   elementManagers,
+                                   _notifier);
+
             _project.PropertyChanged += (s, e) =>
             {
                 OnPropertyChanged(nameof(ProjectName));

@@ -78,6 +78,16 @@ namespace UiSon.Extension
                             result = (int)value;
                             return true;
                         }
+                        else if (value is float floatToInt)
+                        {
+                            result = (int)floatToInt;
+                            return true;
+                        }
+                        else if (value is double doubleToInt)
+                        {
+                            result = (int)doubleToInt;
+                            return true;
+                        }
                         break;
                     case ValueishType._uint:
                         if (value is uint asUint)
@@ -118,6 +128,11 @@ namespace UiSon.Extension
                         if (value is float asFloat)
                         {
                             result = asFloat;
+                            return true;
+                        }
+                        else if (value is double doubleToFloat)
+                        {
+                            result = (float)doubleToFloat;
                             return true;
                         }
                         break;

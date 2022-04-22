@@ -27,14 +27,17 @@ namespace UiSon.ViewModel
 
         private Notifier _notifier;
 
+        private ElementTemplateSelector _templateSelector;
+
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="elementManagers">The collection of element managers</param>
-        public EditorModuleFactory(IEnumerable<ElementManager> elementManagers, Notifier notifier)
+        public EditorModuleFactory(IEnumerable<ElementManager> elementManagers, Notifier notifier, ElementTemplateSelector templateSelector)
         {
             _elementManagers = elementManagers ?? throw new ArgumentNullException(nameof(elementManagers));
             _notifier = notifier ?? throw new ArgumentNullException(nameof(notifier));
+            _templateSelector = templateSelector ?? throw new ArgumentNullException(nameof(templateSelector));
         }
 
         /// <summary>
@@ -43,25 +46,18 @@ namespace UiSon.ViewModel
         /// <param name="type">Type the element represents</param>
         /// <param name="initialValue">Initial json string value of the element</param>
         /// <returns></returns>
-        public IEditorModule MakeMainElement(Type type, string initialValue = null)
+        public IEditorModule MakeMainElement(Type type)
         {
             _notifier.StartCashe();
             var mainElement = new GroupVM(MakeGroups(type));
             _notifier.EndCashe();
 
-            if (initialValue == null)
-            {
-                mainElement.Read(Activator.CreateInstance(type));
-            }
-            else
-            {
-                mainElement.Read(JsonSerializer.Deserialize(initialValue, type));
-            }
+            mainElement.Read(Activator.CreateInstance(type));
 
             return mainElement;
         }
 
-        public CollectionEntryVM MakeCollectionEntryVM(Collection<CollectionEntryVM> parent, Type entryType, Visibility modifyVisability, UiSonCollectionAttribute enumerableAttribute, IUiSonUiAttribute uiAttribute)
+        public CollectionEntryVM MakeCollectionEntryVM(Collection<CollectionEntryVM> parent, Type entryType, Visibility modifyVisability, UiSonCollectionAttribute enumerableAttribute, UiSonUiAttribute uiAttribute)
         {
             // don't apply enumerable attributes to non-collections
             if (entryType.GetInterfaces().FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ICollection<>)) == null)
@@ -146,16 +142,16 @@ namespace UiSon.ViewModel
         /// <param name="attribute">The attribute</param>
         /// <param name="info">The member info</param>
         /// <returns>An IEditorModule selected based on the attribute</returns>
-        private IEditorModule MakeEditorModule(IUiSonUiAttribute attribute, Type type, MemberInfo info = null, UiSonCollectionAttribute enumerableAttribute = null)
+        private IEditorModule MakeEditorModule(UiSonUiAttribute attribute, Type type, MemberInfo info = null, UiSonCollectionAttribute enumerableAttribute = null)
         {
             var name = info?.Name ?? type.Name;
 
-            // first check for enumerables
+            // first check for collections
             var hasCollectionInterface = type.GetInterfaces()
                 .FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ICollection<>)) != null;
-            var hasParamaterlessConstructor = type.GetConstructor(new Type[] { }) != null;
+            var hasParamaterlessConstructor = type.GetConstructor(Array.Empty<Type>()) != null;
 
-            // enumerable attributes
+            // collection attributes
             if (enumerableAttribute != null)
             {
                 if (!hasCollectionInterface)
@@ -194,7 +190,7 @@ namespace UiSon.ViewModel
                     {
                         return new BadDataVM($"{nameof(UiSonMultiChoiceUiAttribute)} {name}: Unable to find entry type for {type}");
                     }
-                    else if (!entryType.IsValueType && !entryType.IsAssignableFrom(typeof(string)) && entryType.GetConstructor(new Type[] { }) == null)
+                    else if (!entryType.IsValueType && !entryType.IsAssignableFrom(typeof(string)) && entryType.GetConstructor(Array.Empty<Type>()) == null)
                     {
                         return new BadDataVM($"{nameof(UiSonMultiChoiceUiAttribute)} {name}: {type}'s entry type lacks a parameterless constructor.");
                     }
@@ -241,11 +237,30 @@ namespace UiSon.ViewModel
             // then go by ui attribute
             if (attribute is UiSonTextEditUiAttribute textEdit)
             {
-                return new TextEditVM(new StringElement(type, info == null ? null : new ValueMemberInfo(info), textEdit.RegexValidation), name, textEdit.Priority);
+                return new TextEditVM(new StringElement(type,
+                                                        info == null ? null : new ValueMemberInfo(info),
+                                                        textEdit.RegexValidation),
+                                      name,
+                                      textEdit.Priority);
+            }
+            else if (attribute is UiSonSliderUiAttribute slider)
+            {
+                var element = new RangeElement(type,
+                                               info == null ? null : new ValueMemberInfo(info),
+                                               slider.Min,
+                                               slider.Max,
+                                               slider.Precision);
+
+                return new GroupVM(new List<IEditorModule>()
+                                   {new TextEditVM(element, null, 0),
+                                    new SliderVM(element, slider.IsVertical, null, 0, _templateSelector)},
+                                   name,
+                                   slider.Priority,
+                                   DisplayMode.Vertial,
+                                   false);
             }
             else if (attribute is UiSonElementSelectorUiAttribute eleSel)
             {
-                // find manager
                 var manager = _elementManagers.FirstOrDefault(x => x.ElementName == eleSel.ElementName);
 
                 if (manager == null)
@@ -312,7 +327,7 @@ namespace UiSon.ViewModel
                                             displayMode);
             }
 
-            if (type.GetConstructor(new Type[] { }) == null)
+            if (type.GetConstructor(Array.Empty<Type>()) == null)
             {
                 return new BadDataVM($"Member Element {name}: {type} lacks a parameterless constructor.");
             }
@@ -338,14 +353,14 @@ namespace UiSon.ViewModel
             MemberInfo info = null,
             bool modifiable = true,
             UiSonCollectionAttribute enumerableAttribute = null,
-            IUiSonUiAttribute uiAttribute = null,
+            UiSonUiAttribute uiAttribute = null,
             DisplayMode displayMode = DisplayMode.Vertial)
         {
             Func<IEditorModule> makeEditorFunc = null;
 
             name = name ?? type.Name;
 
-            if (type.GetConstructor(new Type[] { }) == null)
+            if (type.GetConstructor(Array.Empty<Type>()) == null)
             {
                 makeEditorFunc = () => new BadDataVM($"Collection Element for {name}: {type} lacks a parameterless constructor.");
             }
@@ -357,7 +372,7 @@ namespace UiSon.ViewModel
                 {
                     makeEditorFunc = () => new BadDataVM($"Collection Element for {name}: Unable to find entry type for {type}");
                 }
-                else if (!entryType.IsValueType && !entryType.IsAssignableFrom(typeof(string)) && entryType.GetConstructor(new Type[] { }) == null)
+                else if (!entryType.IsValueType && !entryType.IsAssignableFrom(typeof(string)) && entryType.GetConstructor(Array.Empty<Type>()) == null)
                 {
                     makeEditorFunc = () => new BadDataVM($"Collection Element for {name}: {type}'s entry type lacks a parameterless constructor.");
                 }
@@ -373,7 +388,8 @@ namespace UiSon.ViewModel
                                                             info == null ? null : new ValueMemberInfo(info),
                                                             modifiable,
                                                             displayMode,
-                                                            enumerableAttribute);
+                                                            enumerableAttribute,
+                                                            _templateSelector);
                 }
             }
 
@@ -515,7 +531,7 @@ namespace UiSon.ViewModel
             foreach (var member in members)
             {
                 UiSonCollectionAttribute enumerableAttribute = null;
-                IUiSonUiAttribute uiAttribute = null;
+                UiSonUiAttribute uiAttribute = null;
 
                 // grab attributes
                 foreach (var att in member.GetCustomAttributes())
@@ -524,7 +540,7 @@ namespace UiSon.ViewModel
                     {
                         enumerableAttribute = enumAtt;
                     }
-                    else if (att is IUiSonUiAttribute uiAtt)
+                    else if (att is UiSonUiAttribute uiAtt)
                     {
                         uiAttribute = uiAtt;
                     }
@@ -551,7 +567,7 @@ namespace UiSon.ViewModel
                 }
                 else if (enumerableAttribute != null)
                 {
-                    _notifier.Notify($"{member} lacks a {nameof(IUiSonUiAttribute)}", "Standalone UiSonEnumerableAttribute");
+                    _notifier.Notify($"{member} lacks a {nameof(UiSonUiAttribute)}", "Standalone UiSonEnumerableAttribute");
                 }
             }
 

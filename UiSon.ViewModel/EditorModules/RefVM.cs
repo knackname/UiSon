@@ -38,8 +38,12 @@ namespace UiSon.ViewModel
 
         public override bool SetValue(object value)
         {
-            base.Read(value);
-            return true;
+            if (value.GetType() == _type)
+            {
+                base.Read(value);
+                return true;
+            }
+            return false;
         }
 
         public override object GetValueAs(Type type)

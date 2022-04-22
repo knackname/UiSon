@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -43,11 +44,11 @@ namespace UiSon.ViewModel
 
         public IEnumerable<string> Options => _element.IsNullable ? _converter.Keys.Concat(new string[] {"null"}) : _converter.Keys;
 
-        private IElement _element;
+        private IUiSonElement _element;
         private Map<string, T> _converter;
         private bool _badValue = false;
 
-        public SelectorVM(IElement element,
+        public SelectorVM(IUiSonElement element,
                           string name, int priority,
                           Map<string, T> converter)
         {
@@ -56,6 +57,8 @@ namespace UiSon.ViewModel
 
             Name = name;
             Priority = priority;
+
+            _element.PropertyChanged += Refresh;
         }
 
         /// <summary>
@@ -151,15 +154,21 @@ namespace UiSon.ViewModel
                 _badValue = false;
             }
 
-            OnPropertyChanged(nameof(Value));
-            OnPropertyChanged(nameof(TextColor));
-
             return result;
         }
 
         public void UpdateRefs()
         {
             // no refs to update
+        }
+
+        private void Refresh(object? sender, PropertyChangedEventArgs e)
+        {
+            OnPropertyChanged(nameof(Name));
+            OnPropertyChanged(nameof(IsNameVisible));
+            OnPropertyChanged(nameof(Value));
+            OnPropertyChanged(nameof(TextColor));
+            OnPropertyChanged(nameof(Options));
         }
     }
 }
