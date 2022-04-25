@@ -42,7 +42,7 @@ namespace UiSon.ViewModel
 
         public Brush TextColor => Value == "null" ? UiSonColors.Red : UiSonColors.Black;
 
-        public IEnumerable<string> Options => _element.IsNullable ? _converter.Keys.Concat(new string[] {"null"}) : _converter.Keys;
+        public IEnumerable<string> Options => _converter.Keys;
 
         private IUiSonElement _element;
         private Map<string, T> _converter;
@@ -58,7 +58,9 @@ namespace UiSon.ViewModel
             Name = name;
             Priority = priority;
 
-            _element.PropertyChanged += Refresh;
+            _element.PropertyChanged += OnElementPropertyChanged;
+
+            SetValue(Options.FirstOrDefault());
         }
 
         /// <summary>
@@ -162,13 +164,24 @@ namespace UiSon.ViewModel
             // no refs to update
         }
 
-        private void Refresh(object? sender, PropertyChangedEventArgs e)
+        private void OnElementPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            OnPropertyChanged(nameof(Name));
-            OnPropertyChanged(nameof(IsNameVisible));
-            OnPropertyChanged(nameof(Value));
-            OnPropertyChanged(nameof(TextColor));
-            OnPropertyChanged(nameof(Options));
+            switch (e.PropertyName)
+            {
+                case nameof(IUiSonElement.Value):
+                    OnPropertyChanged(nameof(Value));
+                    OnPropertyChanged(nameof(TextColor));
+                    break;
+            }
+        }
+
+        public bool IdSetValue(object value)
+        {
+            if (value != null && value.GetType() == typeof(T))
+            {
+                return SetValue(_converter.Reverse[(T)value]);
+            }
+            return false;
         }
     }
 }

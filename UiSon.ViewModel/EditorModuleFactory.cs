@@ -5,12 +5,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
-using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Windows;
 using UiSon.Attribute;
 using UiSon.Element;
 using UiSon.Extension;
-using UiSon.Notify;
+using UiSon.Notify.Interface;
 using UiSon.ViewModel.Interface;
 
 namespace UiSon.ViewModel
@@ -25,19 +25,25 @@ namespace UiSon.ViewModel
         /// </summary>
         private readonly IEnumerable<ElementManager> _elementManagers;
 
-        private Notifier _notifier;
+        private INotifier _notifier;
 
         private ElementTemplateSelector _templateSelector;
+
+        private Dictionary<string, string[]> _stringArrays;
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="elementManagers">The collection of element managers</param>
-        public EditorModuleFactory(IEnumerable<ElementManager> elementManagers, Notifier notifier, ElementTemplateSelector templateSelector)
+        public EditorModuleFactory(IEnumerable<ElementManager> elementManagers,
+                                   INotifier notifier,
+                                   ElementTemplateSelector templateSelector,
+                                   Dictionary<string, string[]> stringArrays)
         {
             _elementManagers = elementManagers ?? throw new ArgumentNullException(nameof(elementManagers));
             _notifier = notifier ?? throw new ArgumentNullException(nameof(notifier));
             _templateSelector = templateSelector ?? throw new ArgumentNullException(nameof(templateSelector));
+            _stringArrays = stringArrays ?? throw new ArgumentNullException(nameof(stringArrays));
         }
 
         /// <summary>
@@ -195,30 +201,23 @@ namespace UiSon.ViewModel
                         return new BadDataVM($"{nameof(UiSonMultiChoiceUiAttribute)} {name}: {type}'s entry type lacks a parameterless constructor.");
                     }
 
-                    var optionUi = new List<CheckboxVM>();
-
-                    var options = multi.Options;
-                    if (options == null)
+                    if (multi.OptionsArrayName != null && _stringArrays.ContainsKey(multi.OptionsArrayName))
                     {
-                        if (multi.EnumType == null
-                            || !multi.EnumType.IsEnum)
-                        {
-                            return new BadDataVM($"{nameof(UiSonMultiChoiceUiAttribute)} {name}: {multi.EnumType?.ToString() ?? "null"} is not an Enum type");
-                        }
-                        else
-                        {
-                            options = Enum.GetNames(multi.EnumType).ToArray();
-                        }
-                    }
+                        var optionUi = new List<CheckboxVM>();
 
-                    // make checkboxes for each option
-                    foreach (var option in options)
+                        // make checkboxes for each option
+                        foreach (var option in _stringArrays[multi.OptionsArrayName])
+                        {
+                            optionUi.Add(new CheckboxVM(new ValueElement<bool>(typeof(bool), null), option, 0));
+                        }
+
+                        return new BorderedVM(new MultiChoiceVM(optionUi, type, entryType, info == null ? null : new ValueMemberInfo(info),
+                                                 name, multi.Priority, multi.DisplayMode));
+                    }
+                    else
                     {
-                        optionUi.Add(new CheckboxVM(new ValueElement<bool>(typeof(bool), null), option, 0));
+                        return new BadDataVM($"{nameof(UiSonMultiChoiceUiAttribute)} {name}: {multi.OptionsArrayName ?? "null"} is not an exsisting {nameof(UiSonStringArrayAttribute)}.");
                     }
-
-                    return new BorderedVM( new MultiChoiceVM(optionUi, type, entryType, info == null ? null : new ValueMemberInfo(info),
-                                             name, multi.Priority, multi.DisplayMode));
                 }
 
                 // default to using a normal collection ui
@@ -265,16 +264,78 @@ namespace UiSon.ViewModel
 
                 if (manager == null)
                 {
-                    return new BadDataVM($"{nameof(UiSonElementSelectorUiAttribute)}: Unable to find UiSonElement {eleSel.ElementName}");
+                    return new BadDataVM($"{nameof(UiSonElementSelectorUiAttribute)} {name}: {eleSel.ElementName} is not an existing {nameof(UiSonElementAttribute)}.");
                 }
 
-                return MakeElementSelector(manager, type, eleSel.IdentifierTagName, eleSel.Options, eleSel.Identifiers, eleSel.Priority, info);
+                if (eleSel.OptionsArrayName == null)
+                {
+                    var nullOption = new string[] { "null" };
+
+                    return MakeElementSelector(manager,
+                                               type,
+                                               eleSel.IdentifierTagName,
+                                               nullOption,
+                                               nullOption,
+                                               eleSel.Priority,
+                                               info);
+                }
+                else if (_stringArrays.ContainsKey(eleSel.OptionsArrayName))
+                {
+                    if (eleSel.IdentifiersArrayName == null)
+                    {
+                        return MakeElementSelector(manager,
+                                                   type,
+                                                   eleSel.IdentifierTagName,
+                                                   _stringArrays[eleSel.OptionsArrayName],
+                                                   _stringArrays[eleSel.OptionsArrayName],
+                                                   eleSel.Priority,
+                                                   info);
+                    }
+                    else if (_stringArrays.ContainsKey(eleSel.IdentifiersArrayName))
+                    {
+                        return MakeElementSelector(manager,
+                                                   type,
+                                                   eleSel.IdentifierTagName,
+                                                   _stringArrays[eleSel.OptionsArrayName],
+                                                   _stringArrays[eleSel.IdentifiersArrayName],
+                                                   eleSel.Priority,
+                                                   info);
+                    }
+                    else
+                    {
+                        return new BadDataVM($"{nameof(UiSonMultiChoiceUiAttribute)} {name}: {eleSel.IdentifiersArrayName ?? "null"} is not an exsisting {nameof(UiSonStringArrayAttribute)}.");
+                    }
+                }
+                else
+                {
+                    return new BadDataVM($"{nameof(UiSonMultiChoiceUiAttribute)} {name}: {eleSel.OptionsArrayName ?? "null"} is not an exsisting {nameof(UiSonStringArrayAttribute)}.");
+                }
             }
             else if (attribute is UiSonSelectorUiAttribute sel)
             {
-                return new SelectorVM<string>(new StringElement(type, info == null ? null : new ValueMemberInfo(info)),
-                                             name, sel.Priority,
-                                             MakeStringSelectorMap(sel.Options, sel.Identifiers ?? sel.Options, type));
+                if (sel.OptionsArrayName != null && _stringArrays.ContainsKey(sel.OptionsArrayName))
+                { 
+                    if (sel.IdentifiersArrayName == null)
+                    {
+                        return new SelectorVM<string>(new StringElement(type, info == null ? null : new ValueMemberInfo(info)),
+                                                      name,
+                                                      sel.Priority,
+                                                      MakeStringSelectorMap(_stringArrays[sel.OptionsArrayName], _stringArrays[sel.OptionsArrayName], type));
+                    }
+                    else if (_stringArrays.ContainsKey(sel.IdentifiersArrayName))
+                    {
+                        return new SelectorVM<string>(new StringElement(type, info == null ? null : new ValueMemberInfo(info)),
+                                                      name,
+                                                      sel.Priority,
+                                                      MakeStringSelectorMap(_stringArrays[sel.OptionsArrayName], _stringArrays[sel.IdentifiersArrayName], type));
+                    }
+                    else
+                    {
+                        return new BadDataVM($"{nameof(UiSonSelectorUiAttribute)} {name}: {sel.IdentifiersArrayName ?? "null"} is not an exsisting {nameof(UiSonStringArrayAttribute)}.");
+                    }
+                }
+
+                return new BadDataVM($"{nameof(UiSonSelectorUiAttribute)} {name}: {sel.OptionsArrayName ?? "null"} is not an exsisting {nameof(UiSonStringArrayAttribute)}.");
             }
             else if (attribute is UiSonCheckboxUiAttribute chk)
             {
@@ -286,20 +347,6 @@ namespace UiSon.ViewModel
                 {
                     return new BadDataVM($"{nameof(UiSonCheckboxUiAttribute)} {name}: {type?.ToString() ?? "null"} is not compatable");
                 }
-            }
-            else if (attribute is UiSonEnumSelectorUiAttribute enums)
-            {
-                if (enums.EnumType != null)
-                {
-                    var strippedType = Nullable.GetUnderlyingType(enums.EnumType) ?? enums.EnumType;
-
-                    if (strippedType.IsEnum)
-                    {
-                        return MakeEnumSelector(enums.EnumType, type, name, enums.Priority, info);
-                    }
-                }
-
-                return new BadDataVM($"{nameof(UiSonEnumSelectorUiAttribute)} {name}: {type?.ToString() ?? "null"} is not an enum type");
             }
             else if (attribute is UiSonMemberElementAttribute member)
             {
@@ -443,13 +490,15 @@ namespace UiSon.ViewModel
 
             if (identifierTagName != null)
             {
-                foreach (var member in manager.ManagedType.GetMembers())
+                var members = manager.ManagedType.GetMembers().Where(x => x.MemberType == MemberTypes.Field || x.MemberType == MemberTypes.Property);
+
+                foreach (var member in members)
                 {
                     var identifierTag = member.GetCustomAttributes(typeof(UiSonTagAttribute), false)
                                           .Select(x => x as UiSonTagAttribute)
                                           .FirstOrDefault(x => x.Name == identifierTagName);
 
-                    if (identifierTag != null && member.GetUnderlyingType() == valueType)
+                    if (identifierTag != null && valueType.IsAssignableFrom(member.GetUnderlyingType()))
                     {
                         identifingMember = member;
                         break;
@@ -574,12 +623,15 @@ namespace UiSon.ViewModel
                 }
             }
 
-            // if no attributes, then guess at all members
+            // if no attributes, then guess at all fields (includes backing fields for properties)
             if (editors.Count == 0 && groups.Count == 0)
             {
-                foreach (var member in members)
+                foreach (var member in members.Where(x => x.MemberType == MemberTypes.Field))
                 {
-                    editors.Add(MakeEditorModule(member.GetUnderlyingType(), member.Name, 0, member));
+                    // trim the backingfield off the name if nessisarry
+                    var name = Regex.IsMatch(member.Name, "<.+>k__BackingField") ? member.Name.Substring(1, member.Name.Length - 17) : member.Name;
+
+                    editors.Add(MakeEditorModule(member.GetUnderlyingType(), name, 0, member));
                 }
             }
             // otherwise generate the groups
@@ -627,11 +679,19 @@ namespace UiSon.ViewModel
 
             while(optionIt.MoveNext() && idIt.MoveNext())
             {
-                var parsed = idIt.Current.ParseAs(underlyingType);
+                
 
-                if (optionIt.Current != null && parsed != null)
+                if (idIt.Current == "null" && (!underlyingType.IsValueType || Nullable.GetUnderlyingType(underlyingType) != null))
                 {
-                    newMap.Add(optionIt.Current, idIt.Current);
+                    newMap.Add("null", "null");
+                }
+                else
+                {
+                    var parsed = idIt.Current.ParseAs(underlyingType);
+                    if (optionIt.Current != null && parsed != null)
+                    {
+                        newMap.Add(optionIt.Current, idIt.Current);
+                    }
                 }
             }
 
@@ -649,6 +709,8 @@ namespace UiSon.ViewModel
         {
             var newMap = new Map<string, T>();
 
+            var type = typeof(T);
+
             if (options == null || identifiers == null)
             {
                 return newMap;
@@ -659,10 +721,17 @@ namespace UiSon.ViewModel
 
             while (optionIt.MoveNext() && idIt.MoveNext())
             {
-                var parsed = idIt.Current.ParseAs(typeof(T));
-                if (optionIt.Current != null && parsed != null)
+                if (idIt.Current == "null" && (!type.IsValueType || Nullable.GetUnderlyingType(type) != null))
                 {
-                    newMap.Add(optionIt.Current, (T)parsed);
+                    newMap.Add(optionIt.Current, default(T));
+                }
+                else
+                {
+                    var parsed = idIt.Current?.ParseAs(type);
+                    if (optionIt.Current != null && parsed != null)
+                    {
+                        newMap.Add(optionIt.Current, (T)parsed);
+                    }
                 }
             }
 

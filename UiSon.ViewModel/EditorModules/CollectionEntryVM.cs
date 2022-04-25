@@ -36,7 +36,7 @@ namespace UiSon.ViewModel
             _decorated = decorated ?? throw new ArgumentNullException(nameof(decorated));
             ModifyVisibility = modifyVisibility;
 
-            _decorated.PropertyChanged += Refresh;
+            _decorated.PropertyChanged += (s,a) => OnPropertyChanged(nameof(Decorated));
         }
 
         public ICommand RemoveElement => new UiSonActionCommand((s) => _parent.Remove(this));
@@ -52,12 +52,5 @@ namespace UiSon.ViewModel
         public bool SetValue(object value) => _decorated.SetValue(value);
 
         public void UpdateRefs() => _decorated.UpdateRefs();
-
-        private void Refresh(object? sender, PropertyChangedEventArgs e)
-        {
-            OnPropertyChanged(nameof(Name));
-            OnPropertyChanged(nameof(IsNameVisible));
-            OnPropertyChanged(nameof(Decorated));
-        }
     }
 }

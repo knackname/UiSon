@@ -97,9 +97,9 @@ namespace UiSon
             var elementManagers = new ObservableCollection<ElementManager>();
             _project = new Project(new ProjectSave(),
                                    this.TabControl,
-                                   new EditorModuleFactory(elementManagers, _notifier, _templateSelector),
                                    elementManagers,
-                                   _notifier);
+                                   _notifier,
+                                   _templateSelector);
 
             _project.PropertyChanged += (s, e) =>
             {

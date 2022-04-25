@@ -42,7 +42,7 @@ namespace UiSon.ViewModel
             Priority = priority;
             _element = element ?? throw new ArgumentNullException(nameof(element));
 
-            _element.PropertyChanged += Refresh;
+            _element.PropertyChanged += OnElementPropertyChanged;
         }
 
         /// <summary>
@@ -95,12 +95,15 @@ namespace UiSon.ViewModel
             // no refs to update
         }
 
-        private void Refresh(object? sender, PropertyChangedEventArgs e)
+        private void OnElementPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            OnPropertyChanged(nameof(Name));
-            OnPropertyChanged(nameof(IsNameVisible));
-            OnPropertyChanged(nameof(Value));
-            OnPropertyChanged(nameof(TextColor));
+            switch (e.PropertyName)
+            {
+                case nameof(IUiSonElement.Value):
+                    OnPropertyChanged(nameof(Value));
+                    OnPropertyChanged(nameof(TextColor));
+                    break;
+            }
         }
     }
 }

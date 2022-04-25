@@ -11,6 +11,11 @@ namespace UiSon.Element
     public interface IUiSonElement : INotifyPropertyChanged
     {
         /// <summary>
+        /// The element's value.
+        /// </summary>
+        object Value { get; }
+
+        /// <summary>
         /// If the element's value is nullable
         /// </summary>
         bool IsNullable { get; }

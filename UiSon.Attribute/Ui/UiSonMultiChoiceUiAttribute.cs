@@ -16,12 +16,7 @@ namespace UiSon.Attribute
         /// <summary>
         /// Options to select from.
         /// </summary>
-        public string[] Options { get; private set; }
-
-        /// <summary>
-        /// Enum type to generate options from.
-        /// </summary>
-        public Type EnumType { get; private set; }
+        public string OptionsArrayName { get; private set; }
 
         /// <summary>
         /// The display mode for the options.
@@ -31,32 +26,15 @@ namespace UiSon.Attribute
         /// <summary>
         /// Constructor with options array.
         /// </summary>
-        /// <param name="options">Options to select from.</param>
+        /// <param name="optionsArrayName">Name of array with options to select from.</param>
         /// <param name="priority">The display priority of this Ui.</param>
         /// <param name="groupName">The name of the group this Ui belongs to.</param>
         /// <param name="displayMode">The display mode for the options.</param>
-        public UiSonMultiChoiceUiAttribute(string[] options,
+        public UiSonMultiChoiceUiAttribute(string optionsArrayName,
                                            int priority = 0, string groupName = null,
                                            DisplayMode displayMode = DisplayMode.Wrap)
         {
-            Options = options;
-            GroupName = groupName;
-            Priority = priority;
-            DisplayMode = displayMode;
-        }
-
-        /// <summary>
-        /// Constructor with options taken from an enum.
-        /// </summary>
-        /// <param name="enumType">Enum type to generate options to select from.</param>
-        /// <param name="priority">The display priority of this Ui.</param>
-        /// <param name="groupName">The name of the group this Ui belongs to.</param>
-        /// <param name="displayMode">The display mode for the options.</param>
-        public UiSonMultiChoiceUiAttribute(Type enumType,
-                                           int priority = 0, string groupName = null,
-                                           DisplayMode displayMode = DisplayMode.Wrap)
-        {
-            EnumType = enumType;
+            OptionsArrayName = optionsArrayName;
             GroupName = groupName;
             Priority = priority;
             DisplayMode = displayMode;

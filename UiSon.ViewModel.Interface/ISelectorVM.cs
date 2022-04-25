@@ -19,6 +19,8 @@ namespace UiSon.ViewModel.Interface
         void Read(object instance);
         void Write(object instance);
         bool SetValue(object value);
+
+        bool IdSetValue(object value);
         object GetValueAs(Type type);
         IEnumerable<DataGridColumn> GenerateColumns(string path);
     }

@@ -74,7 +74,7 @@ namespace UiSon.ViewModel
             };
             manager.Elements.CollectionChanged += (s, e) => OnPropertyChanged(nameof(Options));
 
-            _element.PropertyChanged += Refresh;
+            _element.PropertyChanged += OnSelectorPropertyChanged;
         }
 
         public bool SetValue(object value)
@@ -168,7 +168,7 @@ namespace UiSon.ViewModel
                 // Finding just the first one with the same information makes it functionally the same on save, but could change the exact selection. Make a note of this in user docs.
                 // That extra info could theoretically be saved in the project file, but i'd like to avaid that and allow the user to edit the jsons in any way they wish and not have to worry
                 // about making sure they update the project file.
-                Value = _manager.Elements.FirstOrDefault(x =>
+                var found = _manager.Elements.FirstOrDefault(x =>
                 {
                     var hold = Activator.CreateInstance(_manager.ManagedType);
 
@@ -177,6 +177,15 @@ namespace UiSon.ViewModel
                     // the string cast makes them comparable. Probably a better way...
                     return _identifingMember.GetValue(hold)?.ToString() == _readValue?.ToString();
                 })?.Name;
+
+                if (found != null)
+                {
+                    Value = found;
+                }
+                else
+                {
+                    IdSetValue(_readValue);
+                }
             }
         }
 
@@ -204,12 +213,32 @@ namespace UiSon.ViewModel
             return null;
         }
 
-        private void Refresh(object? sender, PropertyChangedEventArgs e)
+        private void OnSelectorPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            OnPropertyChanged(nameof(Name));
-            OnPropertyChanged(nameof(IsNameVisible));
-            OnPropertyChanged(nameof(Value));
-            OnPropertyChanged(nameof(Options));
+            switch (e.PropertyName)
+            {
+                case nameof(ISelectorVM.Name):
+                    OnPropertyChanged(nameof(Name));
+                    break;
+                case nameof(ISelectorVM.Priority):
+                    OnPropertyChanged(nameof(Priority));
+                    break;
+                case nameof(ISelectorVM.Value):
+                    OnPropertyChanged(nameof(Value));
+                    break;
+                case nameof(ISelectorVM.Options):
+                    OnPropertyChanged(nameof(Options));
+                    break;
+                case nameof(ISelectorVM.TextColor):
+                    OnPropertyChanged(nameof(TextColor));
+                    break;
+                case nameof(ISelectorVM.IsNameVisible):
+                    OnPropertyChanged(nameof(IsNameVisible));
+                    break;
+            }
+
         }
+
+        public bool IdSetValue(object value) => _selector.IdSetValue(value);
     }
 }

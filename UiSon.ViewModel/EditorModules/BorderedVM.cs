@@ -31,7 +31,7 @@ namespace UiSon.ViewModel
         {
             _decorated = decorated ?? throw new ArgumentNullException(nameof(decorated));
 
-            _decorated.PropertyChanged += Refresh;
+            _decorated.PropertyChanged += OnDecoratedPropertyChanged;
         }
 
         public IEnumerable<DataGridColumn> GenerateColumns(string path) => _decorated.GenerateColumns(path + $".{nameof(Decorated)}");
@@ -46,11 +46,20 @@ namespace UiSon.ViewModel
 
         public void UpdateRefs() => _decorated.UpdateRefs();
 
-        private void Refresh(object? sender, PropertyChangedEventArgs e)
+        private void OnDecoratedPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            OnPropertyChanged(nameof(Name));
-            OnPropertyChanged(nameof(IsNameVisible));
-            OnPropertyChanged(nameof(Decorated));
+            switch(e.PropertyName)
+            {
+                case nameof(IEditorModule.Name):
+                    OnPropertyChanged(nameof(Name));
+                    break;
+                case nameof(IEditorModule.IsNameVisible):
+                    OnPropertyChanged(nameof(IsNameVisible));
+                    break;
+                case nameof(IEditorModule.Priority):
+                    OnPropertyChanged(nameof(Priority));
+                    break;
+            }
         }
     }
 }

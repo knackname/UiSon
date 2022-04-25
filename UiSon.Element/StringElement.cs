@@ -14,7 +14,7 @@ namespace UiSon.Element
         /// <summary>
         /// The element's value
         /// </summary>
-        public string Value => _value;
+        public object Value => _value;
         private string _value = null;
 
         /// <summary>
@@ -66,15 +66,15 @@ namespace UiSon.Element
             // null
             if (input == null)
             {
-                if (_memberType.IsValueType)
-                {
-                    return false;
-                }
-                else
+                if (IsNullable)
                 {
                     _value = null;
                     OnPropertyChanged(nameof(Value));
                     return true;
+                }
+                else
+                {
+                    return false;
                 }
             }
 

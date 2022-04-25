@@ -34,6 +34,7 @@ namespace UiSon
 
         private Collection<ElementManager> _elementManagers;
         private List<ElementManager> _myElementManagers = new List<ElementManager>();
+        private Dictionary<string, string[]> _stringArrays;
 
         private TabControl _controller;
         private EditorModuleFactory _elementFactory;
@@ -47,7 +48,13 @@ namespace UiSon
         /// <param name="elementManagers"></param>
         /// <param name="controller"></param>
         /// <param name="elementFactory"></param>
-        public AssemblyVM(string path, Project parent, Collection<ElementManager> elementManagers, TabControl controller, EditorModuleFactory elementFactory, INotifier notifier)
+        public AssemblyVM(string path,
+                         Project parent,
+                         Collection<ElementManager> elementManagers,
+                         TabControl controller,
+                         Dictionary<string, string[]> stringArrays,
+                         EditorModuleFactory elementFactory,
+                         INotifier notifier)
         {
             _path = path;
             _parent = parent ?? throw new ArgumentNullException(nameof(parent));
@@ -55,6 +62,7 @@ namespace UiSon
             _controller = controller ?? throw new ArgumentNullException(nameof(controller));
             _elementFactory = elementFactory ?? throw new ArgumentNullException(nameof(elementFactory));
             _notifier = notifier ?? throw new ArgumentNullException(nameof(notifier));
+            _stringArrays = stringArrays ?? throw new ArgumentNullException(nameof(stringArrays));
 
             RefreshElements();
         }
@@ -67,21 +75,43 @@ namespace UiSon
             var dll = Assembly.LoadFrom(_path);
             foreach (Type type in dll.GetTypes())
             {
+                // check for string arrays
+                var strArrays = type.GetCustomAttributes(typeof(UiSonStringArrayAttribute)) as IEnumerable<UiSonStringArrayAttribute>;
+
+                if (strArrays != null)
+                {
+                    foreach (var array in strArrays)
+                    {
+                        if (array.Name != null)
+                        {
+                            if (!_stringArrays.ContainsKey(array.Name))
+                            {
+                                _stringArrays.Add(array.Name, null);
+                            }
+
+                            _stringArrays[array.Name] = array.Array;
+                        }
+                    }
+                }
+
                 foreach (var attribute in System.Attribute.GetCustomAttributes(type))
                 {
                     if (attribute is UiSonElementAttribute ele)
                     {
-                        // make sure it has the correct constructor, one without params isn't needed
-                        if (!_elementManagers.Any(x => x.ElementName == type.Name)
-                            && type.GetConstructor(new Type[] { }) != null)
+                        if (!_elementManagers.Any(x => x.ElementName == type.Name))
                         {
-                            var newElementManager = new ElementManager(type, _controller, _elementFactory, ele);
-                            _elementManagers.Add(newElementManager);
-                            _myElementManagers.Add(newElementManager);
-                        }
-                        else
-                        {
-                            _notifier.Notify($"{type} lacks a parameterless constructor.", $"Invalid {nameof(UiSonElementAttribute)}");
+                            // make sure it a parameteless constructor
+                            if (type.GetConstructor(new Type[] { }) != null)
+                            {
+                                // create manager
+                                var newElementManager = new ElementManager(type, _controller, _elementFactory, ele);
+                                _elementManagers.Add(newElementManager);
+                                _myElementManagers.Add(newElementManager);
+                            }
+                            else
+                            {
+                                _notifier.Notify($"{type} lacks a parameterless constructor.", $"Invalid {nameof(UiSonElementAttribute)}");
+                            }
                         }
                         break;
                     }

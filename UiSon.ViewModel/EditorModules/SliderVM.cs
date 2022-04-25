@@ -43,7 +43,7 @@ namespace UiSon.ViewModel
             Priority = priority;
             Name = name;
 
-            _element.PropertyChanged += Refresh;
+            _element.PropertyChanged += OnElementPropertyChanged;
         }
 
         public IEnumerable<DataGridColumn> GenerateColumns(string path)
@@ -84,11 +84,20 @@ namespace UiSon.ViewModel
             // no refs to update
         }
 
-        private void Refresh(object? sender, PropertyChangedEventArgs e)
+        private void OnElementPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            OnPropertyChanged(nameof(Name));
-            OnPropertyChanged(nameof(IsNameVisible));
-            OnPropertyChanged(nameof(Value));
+            switch (e.PropertyName)
+            {
+                case nameof(RangeElement.Value):
+                    OnPropertyChanged(nameof(Value));
+                    break;
+                case nameof(RangeElement.Min):
+                    OnPropertyChanged(nameof(Min));
+                    break;
+                case nameof(RangeElement.Max):
+                    OnPropertyChanged(nameof(Max));
+                    break;
+            }
         }
     }
 }

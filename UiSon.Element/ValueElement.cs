@@ -15,7 +15,7 @@ namespace UiSon.Element
         /// <summary>
         /// The element's value
         /// </summary>
-        public T? Value => _value;
+        public object Value => _value;
         protected T? _value = null;
 
         /// <summary>

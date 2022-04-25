@@ -19,7 +19,7 @@ namespace UiSon.Attribute
         /// <param name="groupName">The name of the group this Ui belongs to.</param>
         /// <param name="displayMode">The display mode for the member's ui moduels.</param>
         public UiSonMemberElementAttribute(int priority = 0, string groupName = null,
-                                        DisplayMode displayMode = DisplayMode.Vertial)
+                                           DisplayMode displayMode = DisplayMode.Vertial)
         {
             GroupName = groupName;
             Priority = priority;

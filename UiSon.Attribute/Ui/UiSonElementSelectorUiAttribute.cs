@@ -37,8 +37,9 @@ namespace UiSon.Attribute
         public UiSonElementSelectorUiAttribute(string elementName,
                                              int priority = 0, string groupName = null,
                                              string identifierTagName = null,
-                                             string[] additionalOptions = null, string[] identifiers = null)
-            : base(additionalOptions, priority, groupName, identifiers)
+                                             string additionalOptionsArrayName = null,
+                                             string additionalOptionsIdentifiersArrayName = null)
+            : base(additionalOptionsArrayName, priority, groupName, additionalOptionsIdentifiersArrayName)
         {
             ElementName = elementName ?? throw new ArgumentNullException(nameof(elementName));
             IdentifierTagName = identifierTagName;

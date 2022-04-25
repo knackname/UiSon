@@ -182,9 +182,9 @@ namespace UiSon.ViewModel
                     // set to null so this can be cleaned up, it'll only be used this once
                     MakeEditor = null;
 
-                    Decorated.PropertyChanged += Refresh;
+                    Decorated.PropertyChanged += (s,e) => OnPropertyChanged(nameof(Decorated));
 
-                    Refresh(null, null);
+                    OnPropertyChanged(nameof(Decorated));
                 }
 
                 //attempt to set value
@@ -201,10 +201,5 @@ namespace UiSon.ViewModel
         public object GetValueAs(Type type) => Decorated?.GetValueAs(type);
 
         public void UpdateRefs() => Decorated?.UpdateRefs();
-
-        private void Refresh(object? sender, PropertyChangedEventArgs e)
-        {
-            OnPropertyChanged(nameof(Decorated));
-        }
     }
 }

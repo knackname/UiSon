@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text.Json;
 using System.Windows.Controls;
 using UiSon.Notify.Interface;
@@ -91,28 +90,29 @@ namespace UiSon
         /// </summary>
         private TabControl _tabController;
 
-        /// <summary>
-        /// editor module factory
-        /// </summary>
-        private EditorModuleFactory _editorModuleFactory;
-
         private INotifier _notifier;
+
+        private ElementTemplateSelector _templateSelector;
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="projectSave">project save file</param>
         /// <param name="tabController">tab controller</param>
-        /// <param name="editorModuleFactory">factory for making editor modules</param>
         /// <param name="elementManagers">collection of element managers</param>
         /// <param name="notifier">The notifier</param>
-        public Project(ProjectSave projectSave, TabControl tabController, EditorModuleFactory editorModuleFactory, Collection<ElementManager> elementManagers, INotifier notifier)
+        /// <param name="templateSelector">The template selector</param>
+        public Project(ProjectSave projectSave,
+                       TabControl tabController,
+                       Collection<ElementManager> elementManagers,
+                       INotifier notifier,
+                       ElementTemplateSelector templateSelector)
         {
             _projectSave = projectSave ?? throw new ArgumentNullException(nameof(projectSave));
             _tabController = tabController ?? throw new ArgumentNullException(nameof(tabController));
             _elementManagers = elementManagers ?? throw new ArgumentNullException(nameof(elementManagers));
-            _editorModuleFactory = editorModuleFactory ?? throw new ArgumentNullException(nameof(editorModuleFactory));
             _notifier = notifier ?? throw new ArgumentNullException(nameof(notifier));
+            _templateSelector = templateSelector ?? throw new ArgumentNullException(nameof(templateSelector));
         }
 
         /// <summary>
@@ -128,8 +128,16 @@ namespace UiSon
                 assembly.RefreshElements();
             }
 
-            // add new assembly VM
-            _assemblies.Add(new AssemblyVM(path, this, _elementManagers, _tabController, _editorModuleFactory, _notifier));
+            // add new assembly VM with its components
+            Dictionary<string, string[]> stringArrays = new Dictionary<string, string[]>();
+
+            _assemblies.Add(new AssemblyVM(path,
+                                           this,
+                                           _elementManagers,
+                                           _tabController,
+                                           stringArrays,
+                                           new EditorModuleFactory(_elementManagers, _notifier, _templateSelector, stringArrays),
+                                           _notifier));
         }
 
         /// <summary>
@@ -170,6 +178,7 @@ namespace UiSon
 
             Name = Path.GetFileName(path);
             _projectFilePath = Path.GetDirectoryName(path);
+            OnPropertyChanged(nameof(LogoPath));
 
             foreach (var assembly in _projectSave.Assemblies)
             {

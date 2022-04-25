@@ -13,12 +13,12 @@ namespace UiSon.Attribute
         /// <summary>
         /// Options to select from. 
         /// </summary>
-        public string[] Options { get; private set; }
+        public string OptionsArrayName { get; private set; }
 
         /// <summary>
         /// String identifiers to be paired with the additional options.
         /// </summary>
-        public string[] Identifiers { get; private set; }
+        public string IdentifiersArrayName { get; private set; }
 
         /// <summary>
         /// Constructor
@@ -27,14 +27,14 @@ namespace UiSon.Attribute
         /// <param name="priority">The display priority of this Ui.</param>
         /// <param name="groupName">The name of the group this Ui belongs to.</param>
         /// <param name="identifiers">Identifiers to be paired with the Options.</param>
-        public UiSonSelectorUiAttribute(string[] options,
+        public UiSonSelectorUiAttribute(string optionsArrayName,
                                         int priority = 0, string groupName = null,
-                                        string[] identifiers = null)
+                                        string identifiersArrayName = null)
         {
-            Options = options;
+            OptionsArrayName = optionsArrayName;
             GroupName = groupName;
             Priority = priority;
-            Identifiers = identifiers;
+            IdentifiersArrayName = identifiersArrayName;
         }
     }
 }

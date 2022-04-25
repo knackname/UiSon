@@ -22,7 +22,7 @@ namespace UiSon.ViewModel
 
         public bool Value
         {
-            get => _element.Value ?? false;
+            get => (bool)(_element.Value ?? false);
             set => SetValue(value);
         }
 
@@ -39,7 +39,7 @@ namespace UiSon.ViewModel
             Priority = priority;
             _element = element ?? throw new ArgumentNullException(nameof(element));
 
-            _element.PropertyChanged += Refresh;
+            _element.PropertyChanged += OnElementPropertyChanged;
         }
 
         /// <summary>
@@ -82,11 +82,14 @@ namespace UiSon.ViewModel
             // no refs to update
         }
 
-        private void Refresh(object? sender, PropertyChangedEventArgs e)
+        private void OnElementPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            OnPropertyChanged(nameof(Name));
-            OnPropertyChanged(nameof(IsNameVisible));
-            OnPropertyChanged(nameof(Value));
+            switch (e.PropertyName)
+            {
+                case nameof(ValueElement<bool>.Value):
+                    OnPropertyChanged(nameof(Value));
+                    break;
+            }
         }
     }
 }
