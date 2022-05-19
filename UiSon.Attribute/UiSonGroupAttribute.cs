@@ -11,6 +11,11 @@ namespace UiSon.Attribute
     public class UiSonGroupAttribute : System.Attribute
     {
         /// <summary>
+        /// The name of the group this group belongs to.
+        /// </summary>
+        public string GroupName { get; protected set; }
+
+        /// <summary>
         /// The display priority of the group.
         /// </summary>
         public int Priority { get; private set; }
@@ -30,14 +35,17 @@ namespace UiSon.Attribute
         /// </summary>
         /// <param name="name">The group's name.</param>
         /// <param name="priority">The display priority of the group.</param>
+        /// <param name="groupName">The name of the group this group belongs to.</param>
         /// <param name="displayMode">The display mode for Ui modules in the group.</param>
         public UiSonGroupAttribute(string name,
                                    int priority = 0,
+                                   string groupName = null,
                                    DisplayMode displayMode = DisplayMode.Vertial)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Priority = priority;
             DisplayMode = displayMode;
+            GroupName = groupName;
         }
     }
 }

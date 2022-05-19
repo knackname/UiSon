@@ -6,7 +6,7 @@ using System.Windows.Input;
 namespace UiSon.Command
 {
     /// <summary>
-    /// ommand that preforms an action
+    /// Command that preforms an action
     /// </summary>
     public class UiSonActionCommand : ICommand
     {
@@ -26,20 +26,13 @@ namespace UiSon.Command
             _canExecute = canExecute;
         }
 
-        /// <summary>
-        /// Executes the command's action
-        /// </summary>
-        /// <param name="parameter">parameter for action</param>
+        /// <inheritdoc cref="ICommand.Execute(object?)" />
         public void Execute(object parameter)
         {
             _execute(parameter);
         }
 
-        /// <summary>
-        /// Checks if parameter can be used for Execute
-        /// </summary>
-        /// <param name="parameter"></param>
-        /// <returns></returns>
+        /// <inheritdoc cref="ICommand.CanExecute(object?)" />
         public bool CanExecute(object parameter)
         {
             return (_canExecute == null) || _canExecute(parameter);

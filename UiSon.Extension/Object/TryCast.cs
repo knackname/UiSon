@@ -12,7 +12,7 @@ namespace UiSon.Extension
         /// <param name="value">The value to cast</param>
         /// <param name="type">The type to cast to</param>
         /// <param name="result">The cast value</param>
-        /// <returns>True if successful, false otherwise</returns>
+        /// <returns>True if successful, false otherwise.</returns>
         public static bool TryCast(this object value, Type type, out object result)
         {
             if (type == null || value == null)
@@ -20,11 +20,11 @@ namespace UiSon.Extension
                 result = null;
                 return false;
             }
-            else if (type.IsEnum &&
-                value is int enumInt
-                && Enum.IsDefined(type, enumInt))
+            else if (type.IsEnum
+                     && value.TryCast(typeof(int), out object asInt)
+                     && Enum.IsDefined(type, asInt))
             {
-                result = Enum.ToObject(type, enumInt);
+                result = Enum.ToObject(type, asInt);
                 return true;
             }
             else if (value is string parseString)

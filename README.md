@@ -29,10 +29,10 @@ Reference UiSon.Attributes.dll (also available through NuGet) in your project an
 
 UiSon.Attributes has two kinds of attributes: Ui attributes, all with the suffix 'Ui', and identifier attributes.
 
-Ui attributes are placed directly on the property/field and designate a Ui module to represent its value. Only one Ui attribute can be used per property/field. All Ui attributes have a int 'priority' and a string 'groupName' paramiter. 'priority' defines the order in which Ui modules are displayed in ascending order. 'groupName' will place the moduel into the group of that name.
+Ui attributes are placed directly on the property/field and designate a Ui module to represent its value. Only one Ui attribute can be used per property/field. All Ui attributes have a int 'priority' and a string 'groupName' paramiter. 'priority' defines the order in which Ui modules are displayed in decending order. 'groupName' will place the moduel into the group of that name.
 
 Identifier attributes identify or define information used by UiSon and its Ui moduels.
 
 ## Customization
 
-Once a .uis file is created, it can be edited to customize the user experience. This includes setting up relative assembly paths, disabling the modification of the assembly list, and setting a custom logo and description.
+Once a .uis file is created, it can be edited to customize the user experience. This includes setting up relative assembly paths, disabling the modification of the assembly list, and setting a custom logo and description. It has it's own UiSon attributes defined and can be edited in UiSon by opening UiSon.dll'

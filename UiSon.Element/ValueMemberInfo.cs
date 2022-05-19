@@ -1,68 +1,97 @@
-﻿using System;
+﻿// UiSon, by Cameron Gale 2021
+
+using System;
 using System.Reflection;
 
 namespace UiSon.Element
 {
     /// <summary>
-    /// member info of either a field or property. Provides common interface for value
+    /// Decorates <see cref="MemberInfo"/> either a field or property. Provides common interface for get and set value.
     /// </summary>
     public class ValueMemberInfo : MemberInfo
     {
+        private readonly string NotFieldOrPropertyError = $"Wrapped {nameof(MemberInfo)} wasn't a {nameof(FieldInfo)} or a {nameof(PropertyInfo)}.";
+
+        /// <inheritdoc cref="MemberInfo.DeclaringType" />
         public override Type DeclaringType => _decorated.DeclaringType;
+
+        /// <inheritdoc cref="MemberInfo.MemberType" />
         public override MemberTypes MemberType => _decorated.MemberType;
+
+        /// <inheritdoc cref="MemberInfo.Name" />
         public override string Name => _decorated.Name;
+
+        /// <inheritdoc cref="MemberInfo.ReflectedType" />
         public override Type ReflectedType => _decorated.ReflectedType;
 
-        private MemberInfo _decorated;
+        /// <summary>
+        /// The decorated <see cref="MemberInfo"/>.
+        /// </summary>
+        private readonly MemberInfo _decorated;
 
-        // one will be set, the other will be null
-        private FieldInfo _asField;
-        private PropertyInfo _asProperty;
-
-        public ValueMemberInfo(FieldInfo decorated)
-        {
-            _decorated = _asField = decorated ?? throw new ArgumentNullException(nameof(decorated));
-        }
-
-        public ValueMemberInfo(PropertyInfo decorated)
-        {
-            _decorated = _asProperty = decorated ?? throw new ArgumentNullException(nameof(decorated));
-        }
-
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="decorated">The decorated <see cref="MemberInfo"/>.</param>
         public ValueMemberInfo(MemberInfo decorated)
         {
-            if (decorated is FieldInfo field)
+            _decorated = decorated ?? throw new ArgumentNullException(nameof(decorated));
+
+            switch (_decorated.MemberType)
             {
-                _decorated = _asField = field;
-            }
-            else if (decorated is PropertyInfo property)
-            {
-                _decorated = _asProperty = property;
-            }
-            else
-            {
-                throw new ArgumentException(nameof(decorated));
+                case MemberTypes.Field:
+                case MemberTypes.Property:
+                    break;
+                default:
+                    throw new Exception(NotFieldOrPropertyError);
             }
         }
 
-        public object GetValue(object source) => _asField == null
-            ? _asProperty.GetValue(source)
-            : _asField.GetValue(source);
+        /// <summary>
+        /// Gets the value of the instance's value member.
+        /// </summary>
+        /// <param name="instance">The instance.</param>
+        /// <returns>The value of the instance's value member.</returns>
+        public object GetValue(object instance)
+        {
+            switch (_decorated.MemberType)
+            {
+                case MemberTypes.Field:
+                    return ((FieldInfo)_decorated).GetValue(instance);
+                case MemberTypes.Property:
+                    return ((PropertyInfo)_decorated).GetValue(instance);
+                default:
+                    throw new Exception(NotFieldOrPropertyError);
+            }
+        }
 
+        /// <summary>
+        /// Sets the instances value member to the value.
+        /// </summary>
+        /// <param name="instance">The instance.</param>
+        /// <param name="value">The value.</param>
         public void SetValue(object instance, object value)
         {
-            if (_asField == null)
+            switch (_decorated.MemberType)
             {
-                _asProperty.GetSetMethod(true).Invoke(instance, new[] { value });
-            }
-            else
-            {
-                _asField.SetValue(instance, value);
+                case MemberTypes.Field:
+                    ((FieldInfo)_decorated).SetValue(instance, value);
+                    break;
+                case MemberTypes.Property:
+                    ((PropertyInfo)_decorated).GetSetMethod(true)?.Invoke(instance, new[] { value });
+                    break;
+                default:
+                    throw new Exception(NotFieldOrPropertyError);
             }
         }
 
+        /// <inheritdoc cref="MemberInfo.GetCustomAttributes(bool)" />
         public override object[] GetCustomAttributes(bool inherit) => _decorated.GetCustomAttributes(inherit);
+
+        /// <inheritdoc cref="MemberInfo.GetCustomAttributes(Type, bool)" />
         public override object[] GetCustomAttributes(Type attributeType, bool inherit) => _decorated.GetCustomAttributes(attributeType, inherit);
+
+        /// <inheritdoc cref="MemberInfo.IsDefined(Type, bool)" />
         public override bool IsDefined(Type attributeType, bool inherit) => _decorated.IsDefined(attributeType, inherit);
     }
 }

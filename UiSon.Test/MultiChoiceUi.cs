@@ -3,9 +3,9 @@ using UiSon.Attribute;
 
 namespace UiSon.Test
 {
-    [UiSonGroup("Horizontal", 0, DisplayMode.Horizontal)]
-    [UiSonStringArray("MultiChoiceUi_123", new string[] { "1", "2", "3" })]
-    [UiSonStringArray("MultiChoiceUi_abc", new string[] { "A", "B", "C" })]
+    [UiSonGroup("Horizontal", 0, null, DisplayMode.Horizontal)]
+    [UiSonArray("MultiChoiceUi_123", new object[] { 1, 2, 3 })]
+    [UiSonArray("MultiChoiceUi_abc", new object[] { "A", "B", "C" })]
     public class MultiChoiceUi
     {
         [UiSonMultiChoiceUi("MultiChoiceUi_123", 0, "Horizontal")]

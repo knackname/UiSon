@@ -4,7 +4,7 @@ using UiSon.Attribute;
 
 namespace UiSon.Test
 {
-    [UiSonGroup("Kool Kids", 0, DisplayMode.Horizontal)]
+    [UiSonGroup("Kool Kids", 0, null, DisplayMode.Horizontal)]
     public class Sliders
     {
         [UiSonSliderUi(0d, 100d, 0)]

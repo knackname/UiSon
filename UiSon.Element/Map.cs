@@ -7,44 +7,50 @@ namespace UiSon.Element
     /// <summary>
     /// Data structure with two way lookup
     /// </summary>
-    /// <typeparam name="T1"></typeparam>
-    /// <typeparam name="T2"></typeparam>
+    /// <typeparam name="T1">The first value's type.</typeparam>
+    /// <typeparam name="T2">The second value's type.</typeparam>
     public class Map<T1, T2>
     {
-        public Indexer<T1, T2> Forward { get; private set; }
-        public Indexer<T2, T1> Reverse { get; private set; }
+        /// <summary>
+        /// Indexer to lookup the second value using the first.
+        /// </summary>
+        public Indexer<T1, T2> FirstToSecond { get; private set; }
+        private readonly Dictionary<T1, T2> _firstToSecond = new Dictionary<T1, T2>();
 
-        private Dictionary<T1, T2> _forward = new Dictionary<T1, T2>();
-        private Dictionary<T2, T1> _reverse = new Dictionary<T2, T1>();
+        /// <summary>
+        /// Indexer to lookup the first value using the second.
+        /// </summary>
+        public Indexer<T2, T1> SecondToFirst { get; private set; }
+        private readonly Dictionary<T2, T1> _secondToFirst = new Dictionary<T2, T1>();
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public Map()
         {
-            Forward = new Indexer<T1, T2>(_forward);
-            Reverse = new Indexer<T2, T1>(_reverse);
+            FirstToSecond = new Indexer<T1, T2>(_firstToSecond);
+            SecondToFirst = new Indexer<T2, T1>(_secondToFirst);
         }
 
-        public class Indexer<T3, T4>
+        /// <summary>
+        /// Adds the specified values to the map.
+        /// </summary>
+        /// <param name="firstValue">The first value.</param>
+        /// <param name="secondValue">The second value.</param>
+        public void Add(T1 firstValue, T2 secondValue)
         {
-            private Dictionary<T3, T4> _dictionary;
-            public Indexer(Dictionary<T3, T4> dictionary)
-            {
-                _dictionary = dictionary;
-            }
-            public T4 this[T3 index]
-            {
-                get { return _dictionary[index]; }
-                set { _dictionary[index] = value; }
-            }
+            _firstToSecond.Add(firstValue, secondValue);
+            _secondToFirst.Add(secondValue, firstValue);
         }
 
-        public void Add(T1 key, T2 value)
-        {
-            _forward.Add(key, value);
-            _reverse.Add(value, key);
-        }
+        /// <summary>
+        /// Returns an enumerable containing all the first values in this map. 
+        /// </summary>
+        public IEnumerable<T1> FirstValues => _firstToSecond.Keys;
 
-        public IEnumerable<T1> Keys => _forward.Keys;
-
-        public IEnumerable<T2> Values => _forward.Values;
+        /// <summary>
+        /// Returns an enumerable containing all the second values in this map. 
+        /// </summary>
+        public IEnumerable<T2> SecondValues => _firstToSecond.Values;
     }
 }

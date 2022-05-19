@@ -1,7 +1,5 @@
 ﻿// UiSon, by Cameron Gale 2021
 
-using System;
-
 namespace UiSon.Attribute
 {
     /// <summary>
@@ -9,6 +7,8 @@ namespace UiSon.Attribute
     /// The input string will be parsed to the represented property/field's type.
     /// Includes an optional string 'regexValidation' paramiter which will validate
     /// all input and only allow those satisfying the regex.
+    /// 
+    /// Only one Ui attribute may be used per property/field.
     /// </summary>
     public class UiSonTextEditUiAttribute : UiSonUiAttribute
     {
@@ -20,13 +20,15 @@ namespace UiSon.Attribute
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="priority">The name of the group this Ui belongs to.</param>
+        /// <param name="displayPriority">The name of the group this Ui belongs to.</param>
         /// <param name="groupName">The display priority of this Ui.</param>
         /// <param name="regexValidation">Validation regex string.</param>
-        public UiSonTextEditUiAttribute(int priority = 0, string groupName = null, string regexValidation = null)
+        public UiSonTextEditUiAttribute(int displayPriority = 0,
+                                        string groupName = null,
+                                        string regexValidation = null)
         {
             GroupName = groupName;
-            Priority = priority;
+            DisplayPriority = displayPriority;
             RegexValidation = regexValidation;
         }
     }

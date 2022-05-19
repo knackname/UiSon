@@ -1,62 +1,42 @@
 // UiSon, by Cameron Gale 2022
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Windows;
 using System.Windows.Controls;
+using UiSon.Element;
 
 namespace UiSon.ViewModel.Interface
 {
     /// <summary>
-    /// Describes a module for the element editor
+    /// Describes a representing a value that can be get/set/read/write -ed
     /// </summary>
-    public interface IEditorModule : INotifyPropertyChanged
+    public interface IEditorModule : INotifyPropertyChanged, INamedOrderedViewModel
     {
         /// <summary>
-        /// Display name for the editor
+        /// The moduel's value.
         /// </summary>
-        public string Name { get; }
+        object Value { get; set; }
 
         /// <summary>
-        /// The editors display priority
+        /// The module's current state
         /// </summary>
-        public int Priority { get; }
+        ModuleState State { get; }
 
         /// <summary>
-        /// Whether or not the editor's name is visible
+        /// 
         /// </summary>
-        public Visibility IsNameVisible { get; }
+        void Read(object instance);
 
         /// <summary>
-        /// Generates data grid column(s) for parent grids
+        /// 
         /// </summary>
-        public IEnumerable<DataGridColumn> GenerateColumns(string path);
+        void Write(object instance);
 
         /// <summary>
-        /// Reads data from instance and set's this editor's element's value to it
+        /// Generates data grid columns for parent data grids.
         /// </summary>
-        public void Read(object instance);
-
-        /// <summary>
-        /// Writes this editor's element's value to the instance
-        /// </summary>
-        public void Write(object instance);
-
-        /// <summary>
-        /// Attempts to set the value to the input.
-        /// </summary>
-        /// <param name="value">input value</param>
-        /// <returns>True if set successfully, false otherwise</returns>
-        bool SetValue(object value);
-
-        /// <summary>
-        /// Returns the element's value as the given type
-        /// </summary>
-        /// <param name="type">The type to retreieve the value as</param>
-        /// <returns>The element's value as the type</returns>
-        object GetValueAs(Type type);
-
-        void UpdateRefs();
+        /// <param name="bindingPath">The binding path.</param>
+        /// <returns>An enumerable of the generated columns.</returns>
+        public IEnumerable<DataGridColumn> GenerateColumns(string bindingPath);
     }
 }

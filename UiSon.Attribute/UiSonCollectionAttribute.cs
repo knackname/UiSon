@@ -26,7 +26,7 @@ namespace UiSon.Attribute
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="isModifiable">If the collection can have elements added to or removed from within UiSon.</param>
+        /// <param name="isModifiable">If the collection can have items added to or removed from within UiSon.</param>
         /// <param name="displayMode">The display mode for collection members.</param>
         public UiSonCollectionAttribute(bool isModifiable = true,
                                         DisplayMode displayMode = DisplayMode.Vertial)

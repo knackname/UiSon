@@ -4,6 +4,8 @@ namespace UiSon.Attribute
 {
     /// <summary>
     /// Designates the member to be represented by a slider Ui in UiSon.
+    /// 
+    /// Only one Ui attribute may be used per property/field.
     /// </summary>
     public class UiSonSliderUiAttribute : UiSonUiAttribute
     {
@@ -28,23 +30,25 @@ namespace UiSon.Attribute
         public bool IsVertical { get; private set; }
 
         /// <summary>
-        /// Constructor with decimal range.
+        /// Constructor
         /// </summary>
         /// <param name="min">Minimum value of the slider.</param>
         /// <param name="max">Maximum value of the slider.</param>
         /// <param name="precision">Number of digits after the decimal when rounding value.</param>
-        /// <param name="priority">The display priority of this Ui.</param>
+        /// <param name="displayPriority">The display priority of this Ui.</param>
         /// <param name="groupName">The name of the group this Ui belongs to.</param>
-        /// <param name="unit">Unit string to be displayed along with the value.</param>
         /// <param name="isVertical">If the slider is vertical.</param>
-        public UiSonSliderUiAttribute(double min, double max, int precision,
-                                      int priority = 0, string groupName = null,
+        public UiSonSliderUiAttribute(double min,
+                                      double max,
+                                      int precision,
+                                      int displayPriority = 0,
+                                      string groupName = null,
                                       bool isVertical = false)
         {
             Max = max;
             Min = min;
             Precision = precision;
-            Priority = priority;
+            DisplayPriority = displayPriority;
             GroupName = groupName;
             IsVertical = isVertical;
         }

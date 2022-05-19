@@ -3,22 +3,22 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net6.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon>UiSon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Images\logo.png" />
+    <Content Include="UiSon.ico" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\UiSon.Command\UiSon.Command.csproj" />
     <ProjectReference Include="..\UiSon.Element\UiSon.Element.csproj" />
-    <ProjectReference Include="..\UiSon.Notifier\UiSon.Notify.csproj" />
-    <ProjectReference Include="..\UiSon.ViewModel.Interface\UiSon.ViewModel.Interface.csproj" />
+    <ProjectReference Include="..\UiSon.Resource\UiSon.Resource.csproj" />
+    <ProjectReference Include="..\UiSon.View.Interface\UiSon.View.Interface.csproj" />
     <ProjectReference Include="..\UiSon.ViewModel\UiSon.ViewModel.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Resource Include="Images\logo.png" />
+    <ProjectReference Include="..\UiSon.View\UiSon.View.csproj" />
   </ItemGroup>
 
 </Project>

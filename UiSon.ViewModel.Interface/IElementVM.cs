@@ -1,13 +1,12 @@
-﻿// UiSon, by Cameron Gale 2022
-
-using System.ComponentModel;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace UiSon.ViewModel.Interface
 {
-    /// <summary>
-    /// Describes a view model for an UiSonElement
-    /// </summary>
-    public interface IElementVM : INotifyPropertyChanged
+    public interface IElementVM
     {
     }
 }

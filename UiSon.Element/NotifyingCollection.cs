@@ -9,42 +9,29 @@ using System.ComponentModel;
 namespace UiSon.Element
 {
     /// <summary>
-    /// Collection that notifies when a item contained within calls a property changed event
+    /// Collection that notifies when a item contained within calls a property changed event.
     /// </summary>
-    /// <typeparam name="T">item type, must impliment INotifyPropertyChanged</typeparam>
+    /// <typeparam name="T">Item type.</typeparam>
     public class NotifyingCollection<T> : ICollection<T>, INotifyCollectionChanged, INotifyPropertyChanged
         where T : INotifyPropertyChanged
     {
         /// <summary>
-        /// Called when an item is added, removes or the collection is cleared
+        /// Called when an item is added, removed or the collection is cleared.
         /// </summary>
-        public event NotifyCollectionChangedEventHandler CollectionChanged;
+        public event NotifyCollectionChangedEventHandler CollectionChanged = delegate { };
 
         /// <summary>
-        /// Called when an item contained calls its PropertyChanged event
+        /// Called when an item contained calls its <see cref="INotifyPropertyChanged.PropertyChanged"/> event.
         /// </summary>
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
 
-        /// <summary>
-        /// The decorated observable collection
-        /// </summary>
-        private ObservableCollection<T> _collection = new ObservableCollection<T>();
-
-        /// <summary>
-        /// Reutrns an IEnumerator for the collection
-        /// </summary>
-        /// <returns>An IEnumerator for the collection</returns>
-        IEnumerator IEnumerable.GetEnumerator() => _collection.GetEnumerator();
-
-        /// <summary>
-        /// Returns the number of elements in the collection
-        /// </summary>
+        /// <inheritdoc cref="Collection{T}.Count" />
         public int Count => _collection.Count;
 
-        /// <summary>
-        /// The collection is never read only; always returns false. Implimented for ICollection
-        /// </summary>
+        /// <inheritdoc cref="ICollection{T}.IsReadOnly" />
         public bool IsReadOnly => false;
+
+        private readonly ObservableCollection<T> _collection = new ObservableCollection<T>();
 
         /// <summary>
         /// Constructor
@@ -55,18 +42,27 @@ namespace UiSon.Element
         }
 
         /// <summary>
-        /// Adds an item to the collection
+        /// Passes on the property changed event from items
         /// </summary>
-        /// <param name="item">The item to add</param>
+        /// <param name="source">The source.</param>
+        /// <param name="args">The arguments.</param>
+        private void OnItemPropertyChanged(object source, PropertyChangedEventArgs args) => PropertyChanged.Invoke(source, args);
+
+        /// <inheritdoc cref="ICollection{T}.Add(T)" />
         public void Add(T item)
         {
             item.PropertyChanged += OnItemPropertyChanged;
             _collection.Add(item);
         }
 
-        /// <summary>
-        /// Removes all items from the collection
-        /// </summary>
+        /// <inheritdoc cref="ICollection{T}.Remove(T)" />
+        public bool Remove(T item)
+        {
+            item.PropertyChanged -= OnItemPropertyChanged;
+            return _collection.Remove(item);
+        }
+
+        /// <inheritdoc cref="ICollection{T}.Clear" />
         public void Clear()
         {
             foreach(var item in _collection)
@@ -76,42 +72,15 @@ namespace UiSon.Element
             _collection.Clear();
         }
 
-        /// <summary>
-        /// Reutrns wether the item is contained in the collection
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns>True if the item in contained</returns>
+        /// <inheritdoc cref="ICollection{T}.Contains(T)" />
         public bool Contains(T item) => _collection.Contains(item);
 
-        /// <summary>
-        /// Copies the entire collection to a compatiable 1d array, starting at the specified index
-        /// </summary>
-        /// <param name="array">Array to copy to</param>
-        /// <param name="arrayIndex">Starting index</param>
+        /// <inheritdoc cref="ICollection{T}.CopyTo(T[], int)" />
         public void CopyTo(T[] array, int arrayIndex) => _collection.CopyTo(array, arrayIndex);
 
-        /// <summary>
-        /// Removes an item from the collection
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns>The item to remove</returns>
-        public bool Remove(T item)
-        {
-            item.PropertyChanged -= OnItemPropertyChanged;
-            return _collection.Remove(item);
-        }
-
-        /// <summary>
-        /// Returns an enumerator for the collection
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
         public IEnumerator<T> GetEnumerator() => _collection.GetEnumerator();
 
-        /// <summary>
-        /// Passes on the property changed event from items
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="args"></param>
-        private void OnItemPropertyChanged(object source, PropertyChangedEventArgs args) => PropertyChanged.Invoke(source, args);
+        IEnumerator IEnumerable.GetEnumerator() => _collection.GetEnumerator();
     }
 }

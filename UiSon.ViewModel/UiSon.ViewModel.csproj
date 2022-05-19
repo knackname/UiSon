@@ -11,12 +11,18 @@
     <ProjectReference Include="..\UiSon.Converter\UiSon.Converter.csproj" />
     <ProjectReference Include="..\UiSon.Element\UiSon.Element.csproj" />
     <ProjectReference Include="..\UiSon.Event\UiSon.Event.csproj" />
+    <ProjectReference Include="..\UiSon.Extension\UiSon.Extension.csproj" />
     <ProjectReference Include="..\UiSon.Notifier\UiSon.Notify.csproj" />
     <ProjectReference Include="..\UiSon.ViewModel.Interface\UiSon.ViewModel.Interface.csproj" />
+    <ProjectReference Include="..\UiSon.View\UiSon.View.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="ElementEditor.xaml">
+    <Page Update="Controls\ElementEditorTab.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Controls\UiSonUi.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
       <SubType>Designer</SubType>
     </Page>

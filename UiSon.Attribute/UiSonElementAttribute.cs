@@ -11,24 +11,25 @@ namespace UiSon.Attribute
     public class UiSonElementAttribute : System.Attribute
     {
         /// <summary>
+        /// The name of the group this element belongs to.
+        /// </summary>
+        public string GroupName { get; protected set; }
+
+        /// <summary>
         /// The file extension for json files made from this.
         /// </summary>
         public string Extension { get; private set; }
 
         /// <summary>
-        /// If jsons generated should include fields.
-        /// </summary>
-        public bool IncludeFields;
-
-        /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="includeFields">If jsons generated should include fields.</param>
         /// <param name="extension">The file extension for json files made from this.</param>
-        public UiSonElementAttribute(bool includeFields = true, string extension = ".json")
+        /// <param name="groupName">The name of the group this element belongs to.</param>
+        public UiSonElementAttribute(string extension = ".json",
+                                     string groupName = null)
         {
-            IncludeFields = includeFields;
-            Extension = extension;
+            Extension = string.IsNullOrWhiteSpace(extension) ? ".json" : extension;
+            GroupName = groupName;
         }
     }
 }

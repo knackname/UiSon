@@ -12,6 +12,8 @@ namespace UiSon.Attribute
     /// A <see cref="UiSonTagAttribute"/> can be defined on a property/field of the designated UiSonElement to select an identifier.
     /// The saved value will then be the value of the identifier. If no identifierTagName is provided, the saved value will be
     /// the name of the selected element.
+    /// 
+    /// Only one Ui attribute may be used per property/field.
     /// </summary>
     public class UiSonElementSelectorUiAttribute : UiSonSelectorUiAttribute
     {
@@ -29,17 +31,18 @@ namespace UiSon.Attribute
         /// Constructor
         /// </summary>
         /// <param name="elementName">The name of the element being selected.</param>
-        /// <param name="priority">The display priority of this Ui.</param>
+        /// <param name="displayPriority">The display priority of this Ui.</param>
         /// <param name="groupName">The name of the group this Ui belongs to.</param>
         /// <param name="identifierTagName">The name of the tag attribute on the identifier.</param>
-        /// <param name="additionalOptions">Additional options to be selected.</param>
-        /// <param name="identifiers">Identifiers to be paired with the additional options.</param>
+        /// <param name="additionalOptionsArrayName">Additional options to be selected.</param>
+        /// <param name="additionalOptionsIdentifiersArrayName">Identifiers to be mapped with the additional options.</param>
         public UiSonElementSelectorUiAttribute(string elementName,
-                                             int priority = 0, string groupName = null,
-                                             string identifierTagName = null,
-                                             string additionalOptionsArrayName = null,
-                                             string additionalOptionsIdentifiersArrayName = null)
-            : base(additionalOptionsArrayName, priority, groupName, additionalOptionsIdentifiersArrayName)
+                                               int displayPriority = 0,
+                                               string groupName = null,
+                                               string identifierTagName = null,
+                                               string additionalOptionsArrayName = null,
+                                               string additionalOptionsIdentifiersArrayName = null)
+            : base(additionalOptionsArrayName, displayPriority, groupName, additionalOptionsIdentifiersArrayName)
         {
             ElementName = elementName ?? throw new ArgumentNullException(nameof(elementName));
             IdentifierTagName = identifierTagName;

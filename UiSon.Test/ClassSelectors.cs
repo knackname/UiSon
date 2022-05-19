@@ -4,9 +4,9 @@ using UiSon.Attribute;
 
 namespace UiSon.Test
 {
-    [UiSonStringArray("ClassSelectors_Numbers_Text", new string[] { "additional_50", "additional_101", "additional_102" })]
-    [UiSonStringArray("ClassSelectors_Numbers_Values", new string[] { "50", "101", "102" })]
-    [UiSonStringArray(ClassSelectors.poop, new string[] { "Big", "Bad", "Wolf" })]
+    [UiSonArray("ClassSelectors_Numbers_Text", new object[] { "additional_50", "additional_101", "additional_102" })]
+    [UiSonArray("ClassSelectors_Numbers_Values", new object[] { 50, 101, 102 })]
+    [UiSonArray(ClassSelectors.poop, new object[] { "Big", "Bad", "Wolf" })]
     public class ClassSelectors
     {
         const string poop = "poop";

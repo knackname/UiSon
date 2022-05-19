@@ -7,6 +7,8 @@ namespace UiSon.Attribute
     /// Options and identifiers of the same index will be paired, selecting an option
     /// will cause the paired identifier's value to be saved. If no identifiers are provided,
     /// the value of the option itself will be saved.
+    /// 
+    /// Only one Ui attribute may be used per property/field.
     /// </summary>
     public class UiSonSelectorUiAttribute : UiSonUiAttribute
     {
@@ -24,16 +26,17 @@ namespace UiSon.Attribute
         /// Constructor
         /// </summary>
         /// <param name="options">Options to select from.</param>
-        /// <param name="priority">The display priority of this Ui.</param>
+        /// <param name="displayPriority">The display priority of this Ui.</param>
         /// <param name="groupName">The name of the group this Ui belongs to.</param>
         /// <param name="identifiers">Identifiers to be paired with the Options.</param>
         public UiSonSelectorUiAttribute(string optionsArrayName,
-                                        int priority = 0, string groupName = null,
+                                        int displayPriority = 0,
+                                        string groupName = null,
                                         string identifiersArrayName = null)
         {
             OptionsArrayName = optionsArrayName;
             GroupName = groupName;
-            Priority = priority;
+            DisplayPriority = displayPriority;
             IdentifiersArrayName = identifiersArrayName;
         }
     }

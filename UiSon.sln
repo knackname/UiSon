@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32414.318
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UiSon", "UiSon\UiSon.csproj", "{ED973E69-F2E1-40B2-AD64-A03411CB798E}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UiSon.Element", "UiSon.Element\UiSon.Element.csproj", "{ABB7984A-741C-49ED-971E-E6D854660E10}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UiSon.Extension", "UiSon.Extension\UiSon.Extension.csproj", "{F5BC4638-011D-4E0D-B4E4-DF80702D26A5}"
@@ -21,11 +19,19 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UiSon.Test", "UiSon.Test\Ui
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UiSon.Notify", "UiSon.Notifier\UiSon.Notify.csproj", "{30A0915C-ED7C-4004-B78E-DB9B325F3F7E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UiSon.Notify.Interface", "UiSon.Notifier.Interface\UiSon.Notify.Interface.csproj", "{C40513FD-F8EF-4C32-92D4-B33AE79C1B3E}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UiSon.Converter", "UiSon.Converter\UiSon.Converter.csproj", "{954A41A3-50BD-45F3-BDF6-FE65D8258743}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UiSon.Attribute", "UiSon.Attribute\UiSon.Attribute.csproj", "{6FBD1806-A9BD-40F2-96CD-752901AB54FE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UiSon.Attribute", "UiSon.Attribute\UiSon.Attribute.csproj", "{6FBD1806-A9BD-40F2-96CD-752901AB54FE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UiSon", "UiSon\UiSon.csproj", "{619CFDFF-D43D-479A-AF42-E0E02AF9C6AF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UiSon.Resource", "UiSon.Resource\UiSon.Resource.csproj", "{B2FEC706-11E8-4091-BDCE-B85D1376BE98}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UiSon.View", "UiSon.View\UiSon.View.csproj", "{21E4626F-1391-49CD-ACD0-17E18CC9F1F4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UiSon.View.Interface", "UiSon.View.Interface\UiSon.View.Interface.csproj", "{EA60D9C7-BD8F-4EA5-9D46-8F3223B1CE1C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UiSon.Notify.Interface", "UiSon.Notifier.Interface\UiSon.Notify.Interface.csproj", "{ADE501D7-A28E-4E19-8780-F5033210A7D7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,10 +39,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{ED973E69-F2E1-40B2-AD64-A03411CB798E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{ED973E69-F2E1-40B2-AD64-A03411CB798E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{ED973E69-F2E1-40B2-AD64-A03411CB798E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{ED973E69-F2E1-40B2-AD64-A03411CB798E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{ABB7984A-741C-49ED-971E-E6D854660E10}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{ABB7984A-741C-49ED-971E-E6D854660E10}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ABB7984A-741C-49ED-971E-E6D854660E10}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -69,10 +71,6 @@ Global
 		{30A0915C-ED7C-4004-B78E-DB9B325F3F7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{30A0915C-ED7C-4004-B78E-DB9B325F3F7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{30A0915C-ED7C-4004-B78E-DB9B325F3F7E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C40513FD-F8EF-4C32-92D4-B33AE79C1B3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C40513FD-F8EF-4C32-92D4-B33AE79C1B3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C40513FD-F8EF-4C32-92D4-B33AE79C1B3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C40513FD-F8EF-4C32-92D4-B33AE79C1B3E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{954A41A3-50BD-45F3-BDF6-FE65D8258743}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{954A41A3-50BD-45F3-BDF6-FE65D8258743}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{954A41A3-50BD-45F3-BDF6-FE65D8258743}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -81,6 +79,26 @@ Global
 		{6FBD1806-A9BD-40F2-96CD-752901AB54FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6FBD1806-A9BD-40F2-96CD-752901AB54FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6FBD1806-A9BD-40F2-96CD-752901AB54FE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{619CFDFF-D43D-479A-AF42-E0E02AF9C6AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{619CFDFF-D43D-479A-AF42-E0E02AF9C6AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{619CFDFF-D43D-479A-AF42-E0E02AF9C6AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{619CFDFF-D43D-479A-AF42-E0E02AF9C6AF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2FEC706-11E8-4091-BDCE-B85D1376BE98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2FEC706-11E8-4091-BDCE-B85D1376BE98}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2FEC706-11E8-4091-BDCE-B85D1376BE98}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2FEC706-11E8-4091-BDCE-B85D1376BE98}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21E4626F-1391-49CD-ACD0-17E18CC9F1F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21E4626F-1391-49CD-ACD0-17E18CC9F1F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21E4626F-1391-49CD-ACD0-17E18CC9F1F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21E4626F-1391-49CD-ACD0-17E18CC9F1F4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA60D9C7-BD8F-4EA5-9D46-8F3223B1CE1C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA60D9C7-BD8F-4EA5-9D46-8F3223B1CE1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA60D9C7-BD8F-4EA5-9D46-8F3223B1CE1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA60D9C7-BD8F-4EA5-9D46-8F3223B1CE1C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ADE501D7-A28E-4E19-8780-F5033210A7D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ADE501D7-A28E-4E19-8780-F5033210A7D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ADE501D7-A28E-4E19-8780-F5033210A7D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ADE501D7-A28E-4E19-8780-F5033210A7D7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

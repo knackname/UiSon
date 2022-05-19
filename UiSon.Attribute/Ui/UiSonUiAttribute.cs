@@ -7,6 +7,8 @@ namespace UiSon.Attribute
     /// <summary>
     /// An attribute used to define an Ui element.
     /// Only one Ui attribute may be used per property/field.
+    /// 
+    /// Only one Ui attribute may be used per property/field.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
     public abstract class UiSonUiAttribute : System.Attribute
@@ -19,6 +21,6 @@ namespace UiSon.Attribute
         /// <summary>
         /// The display priority of the element.
         /// </summary>
-        public int Priority { get; protected set; }
+        public int DisplayPriority { get; protected set; }
     }
 }

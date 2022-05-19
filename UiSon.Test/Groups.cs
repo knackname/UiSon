@@ -4,10 +4,12 @@ using UiSon.Attribute;
 
 namespace UiSon.Test
 {
-    [UiSonGroup("Vertical", 0, DisplayMode.Vertial)]
-    [UiSonGroup("Horizontal", 0, DisplayMode.Horizontal)]
-    [UiSonGroup("Wrap", 0, DisplayMode.Wrap)]
-    [UiSonGroup("Grid", 0, DisplayMode.Grid)]
+    [UiSonGroup("Vertical", 0, null, DisplayMode.Vertial)]
+    [UiSonGroup("Horizontal", 0, null, DisplayMode.Horizontal)]
+    [UiSonGroup("Wrap", 0, null, DisplayMode.Wrap)]
+    [UiSonGroup("Grid", 0, null, DisplayMode.Grid)]
+    [UiSonGroup("Parent", 0, null)]
+    [UiSonGroup("Child", 0, "Parent")]
     public class Groups
     {
         // undefined members
@@ -46,5 +48,8 @@ namespace UiSon.Test
 
         [UiSonCheckboxUi(0, "Grid")]
         public bool G_member_B;
+
+        [UiSonCheckboxUi(0, "Child")]
+        public bool C_member_A;
     }
 }
