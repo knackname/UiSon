@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <Page Remove="Skins\DarkSkin.xaml" />
+    <Page Remove="Skins\LightSkin.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -16,6 +17,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Skins\LightSkin.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Resource>
     <Resource Include="Skins\DarkSkin.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

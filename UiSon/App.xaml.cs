@@ -17,7 +17,7 @@ namespace UiSon
        private readonly Dictionary<string, string> DefaultSkins = new Dictionary<string, string>()
         {
             { "Dark", "pack://application:,,,/UiSon.Resource;Component/Skins/DarkSkin.xaml" },
-            //{ "Dark", "pack://application:,,,/UiSon.Resource;Component/Skins/DarkSkin.xaml" }
+            { "Light", "pack://application:,,,/UiSon.Resource;Component/Skins/LightSkin.xaml" }
         };
 
         /// <summary>
