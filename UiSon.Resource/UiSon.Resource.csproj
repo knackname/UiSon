@@ -7,20 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Images\add_dark.svg" />
-    <None Remove="Images\add_dark_over.svg" />
-    <None Remove="Images\add_light.svg" />
-    <None Remove="Images\add_light_over.svg" />
-    <None Remove="Images\close_dark.svg" />
-    <None Remove="Images\close_dark_over.svg" />
-    <None Remove="Images\close_light.svg" />
-    <None Remove="Images\close_light_over.svg" />
-    <None Remove="Images\icon.png" />
-    <None Remove="Images\logo.png" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Page Remove="Skins\LightSkin.xaml" />
+    <Page Remove="Skins\DarkSkin.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -29,16 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Images\add_dark.svg" />
-    <Resource Include="Images\add_dark_over.svg" />
-    <Resource Include="Images\add_light.svg" />
-    <Resource Include="Images\add_light_over.svg" />
-    <Resource Include="Images\close_dark_over.svg" />
-    <Resource Include="Images\close_dark.svg" />
-    <Resource Include="Images\close_light_over.svg" />
-    <Resource Include="Images\close_light.svg" />
-    <Resource Include="Images\logo.png" />
-    <Resource Include="Skins\LightSkin.xaml">
+    <Resource Include="Skins\DarkSkin.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Generator>MSBuild:Compile</Generator>

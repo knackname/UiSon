@@ -5,9 +5,14 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/UiSon.Resource;Component/Styles/AddButtonStyle.xaml"/>
-                <ResourceDictionary Source="/UiSon.Resource;Component/Styles/CloseButtonStyle.xaml"/>
                 <ResourceDictionary Source="/UiSon.Resource;Component/Styles/BaseStyles.xaml"/>
+                <ResourceDictionary Source="/UiSon.Resource;Component/Styles/ButtonStyle.xaml"/>
+                <ResourceDictionary Source="/UiSon.Resource;Component/Styles/DataGridStyle.xaml"/>
+                <ResourceDictionary Source="/UiSon.Resource;Component/Styles/MenuStyle.xaml"/>
+                <ResourceDictionary Source="/UiSon.Resource;Component/Styles/TabControlStyle.xaml"/>
+                <ResourceDictionary Source="/UiSon.Resource;Component/Styles/CheckBoxStyle.xaml"/>
+                <ResourceDictionary Source="/UiSon.Resource;Component/Styles/ScrollViewerStyle.xaml"/>
+                <ResourceDictionary Source="/UiSon.Resource;Component/Styles/TextBoxStyle.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

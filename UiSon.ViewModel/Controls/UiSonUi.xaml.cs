@@ -299,9 +299,9 @@ namespace UiSon.ViewModel
             Project.RemoveAssembly(assemblyView);
         }
 
-        private void Element_MouseDoubleClick(object sender, RoutedEventArgs e)
+        private void Element_OpenClick(object sender, RoutedEventArgs e)
         {
-            var elementView = ((DataGrid)sender).SelectedItem as ElementView;
+            var elementView = ((Button)sender).DataContext as ElementView;
 
             if (elementView != null)
             {

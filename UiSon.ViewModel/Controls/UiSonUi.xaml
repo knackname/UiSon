@@ -21,7 +21,7 @@
                 <MenuItem Header="Save" Command="{Binding SaveCommand}"/>
                 <MenuItem Header="Save As" Command="{Binding SaveAsCommand}"/>
             </MenuItem>
-            <MenuItem Header="Theme" ItemsSource="{Binding SkinOptions}">
+            <MenuItem Header="Skin" ItemsSource="{Binding SkinOptions}">
                 <MenuItem.ItemContainerStyle>
                     <Style TargetType="{x:Type MenuItem}">
                         <Setter Property="Command" Value="{Binding DataContext.ChangeSkinCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type MenuItem}, AncestorLevel=1}}" />
@@ -36,7 +36,8 @@
                 <ColumnDefinition Width="240"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <ScrollViewer Grid.Column="0">
+            <ScrollViewer Grid.Column="0"
+                          Margin="0,0,4,0">
                 <StackPanel Orientation="Vertical" Margin="4">
                     
                     <Expander IsExpanded="True">
@@ -44,13 +45,13 @@
                             <TextBlock Text="{Binding ProjectName}" FontWeight="Bold" MinWidth="100"/>
                         </Expander.Header>
                         <StackPanel Orientation="Vertical">
-                            <ContentControl Content="{StaticResource LogoImage}" MaxHeight="160" MinWidth="100"/>
-                            <Line Stretch="Fill" Stroke="Black" X2="1" Margin="4"/>
+                            <ContentPresenter Content="{DynamicResource LogoImage}" MaxHeight="160" MinWidth="100"/>
+                            <Line Stretch="Fill" Stroke="{DynamicResource WindowForegroundBrush}" X2="1" Margin="4"/>
                             <TextBlock TextWrapping="Wrap" Text="{Binding Description}" MinWidth="100"/>
                         </StackPanel>
                     </Expander>
-                    
-                    <Line Stretch="Fill" Stroke="Black" X2="1" Margin="4"/>
+
+                    <Line Stretch="Fill" Stroke="{DynamicResource WindowForegroundBrush}" X2="1" Margin="4"/>
                     
                     <Grid Visibility="{Binding AllowAssemblyMod, Converter={StaticResource boolToVisibilityConverter}}">
 
@@ -76,24 +77,32 @@
                                 Grid.Column="1"/>
                         </Grid>
 
-                        <Border BorderThickness="4" BorderBrush="Black" Grid.Row="1">
+                        <Border BorderThickness="4" BorderBrush="{DynamicResource ElementsBorderBrush}" Grid.Row="1" CornerRadius="{DynamicResource ElementCornerRadius}">
                             <ScrollViewer MaxHeight="100">
-                                <DataGrid ItemsSource="{Binding Assemblies}" AutoGenerateColumns="False" HeadersVisibility="None">
-                                    <DataGrid.Columns>
-                                        <DataGridTemplateColumn Width="auto" IsReadOnly="True">
-                                            <DataGridTemplateColumn.CellTemplate>
-                                                <DataTemplate>
-                                                    <Button Content="X" Click="RemoveAssembly_Click" Grid.Column="1"/>
-                                                </DataTemplate>
-                                            </DataGridTemplateColumn.CellTemplate>
-                                        </DataGridTemplateColumn>
-                                        <DataGridTextColumn Binding="{Binding Path}" Width="*" IsReadOnly="True"/>
-                                    </DataGrid.Columns>
-                                </DataGrid>
+                                <ItemsControl HorizontalAlignment="Stretch"
+                                              ItemsSource="{Binding Assemblies}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Button Content=" X " Click="RemoveAssembly_Click" VerticalAlignment="Stretch" Margin="4" Grid.Column="0"/>
+                                                <TextBlock Text="{Binding Path}" VerticalAlignment="Center" TextWrapping="WrapWithOverflow" Grid.Column="1"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                </ItemsControl>
                             </ScrollViewer>
                         </Border>
 
-                        <Line Stretch="Fill" Stroke="Black" X2="1" Margin="4" Grid.Row="2"/>
+                        <Line Stretch="Fill" Stroke="{DynamicResource WindowForegroundBrush}" X2="1" Margin="4" Grid.Row="2"/>
                     </Grid>
 
                     <ItemsControl ItemsSource="{Binding ElementManagers}">
@@ -106,29 +115,39 @@
                                             <ColumnDefinition Width="auto"/>
                                             <ColumnDefinition Width="auto"/>
                                         </Grid.ColumnDefinitions>
-                                        <Button Content=" + " Click="ElementManagerAdd_Click" Margin="0,0,0,0" Grid.Column="1"/>
+                                        <Button Content=" + " Click="ElementManagerAdd_Click" Grid.Column="1"/>
                                         <TextBlock Text="{Binding ElementName}"
                                            FontWeight="Bold"
                                            TextWrapping="Wrap"
                                            HorizontalAlignment="left"
                                            MinWidth="100"
                                            Grid.Column="0"/>
-                                        <Button Content=" ... " Click="ElementManagerImport_Click" Margin="0,0,0,0" Grid.Column="2"/>
+                                        <Button Content=" ... " Click="ElementManagerImport_Click" Grid.Column="2"/>
                                     </Grid>
-                                    <Border BorderBrush="Black" BorderThickness="4">
+                                    <Border BorderBrush="{DynamicResource ElementsBorderBrush}" BorderThickness="4" CornerRadius="{DynamicResource ElementCornerRadius}">
                                         <ScrollViewer MaxHeight="100">
-                                            <DataGrid ItemsSource="{Binding Elements}" AutoGenerateColumns="False" HeadersVisibility="None" MouseDoubleClick="Element_MouseDoubleClick">
-                                                <DataGrid.Columns>
-                                                    <DataGridTemplateColumn Width="auto" IsReadOnly="True">
-                                                        <DataGridTemplateColumn.CellTemplate>
-                                                            <DataTemplate>
-                                                                <Button Content="X" Click="ElementManagerRemove_Click" Grid.Column="1"/>
-                                                            </DataTemplate>
-                                                        </DataGridTemplateColumn.CellTemplate>
-                                                    </DataGridTemplateColumn>
-                                                    <DataGridTextColumn Binding="{Binding Name}" Width="*" IsReadOnly="True"/>
-                                                </DataGrid.Columns>
-                                            </DataGrid>
+                                            <ItemsControl HorizontalAlignment="Stretch"
+                                              ItemsSource="{Binding Elements}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="auto"/>
+                                                                <ColumnDefinition Width="*"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <Button Content=" X " Click="ElementManagerRemove_Click" VerticalAlignment="Stretch" Margin="4" Grid.Column="0"/>
+                                                            <Button Click="Element_OpenClick" HorizontalContentAlignment="Left" VerticalAlignment="Center" Margin="0,4,4,4" Grid.Column="1">
+                                                                <TextBlock Text="{Binding Name}" TextWrapping="WrapWithOverflow"/>
+                                                            </Button>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch"/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                            </ItemsControl>
                                         </ScrollViewer>
                                     </Border>
                                 </StackPanel>
@@ -145,7 +164,7 @@
                 
             </ScrollViewer>
 
-            <GridSplitter ResizeDirection="Columns" Width="4"/>
+            <GridSplitter ResizeDirection="Columns" Width="4" Grid.Column="0"/>
 
             <TabControl x:Name="TabControl" Grid.Column="1"/>
         </Grid>

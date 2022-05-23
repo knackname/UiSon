@@ -14,9 +14,9 @@ namespace UiSon
     /// </summary>
     public partial class App : Application
     {
-        private readonly Dictionary<string, string> DefaultSkins = new Dictionary<string, string>()
+       private readonly Dictionary<string, string> DefaultSkins = new Dictionary<string, string>()
         {
-            { "Light", "pack://application:,,,/UiSon.Resource;Component/Skins/LightSkin.xaml" },
+            { "Dark", "pack://application:,,,/UiSon.Resource;Component/Skins/DarkSkin.xaml" },
             //{ "Dark", "pack://application:,,,/UiSon.Resource;Component/Skins/DarkSkin.xaml" }
         };
 
