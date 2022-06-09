@@ -1,55 +1,85 @@
-﻿// UiSon 2022, Cameron Gale
+﻿// UiSon, by Cameron Gale 2022
 
+using System.ComponentModel;
+using UiSon.Attribute;
 using UiSon.Element;
 using UiSon.View.Interface;
 
 namespace UiSon.View
 {
     /// <summary>
-    /// View for a class or struct
+    /// A view representing a class or struct
     /// </summary>
-    public class EncapsulatingView : NPCBase, IReadWriteView
+    public class EncapsulatingView : GroupView, IUiValueView
     {
         /// <inheritdoc/>
-        public object? Value => _value;
-        private object? _value;
-
-        private readonly bool _isNullable;
-        private readonly ValueMemberInfo? _info;
-        private readonly Type _type;
-
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="type"></param>
-        /// <param name="info"></param>
-        /// <exception cref="ArgumentNullException"></exception>
-        public EncapsulatingView(Type type, ValueMemberInfo? info)
+        public virtual object? Value
         {
-            _type = type ?? throw new ArgumentNullException(nameof(type));
-            _info = info;
+            get
+            {
+                var instance = Activator.CreateInstance(_type);
 
-            _isNullable = !type.IsValueType || Nullable.GetUnderlyingType(type) != null;
+                if (instance != null)
+                {
+                    foreach (var member in Members)
+                    {
+                        member.Write(instance);
+                    }
+                }
+
+                return instance;
+            }
         }
 
         /// <inheritdoc/>
-        public bool TrySetValue(object? value)
-        {
-            if (value == null)
-            {
-                if (_isNullable)
-                {
-                    _value = null;
-                    OnPropertyChanged(nameof(Value));
-                    return true;
-                }
+        public object? DisplayValue => Value;
 
-                return false;
-            }
-            else if (value.GetType().IsAssignableTo(_type))
+        /// <inheritdoc/>
+        public UiType UiType => UiType.Encapsulating;
+
+        /// <inheritdoc/>
+        public Type Type => _type;
+        private readonly Type _type;
+
+        private readonly ValueMemberInfo? _info;
+
+        public EncapsulatingView(Type type,
+                                 int displayPriority,
+                                 string? name,
+                                 DisplayMode displayMode,
+                                 ValueMemberInfo? info,
+                                 IReadWriteView[] members)
+            : base(displayPriority, name, displayMode, members)
+        {
+            _type = type ?? throw new ArgumentNullException(nameof(type));
+
+            foreach (var member in members)
             {
-                _value = value;
-                OnPropertyChanged(nameof(Value));
+                member.PropertyChanged += OnMemberPropertyChanged;
+            }
+
+            _info = info;
+        }
+
+        private void OnMemberPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case nameof(IUiValueView.Value):
+                    OnPropertyChanged(nameof(Value));
+                    break;
+            }
+        }
+
+        /// <inheritdoc/>
+        public override bool TrySetValue(object? value)
+        {
+            if (value?.GetType().IsAssignableTo(_type) ?? false)
+            {
+                foreach (var member in Members)
+                {
+                    member.Read(value);
+                }
                 return true;
             }
 
@@ -57,12 +87,28 @@ namespace UiSon.View
         }
 
         /// <inheritdoc/>
-        public bool TrySetValueFromRead(object? instance) => TrySetValue(instance);
+        public override void Read(object instance)
+        {
+            if (_info == null)
+            {
+                throw new Exception("Read called on view without member info");
+            }
+
+            TrySetValueFromRead(_info.GetValue(instance));
+        }
 
         /// <inheritdoc/>
-        public void Read(object instance) => TrySetValue(_info.GetValue(instance));
+        public override void Write(object instance)
+        {
+            if (_info == null)
+            {
+                throw new Exception("Write called on view without member info");
+            }
 
-        /// <inheritdoc/>
-        public void Write(object instance) => _info?.SetValue(instance, _value);
+            if (!IsValueBad)
+            {
+                _info.SetValue(instance, Value);
+            }
+        }
     }
 }

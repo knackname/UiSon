@@ -3,7 +3,7 @@
 namespace UiSon.ViewModel.Interface
 {
     /// <summary>
-    /// Describes a moduel with a name and dirplay priority.
+    /// Describes a view model with a name and dirplay priority.
     /// </summary>
     public interface INamedOrderedViewModel
     {

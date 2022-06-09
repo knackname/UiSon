@@ -13,6 +13,7 @@
                 <ResourceDictionary Source="/UiSon.Resource;Component/Styles/CheckBoxStyle.xaml"/>
                 <ResourceDictionary Source="/UiSon.Resource;Component/Styles/ScrollViewerStyle.xaml"/>
                 <ResourceDictionary Source="/UiSon.Resource;Component/Styles/TextBoxStyle.xaml"/>
+                <ResourceDictionary Source="/UiSon.Resource;Component/Styles/ComboBoxStyle.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

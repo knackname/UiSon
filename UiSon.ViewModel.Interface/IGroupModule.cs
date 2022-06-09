@@ -6,7 +6,7 @@ using UiSon.Attribute;
 namespace UiSon.ViewModel.Interface
 {
     /// <summary>
-    /// For identification
+    /// A group of other editor modules.
     /// </summary>
     public interface IGroupModule : IEditorModule
     {
@@ -18,6 +18,6 @@ namespace UiSon.ViewModel.Interface
         /// <summary>
         /// Modules the group displays
         /// </summary>
-        IEnumerable<IEditorModule> Members { get; }
+        IList<IEditorModule> Members { get; }
     }
 }

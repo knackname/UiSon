@@ -4,38 +4,45 @@ using System.ComponentModel;
 
 namespace UiSon.View.Interface
 {
-    /// <summary>
-    /// Designates a class that holds a value and validates and manages the reading, writing, setting and getting of said value as any type.
-    /// </summary>
     public interface IReadWriteView : INotifyPropertyChanged
     {
         /// <summary>
-        /// The element's value.
+        /// The view's display priority.
         /// </summary>
-        object? Value { get; }
+        int DisplayPriority { get; }
 
         /// <summary>
-        /// Attempts to set the value to the input.
+        /// If the view's value is invalid.
+        /// </summary>
+        public bool IsValueBad { get; }
+
+        /// <summary>
+        /// The name.
+        /// </summary>
+        public string? Name { get; }
+
+        /// <summary>
+        /// Attempts to set the view's value to the input.
         /// </summary>
         /// <param name="value">input value</param>
         /// <returns>True if set successfully, false otherwise</returns>
         bool TrySetValue(object? value);
 
         /// <summary>
-        /// Attempts to set the value from an input that was read.
+        /// Attempts to set the view's value from an input that was read.
         /// </summary>
-        /// <param name="instance"></param>
+        /// <param name="value"></param>
         /// <returns></returns>
-        bool TrySetValueFromRead(object? instance);
+        bool TrySetValueFromRead(object? value);
 
         /// <summary>
-        /// Reads data from instance and set's this element's value to it
+        /// Reads data from an instance and set's this view's value to it
         /// </summary>
         /// <param name="instance">The instance</param>
         void Read(object instance);
 
         /// <summary>
-        /// Writes this element's value to the instance
+        /// Writes this view's value to the instance
         /// </summary>
         /// <param name="instance">The instance</param>
         void Write(object instance);

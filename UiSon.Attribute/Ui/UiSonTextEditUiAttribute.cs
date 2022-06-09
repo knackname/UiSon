@@ -12,6 +12,9 @@ namespace UiSon.Attribute
     /// </summary>
     public class UiSonTextEditUiAttribute : UiSonUiAttribute
     {
+        /// <inheritdoc/>
+        public override UiType Type => UiType.TextEdit;
+
         /// <summary>
         /// Validation regex string.
         /// </summary>

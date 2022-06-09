@@ -3,9 +3,9 @@
 namespace UiSon.ViewModel.Interface
 {
     /// <summary>
-    /// A module using the border template
+    /// A module decorating another
     /// </summary>
-    public interface IBorderedModule : IEditorModule
+    public interface IDecoratingModule : IEditorModule
     {
         /// <summary>
         /// The decorated module

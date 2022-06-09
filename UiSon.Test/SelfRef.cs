@@ -9,7 +9,7 @@ namespace UiSon.Test
         [UiSonTextEditUi]
         public int otherMember;
 
-        [UiSonMemberElement(0, null, DisplayMode.Grid)]
+        [UiSonMemberElementUi(0, null, DisplayMode.Grid)]
         public SelfRef _selfRef;
     }
 }

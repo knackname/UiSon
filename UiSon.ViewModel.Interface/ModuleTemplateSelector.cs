@@ -19,7 +19,7 @@ namespace UiSon.ViewModel.Interface
                 {
                     return frameworkElement.FindResource("TextBlockTemplate") as DataTemplate;
                 }
-                else if (item is IBorderedModule)
+                else if (item is IDecoratingModule)
                 {
                     return frameworkElement.FindResource("BorderedTemplate") as DataTemplate;
                 }
@@ -29,13 +29,9 @@ namespace UiSon.ViewModel.Interface
                 }
                 else if (item is ISliderModule slider)
                 {
-                    switch(slider.IsVertical)
-                    {
-                        case true:
-                            return frameworkElement.FindResource("SliderVerticalTemplate") as DataTemplate;
-                        case false:
-                            return frameworkElement.FindResource("SliderHorizontalTemplate") as DataTemplate;
-                    }
+                    return slider.IsVertical 
+                        ? frameworkElement.FindResource("SliderVerticalTemplate") as DataTemplate 
+                        : frameworkElement.FindResource("SliderHorizontalTemplate") as DataTemplate;
                 }
                 else if (item is ITextEditModule)
                 {

@@ -2,7 +2,7 @@
 
 namespace UiSon.View.Interface
 {
-    public interface ISelectorView : IReadWriteView
+    public interface ISelectorValueView : IUiValueView
     {
         public IEnumerable<string> Options { get; }
     }

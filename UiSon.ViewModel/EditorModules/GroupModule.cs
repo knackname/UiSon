@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Windows.Controls;
 using UiSon.Attribute;
 using UiSon.Element;
@@ -13,42 +12,53 @@ using UiSon.ViewModel.Interface;
 namespace UiSon.ViewModel
 {
     /// <summary>
-    /// A group of other editor modules, not deigned to be expandable
+    /// A group of other editor modules, not expandable
     /// </summary>
-    public class GroupModule : NPCBase, IEditorModule, IGroupModule
+    public class GroupModule : NPCBase, IGroupModule
     {
-        public virtual object Value
-        {
-            get => throw new NotImplementedException();
-            set => throw new NotImplementedException();
-        }
-
-        public IEnumerable<IEditorModule> Members => _members.OrderByDescending(x => x.DisplayPriority);
-        private readonly IEnumerable<IEditorModule> _members;
-
+        /// <inheritdoc/>
         public string Name => _name;
         private readonly string _name;
 
+        /// <inheritdoc/>
         public int DisplayPriority => _displayPriority;
         private readonly int _displayPriority;
 
+        /// <inheritdoc/>
         public DisplayMode DisplayMode => _displayMode;
         private readonly DisplayMode _displayMode;
 
-        public bool IsNameVisible => !_hideName && !string.IsNullOrWhiteSpace(Name);
+        /// <inheritdoc/>
+        public virtual ModuleState State
+        {
+            get
+            {
+                foreach (var member in _members)
+                {
+                    if (member.State == ModuleState.Error)
+                    {
+                        _stateJustification = $"{member.Name} is invalid.";
+                        return ModuleState.Error;
+                    }
+                }
 
-        public virtual ModuleState State => _members.Any(x => x.State == ModuleState.Error) ? ModuleState.Error : ModuleState.Normal;
+                _stateJustification = null;
+                return ModuleState.Normal;
+            }
+        }
 
-        private readonly bool _hideName;
+        /// <inheritdoc/>
+        public string StateJustification => _stateJustification;
+        private string _stateJustification;
 
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        public GroupModule(IEnumerable<IEditorModule> members,
-                              string name,
-                              int displayPriority,
-                              DisplayMode displayMode,
-                              bool hideName = false)
+        /// <inheritdoc/>
+        public IList<IEditorModule> Members => _members;
+        private readonly IEditorModule[] _members;
+
+        public GroupModule(string name,
+                           int displayPriority,
+                           DisplayMode displayMode,
+                           IEditorModule[] members)
         {
             _members = members ?? throw new ArgumentNullException(nameof(members));
 
@@ -57,41 +67,22 @@ namespace UiSon.ViewModel
                 member.PropertyChanged += OnMemberPropertyChanged;
             }
 
-            _hideName = hideName;
             _name = name;
             _displayPriority = displayPriority;
             _displayMode = displayMode;
         }
 
-        protected void OnMemberPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        private void OnMemberPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)
             {
-                case nameof(IEditorModule.Value):
-                    OnPropertyChanged(nameof(Value));
-                    break;
                 case nameof(IEditorModule.State):
                     OnPropertyChanged(nameof(State));
                     break;
             }
         }
 
-        public virtual void Read(object instance)
-        {
-            foreach (var member in Members)
-            {
-                member.Read(instance);
-            }
-        }
-
-        public virtual void Write(object instance)
-        {
-            foreach (var member in Members)
-            {
-                member.Write(instance);
-            }
-        }
-
+        /// <inheritdoc/>
         public virtual IEnumerable<DataGridColumn> GenerateColumns(string path)
         {
             var columns = new List<DataGridColumn>();

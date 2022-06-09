@@ -28,7 +28,7 @@ namespace UiSon.Element
         /// The skin used by UiSon for this project.
         /// </summary>
         [UiSonTextEditUi]
-        public string? Skin { get; set; } = "Light";
+        public string? Skin { get; set; } = "Dark";
 
         /// <summary>
         /// Paths realative to the save file's directory to assemblies used by this project.
@@ -39,7 +39,7 @@ namespace UiSon.Element
         /// <summary>
         /// Paths realative to the save file's directory to assemblies used by this project.
         /// </summary>
-        [UiSonMemberElement]
+        [UiSonMemberElementUi]
         public Dictionary<string, string> CustomSkins { get; set; } = new Dictionary<string, string>();
     }
 }

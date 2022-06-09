@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using UiSon.View;
+using UiSon.View.Interface;
 using UiSon.ViewModel.Interface;
 
 namespace UiSon.ViewModel
@@ -28,18 +29,17 @@ namespace UiSon.ViewModel
         public IEditorModule MainModule => _mainModule;
         private readonly IEditorModule _mainModule;
 
-        public ElementView View => _view;
-        private readonly ElementView _view;
+        public IElementView View => _view;
+        private readonly IElementView _view;
 
         private readonly TabControl _controller;
 
-        public ElementEditorTab(ElementView view, IEditorModule mainModule, TabControl controller)
+        public ElementEditorTab(IElementView view, IEditorModule mainModule, TabControl controller)
         {
             _view = view ?? throw new ArgumentNullException(nameof(view));
             _mainModule = mainModule ?? throw new ArgumentNullException(nameof(mainModule));
             _controller = controller ?? throw new ArgumentNullException(nameof(controller));
 
-            _mainModule.PropertyChanged += OnModulePropertyChanged;
             _view.PropertyChanged += OnViewPropertyChanged;
 
             DataContext = this;
@@ -47,16 +47,26 @@ namespace UiSon.ViewModel
             InitializeComponent();
         }
 
-        private void OnModulePropertyChanged(object? sender, PropertyChangedEventArgs e)
-        {
-            _mainModule.Write(_view.Value);
-        }
-
         private void OnViewPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)
             {
                 case nameof(ElementView.Name):
+                    OnPropertyChanged(nameof(Name));
+                    break;
+                case nameof(ElementView.Value): // somehow notify unsaved changes in doc
+                    OnPropertyChanged(nameof(Name));
+                    break;
+            }
+        }
+
+        private void OnModulePropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case nameof(ElementView.Name):
+                case nameof(ElementView.Value):
+                    
                     OnPropertyChanged(nameof(Name));
                     break;
             }

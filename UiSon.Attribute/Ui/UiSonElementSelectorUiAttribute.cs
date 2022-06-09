@@ -17,6 +17,9 @@ namespace UiSon.Attribute
     /// </summary>
     public class UiSonElementSelectorUiAttribute : UiSonSelectorUiAttribute
     {
+        /// <inheritdoc/>
+        public override UiType Type => UiType.ElementSelector;
+
         /// <summary>
         /// The name of the UiSon object being selected.
         /// </summary>

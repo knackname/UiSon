@@ -1,14 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UiSon.View;
+﻿// UiSon, by Cameron Gale 2022
+
+using UiSon.View.Interface;
 
 namespace UiSon.ViewModel.Interface
 {
+    /// <summary>
+    /// A tab with an element view
+    /// </summary>
     public interface IElementEditorTab
     {
-        ElementView View { get; }
+        IElementView View { get; }
     }
 }

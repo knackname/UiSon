@@ -70,33 +70,6 @@ namespace UiSon
         }
 
         /// <summary>
-        /// Adds a new element with the given name, corrected for uniqueness
-        /// </summary>
-        /// <param name="name"></param>
-        private void NewElement(string name, object initialValue = null) => _view.NewElement(name, initialValue ?? Activator.CreateInstance(_view.ElementType));
-
-        /// <summary>
-        /// Adds a new element with the given name, corrected for uniqueness
-        /// </summary>
-        /// <param name="name"></param>
-        private void ImportElement()
-        {
-            var dlg = new OpenFileDialog();
-            dlg.DefaultExt = _elementAtt.Extension;
-            dlg.Filter = _view.ElementName + "|*" + _elementAtt.Extension;
-            dlg.CheckFileExists = true;
-
-            if (dlg.ShowDialog() ?? false)
-            {
-                var instance = JsonSerializer.Deserialize(File.ReadAllText(dlg.FileName),
-                                                          _view.ElementType,
-                                                          new JsonSerializerOptions() { IncludeFields = true });
-
-                NewElement(Path.GetFileNameWithoutExtension(dlg.FileName), instance);
-            }
-        }
-
-        /// <summary>
         /// Removes a specific element
         /// </summary>
         /// <param name="elementVM"></param>
@@ -107,19 +80,5 @@ namespace UiSon
         /// </summary>
         /// <param name="path">Path to save to</param>
         public void Save(string path) => _view.Save(path);
-
-        #region Commands
-
-        /// <summary>
-        /// Adds a new elements of the manager's type
-        /// </summary>
-        public ICommand AddCommand => new UiSonActionCommand((s) => NewElement($"new {_view.ElementName}"));
-
-        /// <summary>
-        /// Adds a new elements of the manager's type
-        /// </summary>
-        public ICommand ImportCommand => new UiSonActionCommand((s) => ImportElement());
-
-        #endregion
     }
 }

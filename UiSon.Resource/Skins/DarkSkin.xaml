@@ -85,15 +85,30 @@
     <SolidColorBrush x:Key="TabItem.Disabled.Border" Color="{StaticResource ControlDisabledBorderColor}"/>
 
     <!--DataGrid-->
-
-    <SolidColorBrush x:Key="DataGridItem.Static.Background" Color="{StaticResource ControlStaticBackgroundColor}"/>
-    <SolidColorBrush x:Key="DataGridItem.Static.Foreground" Color="{StaticResource ControlStaticForegroundColor}"/>
-    <SolidColorBrush x:Key="DataGridItem.MouseOver.Background" Color="{StaticResource ControlMouseOverBackgroundColor}"/>
-    <SolidColorBrush x:Key="DataGridItem.MouseOver.Foreground" Color="{StaticResource ControlMouseOverForegroundColor}"/>
-    <SolidColorBrush x:Key="DataGridItem.Selected.Background" Color="{StaticResource ControlStaticBackgroundColor}"/>
-    <SolidColorBrush x:Key="DataGridItem.Selected.Foreground" Color="{StaticResource ControlStaticForegroundColor}"/>
+    
     <SolidColorBrush x:Key="DataGrid.Static.Background" Color="{StaticResource ControlStaticBackgroundColor}"/>
+    <SolidColorBrush x:Key="DataGrid.Static.Border" Color="{StaticResource ControlStaticBorderColor}"/>
     <SolidColorBrush x:Key="DataGrid.Static.Foreground" Color="{StaticResource ControlStaticForegroundColor}"/>
+    <SolidColorBrush x:Key="DataGrid.Pressed.Border" Color="{StaticResource ControlStaticBorderColor}"/>
+    <SolidColorBrush x:Key="DataGrid.MouseOver.Border" Color="{StaticResource ControlStaticBorderColor}"/>
+
+    <SolidColorBrush x:Key="DataGridItem.Static.Background" Color="{StaticResource WindowBackgroundColor}"/>
+    <SolidColorBrush x:Key="DataGridItem.Static.Foreground" Color="{StaticResource ControlStaticForegroundColor}"/>
+    <SolidColorBrush x:Key="DataGridItem.MouseOver.Background" Color="{StaticResource WindowBackgroundColor}"/>
+    <SolidColorBrush x:Key="DataGridItem.MouseOver.Foreground" Color="{StaticResource ControlStaticForegroundColor}"/>
+    <SolidColorBrush x:Key="DataGridItem.Selected.Background" Color="{StaticResource WindowBackgroundColor}"/>
+    <SolidColorBrush x:Key="DataGridItem.Selected.Foreground" Color="{StaticResource ControlStaticForegroundColor}"/>
+
+    <SolidColorBrush x:Key="DataGridCell.Selected.Background" Color="{StaticResource WindowBackgroundColor}"/>
+    <SolidColorBrush x:Key="DataGridCell.Selected.Border" Color="{StaticResource ControlStaticBorderColor}"/>
+    <SolidColorBrush x:Key="DataGridCell.Selected.Foreground" Color="{StaticResource ControlStaticForegroundColor}"/>
+
+    <SolidColorBrush x:Key="DataGridCell.Selected.Inactive.Background" Color="{StaticResource WindowBackgroundColor}"/>
+    <SolidColorBrush x:Key="DataGridCell.Selected.Inactive.Border" Color="{StaticResource ControlStaticBorderColor}"/>
+    <SolidColorBrush x:Key="DataGridCell.Selected.Inactive.Foreground" Color="{StaticResource ControlStaticForegroundColor}"/>
+
+    <SolidColorBrush x:Key="DataGridCell.FocusBorderBrushKey" Color="{StaticResource ControlStaticBorderColor}"/>
+    <SolidColorBrush x:Key="DataGridCell.Disabled.Foreground" Color="{StaticResource ControlDisabledForegroundColor}"/>
 
     <!--Modules-->
 
@@ -120,6 +135,50 @@
     <!-- GridSplitter -->
 
     <SolidColorBrush x:Key="Gridsplitter.Background" Color="{StaticResource ControlStaticBackgroundColor}"/>
+
+    <!-- Combobox -->
+    
+    <SolidColorBrush x:Key="ComboBox.Static.Background" Color="{StaticResource ControlStaticBackgroundColor}"/>
+    <SolidColorBrush x:Key="ComboBox.Static.Border" Color="{StaticResource ControlStaticBorderColor}"/>
+    <SolidColorBrush x:Key="ComboBox.Static.Glyph" Color="{StaticResource ControlStaticForegroundColor}"/>
+    <SolidColorBrush x:Key="ComboBox.MouseOver.Background" Color="{StaticResource ControlMouseOverBackgroundColor}"/>
+    <SolidColorBrush x:Key="ComboBox.MouseOver.Border" Color="{StaticResource ControlMouseOverBorderColor}"/>
+    <SolidColorBrush x:Key="ComboBox.MouseOver.Glyph" Color="{StaticResource ControlMouseOverForegroundColor}"/>
+    <SolidColorBrush x:Key="ComboBox.Pressed.Background" Color="{StaticResource ControlPressedBackgroundColor}"/>
+    <SolidColorBrush x:Key="ComboBox.Pressed.Border" Color="{StaticResource ControlPressedBorderColor}"/>
+    <SolidColorBrush x:Key="ComboBox.Pressed.Glyph" Color="{StaticResource ControlPressedForegroundColor}"/>
+    <SolidColorBrush x:Key="ComboBox.Disabled.Background" Color="{StaticResource ControlDisabledBackgroundColor}"/>
+    <SolidColorBrush x:Key="ComboBox.Disabled.Border" Color="{StaticResource ControlDisabledBorderColor}"/>
+    <SolidColorBrush x:Key="ComboBox.Disabled.Glyph" Color="{StaticResource ControlDisabledForegroundColor}"/>
+
+    <SolidColorBrush x:Key="ComboBox.Static.Editable.Background" Color="{StaticResource ControlStaticBackgroundColor}"/>
+    <SolidColorBrush x:Key="ComboBox.Static.Editable.Border" Color="{StaticResource ControlStaticBorderColor}"/>
+    <SolidColorBrush x:Key="ComboBox.Static.Editable.Button.Background" Color="Transparent"/>
+    <SolidColorBrush x:Key="ComboBox.Static.Editable.Button.Border" Color="Transparent"/>
+    <SolidColorBrush x:Key="ComboBox.MouseOver.Editable.Background" Color="{StaticResource ControlMouseOverBackgroundColor}"/>
+    <SolidColorBrush x:Key="ComboBox.MouseOver.Editable.Border" Color="{StaticResource ControlMouseOverBorderColor}"/>
+    <SolidColorBrush x:Key="ComboBox.MouseOver.Editable.Button.Background" Color="{StaticResource ControlMouseOverBackgroundColor}"/>
+    <SolidColorBrush x:Key="ComboBox.MouseOver.Editable.Button.Border" Color="{StaticResource ControlMouseOverBorderColor}"/>
+    <SolidColorBrush x:Key="ComboBox.Pressed.Editable.Background" Color="{StaticResource ControlPressedBackgroundColor}"/>
+    <SolidColorBrush x:Key="ComboBox.Pressed.Editable.Border" Color="{StaticResource ControlPressedBorderColor}"/>
+    <SolidColorBrush x:Key="ComboBox.Pressed.Editable.Button.Background" Color="{StaticResource ControlPressedBackgroundColor}"/>
+    <SolidColorBrush x:Key="ComboBox.Pressed.Editable.Button.Border" Color="{StaticResource ControlPressedBorderColor}"/>
+    <SolidColorBrush x:Key="ComboBox.Disabled.Editable.Background" Color="{StaticResource ControlDisabledBackgroundColor}"/>
+    <SolidColorBrush x:Key="ComboBox.Disabled.Editable.Border" Color="{StaticResource ControlDisabledBorderColor}"/>
+    <SolidColorBrush x:Key="ComboBox.Disabled.Editable.Button.Background" Color="{StaticResource ControlDisabledBackgroundColor}"/>
+    <SolidColorBrush x:Key="ComboBox.Disabled.Editable.Button.Border" Color="{StaticResource ControlDisabledBorderColor}"/>
+
+    <SolidColorBrush x:Key="ComboBoxItem.ItemsviewHover.Background" Color="{StaticResource ControlMouseOverBackgroundColor}"/>
+    <SolidColorBrush x:Key="ComboBoxItem.ItemsviewHover.Border" Color="{StaticResource ControlMouseOverBorderColor}"/>
+    <SolidColorBrush x:Key="ComboBoxItem.ItemsviewSelected.Background" Color="{StaticResource ControlPressedBackgroundColor}"/>
+    <SolidColorBrush x:Key="ComboBoxItem.ItemsviewSelected.Border" Color="{StaticResource ControlPressedBorderColor}"/>
+    <SolidColorBrush x:Key="ComboBoxItem.ItemsviewSelectedHover.Background" Color="{StaticResource ControlMouseOverBackgroundColor}"/>
+    <SolidColorBrush x:Key="ComboBoxItem.ItemsviewSelectedHover.Border" Color="{StaticResource ControlMouseOverBorderColor}"/>
+    <SolidColorBrush x:Key="ComboBoxItem.ItemsviewSelectedNoFocus.Background" Color="{StaticResource ControlPressedBackgroundColor}"/>
+    <SolidColorBrush x:Key="ComboBoxItem.ItemsviewSelectedNoFocus.Border" Color="{StaticResource ControlPressedBorderColor}"/>
+    <SolidColorBrush x:Key="ComboBoxItem.ItemsviewFocus.Border" Color="{StaticResource ControlPressedBorderColor}"/>
+    <SolidColorBrush x:Key="ComboBoxItem.ItemsviewHoverFocus.Background" Color="{StaticResource ControlMouseOverBackgroundColor}"/>
+    <SolidColorBrush x:Key="ComboBoxItem.ItemsviewHoverFocus.Border" Color="{StaticResource ControlMouseOverBorderColor}"/>
 
     <!-- TextBox -->
 

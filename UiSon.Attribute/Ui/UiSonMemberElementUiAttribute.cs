@@ -7,8 +7,11 @@ namespace UiSon.Attribute
     /// 
     /// Only one Ui attribute may be used per property/field.
     /// </summary>
-    public class UiSonMemberElementAttribute : UiSonUiAttribute
+    public class UiSonMemberElementUiAttribute : UiSonUiAttribute
     {
+        /// <inheritdoc/>
+        public override UiType Type => UiType.Encapsulating;
+
         /// <summary>
         /// The display mode for the member's ui moduels.
         /// </summary>
@@ -20,7 +23,7 @@ namespace UiSon.Attribute
         /// <param name="displayPriority">The display priority of this Ui.</param>
         /// <param name="groupName">The name of the group this Ui belongs to.</param>
         /// <param name="displayMode">The display mode for the member's ui moduels.</param>
-        public UiSonMemberElementAttribute(int displayPriority = 0,
+        public UiSonMemberElementUiAttribute(int displayPriority = 0,
                                            string groupName = null,
                                            DisplayMode displayMode = DisplayMode.Vertial)
         {

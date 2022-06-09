@@ -12,7 +12,7 @@
         <!--data template selectors-->
 
         <viewModelInterface:ModuleTemplateSelector x:Key="templateSelector"/>
-
+        
         <!--converters-->
 
         <converter:DebugConverter x:Key="debugConverter"/>
@@ -112,83 +112,48 @@
         <!--groups-->
 
         <DataTemplate x:Key="GroupVerticalTemplate">
-            <Grid Margin="4">
-                <Grid.RowDefinitions>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                </Grid.RowDefinitions>
-                <TextBlock Margin="0,0,4,0" 
-                           Grid.Row="0"
-                           VerticalAlignment="Center" 
-                           Text="{Binding Name}"
-                           Visibility="{Binding IsNameVisible, Converter={StaticResource boolToVisibilityConverter}}"/>
-                <ItemsControl Grid.Row="1"
-                              ItemsSource="{Binding Members}"
-                              ItemTemplateSelector="{StaticResource templateSelector}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch"  Margin="4"/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                </ItemsControl>
-            </Grid>
+            <ItemsControl ItemsSource="{Binding Members}"
+                          ItemTemplateSelector="{StaticResource templateSelector}"
+                          HorizontalAlignment="Stretch">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel Orientation="Vertical"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
         </DataTemplate>
 
         <DataTemplate x:Key="GroupHorizontalTemplate">
-            <Grid Margin="4">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="auto"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Margin="0,0,4,0"
-                           Grid.Column="0"
-                           VerticalAlignment="Center"
-                           Text="{Binding Name}"
-                           Visibility="{Binding IsNameVisible, Converter={StaticResource boolToVisibilityConverter}}"/>
-                <ItemsControl Grid.Column="1"
-                              HorizontalAlignment="Stretch"
-                              ItemsSource="{Binding Members}"
-                              ItemTemplateSelector="{StaticResource templateSelector}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel Orientation="Horizontal"
-                                        HorizontalAlignment="Stretch" 
-                                        Margin="4"/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                </ItemsControl>
-            </Grid>
+            <ItemsControl ItemsSource="{Binding Members}"
+                          ItemTemplateSelector="{StaticResource templateSelector}"
+                          HorizontalAlignment="Stretch">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
         </DataTemplate>
 
         <DataTemplate x:Key="GroupWrapTemplate">
-            <Grid Margin="4">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="auto"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Margin="0,0,4,0"
-                           Grid.Column="0"
-                           VerticalAlignment="Center"
-                           Text="{Binding Name}"
-                           Visibility="{Binding IsNameVisible, Converter={StaticResource boolToVisibilityConverter}}"/>
-                <ItemsControl Grid.Column="1"
-                              HorizontalAlignment="Stretch"
-                              ItemsSource="{Binding Members}"
-                              ItemTemplateSelector="{StaticResource templateSelector}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <WrapPanel HorizontalAlignment="Stretch"
-                                       Margin="4"/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                </ItemsControl>
-            </Grid>
+            <ItemsControl Grid.Column="1"
+                          HorizontalAlignment="Stretch"
+                          ItemsSource="{Binding Members}"
+                          ItemTemplateSelector="{StaticResource templateSelector}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel HorizontalAlignment="Stretch" Margin="4"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
         </DataTemplate>
 
         <DataTemplate x:Key="GroupGridTemplate">
             <DataGrid AutoGenerateColumns="False"
+                      Margin="4"
                       CanUserAddRows="False"
                       CanUserDeleteRows="False"
+                      IsReadOnly="True"
                       HorizontalAlignment="Stretch"
                       ItemsSource="{Binding Converter={StaticResource putInListConverter}}"
                       Initialized="GridGroup_Initialized"/>
@@ -197,6 +162,34 @@
         <!--collections-->
 
         <DataTemplate x:Key="CollectionVerticalTemplate">
+            <Grid Margin="4">
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Button Grid.Row="0"
+                        HorizontalAlignment="Left"
+                        Content=" + "
+                        Command="{Binding AddEntryCommand}"
+                        Visibility="{Binding CanModifyCollection, Converter={StaticResource boolToVisibilityConverter}}"/>
+                <Border Grid.Row="1"
+                        BorderThickness="4"
+                        CornerRadius="{DynamicResource CollectionCornerRadius}"
+                        BorderBrush="{Binding State, Converter={StaticResource moduleStateToBrushConverter}}">
+                    <ItemsControl HorizontalAlignment="Stretch"
+                                  ItemsSource="{Binding Entries}"
+                                  ItemTemplate="{StaticResource CollectionEntryTemplate}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <VirtualizingStackPanel Orientation="Vertical"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </Border>
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="CollectionHorizontalTemplate">
             <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" Margin="8,8,8,8">
                 <Button HorizontalAlignment="Left"
                         Content=" + "
@@ -206,29 +199,7 @@
                         CornerRadius="{DynamicResource CollectionCornerRadius}"
                         BorderBrush="{Binding State, Converter={StaticResource moduleStateToBrushConverter}}">
                     <ItemsControl HorizontalAlignment="Stretch"
-                                  ItemsSource="{Binding Members}"
-                                  ItemTemplate="{StaticResource CollectionEntryTemplate}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch"/>
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                    </ItemsControl>
-                </Border>
-            </StackPanel>
-        </DataTemplate>
-
-        <DataTemplate x:Key="CollectionHorizontalTemplate">
-            <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" Margin="8,8,8,8">
-                <Button HorizontalAlignment="Left"
-                        Style="{StaticResource AddButtonStyle}"
-                        Command="{Binding AddEntryCommand}"
-                        Visibility="{Binding CanModifyCollection, Converter={StaticResource boolToVisibilityConverter}}"/>
-                <Border BorderThickness="4"
-                        CornerRadius="{DynamicResource CollectionCornerRadius}"
-                        BorderBrush="{Binding State, Converter={StaticResource moduleStateToBrushConverter}}">
-                    <ItemsControl HorizontalAlignment="Stretch"
-                                  ItemsSource="{Binding Members}"
+                                  ItemsSource="{Binding Entries}"
                                   ItemTemplate="{StaticResource CollectionEntryTemplate}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -245,14 +216,14 @@
                         HorizontalAlignment="Stretch"
                         Margin="8">
                 <Button HorizontalAlignment="Left"
-                        Style="{StaticResource AddButtonStyle}"
+                        Content=" + "
                         Command="{Binding AddEntryCommand}"
                         Visibility="{Binding CanModifyCollection, Converter={StaticResource boolToVisibilityConverter}}"/>
                 <Border BorderThickness="4"
                         CornerRadius="{DynamicResource CollectionCornerRadius}"
                         BorderBrush="{Binding State, Converter={StaticResource moduleStateToBrushConverter}}">
                     <ItemsControl HorizontalAlignment="Stretch"
-                                  ItemsSource="{Binding Members}"
+                                  ItemsSource="{Binding Entries}"
                                   ItemTemplate="{StaticResource CollectionEntryTemplate}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -272,24 +243,29 @@
                         Content=" + "
                         Command="{Binding AddEntryCommand}"
                         Visibility="{Binding CanModifyCollection, Converter={StaticResource boolToVisibilityConverter}}"/>
-                <DataGrid AutoGenerateColumns="False"
+                <Border BorderThickness="4"
+                        CornerRadius="{DynamicResource CollectionCornerRadius}"
+                        BorderBrush="{Binding State, Converter={StaticResource moduleStateToBrushConverter}}">
+                    <DataGrid AutoGenerateColumns="False"
+                          IsReadOnly="True"
                           CanUserAddRows="False"
                           CanUserDeleteRows="False"
                           HorizontalAlignment="Stretch"
                           ItemTemplate="{StaticResource CollectionEntryTemplate}"
-                          ItemsSource="{Binding Members}" Initialized="DataGridCollection_Initialized">
-                    <DataGrid.Columns>
-                        <DataGridTemplateColumn>
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <Button Content=" X "
+                          ItemsSource="{Binding Entries}" Initialized="DataGridCollection_Initialized">
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn>
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Content=" X "
                                             Command="{Binding RemoveElement}"
                                             Visibility="{Binding CanModifyCollection, Converter={StaticResource boolToVisibilityConverter}}"/>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                    </DataGrid.Columns>
-                </DataGrid>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Border>
             </StackPanel>
         </DataTemplate>
 
@@ -297,6 +273,7 @@
         
         <DataTemplate x:Key="TextBlockTemplate">
             <TextBlock Margin="4"
+                       VerticalAlignment="Center"
                        Text="{Binding Value}"
                        Foreground="{Binding State, Converter={StaticResource moduleStateToBrushConverter}}"/>
         </DataTemplate>
@@ -328,11 +305,13 @@
                 </Grid.ColumnDefinitions>
                 <TextBlock Margin="0,0,4,0"
                            Grid.Column="0"
+                           VerticalAlignment="Center"
                            Text="{Binding Name}"
                            Foreground="{Binding State, Converter={StaticResource moduleStateToBrushConverter}}"
                            Visibility="{Binding IsNameVisible, Converter={StaticResource boolToVisibilityConverter}}"/>
                 <ComboBox HorizontalAlignment="Stretch"
                           Grid.Column="1"
+                          VerticalAlignment="Center"
                           ItemsSource="{Binding Options}"
                           SelectedValue="{Binding Value, Mode=TwoWay}"
                           Foreground="{Binding State, Converter={StaticResource moduleStateToBrushConverter}}"/>
@@ -343,6 +322,7 @@
             <CheckBox Grid.Column="1"
                       Margin="0,4,4,4"
                       VerticalAlignment="Center"
+                      HorizontalAlignment="Left"
                       IsChecked="{Binding Value}"
                       BorderBrush="{Binding State, Converter={StaticResource moduleStateToBrushConverter}}">
                 <CheckBox.Content>
@@ -359,6 +339,7 @@
             <Slider Margin="4"
                     MinWidth="100"
                     HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"
                     Orientation="Horizontal"
                     Minimum="{Binding Min}"
                     Maximum="{Binding Max}"

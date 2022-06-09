@@ -3,7 +3,7 @@
 namespace UiSon.ViewModel.Interface
 {
     /// <summary>
-    /// For identification
+    /// For identification of modules using the checkbox ui.
     /// </summary>
     public interface ICheckboxModule : IEditorModule
     {

@@ -58,7 +58,7 @@ namespace UiSon.Test
         [UiSonSelectorUi("TestEnum_Strings")]
         public TestEnum EnumSelector_TestEnum;
 
-        [UiSonSelectorUi("TestEnum_Strings")]
+        [UiSonSelectorUi("TestEnum_Nullable_Strings")]
         public TestEnum? EnumSelector_NullableTestEnum;
 
         [UiSonSelectorUi("TestEnum_Strings")]

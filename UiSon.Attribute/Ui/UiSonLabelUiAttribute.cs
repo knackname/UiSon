@@ -10,6 +10,9 @@ namespace UiSon.Attribute
     /// </summary>
     public class UiSonLabelUiAttribute : UiSonUiAttribute
     {
+        /// <inheritdoc/>
+        public override UiType Type => UiType.Label;
+
         /// <summary>
         /// Constructor
         /// </summary>

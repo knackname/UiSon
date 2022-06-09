@@ -14,6 +14,9 @@ namespace UiSon.Attribute
     /// </summary>
     public class UiSonMultiChoiceUiAttribute : UiSonUiAttribute
     {
+        /// <inheritdoc/>
+        public override UiType Type => UiType.Encapsulating;
+
         /// <summary>
         /// Options to select from.
         /// </summary>

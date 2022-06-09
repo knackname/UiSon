@@ -9,6 +9,9 @@ namespace UiSon.Attribute
     /// </summary>
     public class UiSonSliderUiAttribute : UiSonUiAttribute
     {
+        /// <inheritdoc/>
+        public override UiType Type => UiType.Slider;
+
         /// <summary>
         /// Minimum value of the slider.
         /// </summary>

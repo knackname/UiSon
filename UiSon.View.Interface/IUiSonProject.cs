@@ -1,7 +1,6 @@
 ﻿// UiSon, by Cameron Gale 2022
 
 using System.ComponentModel;
-using UiSon.Element;
 
 namespace UiSon.View.Interface
 {
@@ -33,18 +32,49 @@ namespace UiSon.View.Interface
         /// <returns>Returns true if successful. False otherwise.</returns>
         bool Save();
 
+        /// <summary>
+        /// 
+        /// </summary>
         string Description { get; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         bool AllowAssemblyMod { get; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         IEnumerable<IAssemblyView> Assemblies { get; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         IEnumerable<IElementManager> ElementManagers { get; }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="path"></param>
         void AddAssembly(string path);
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="assembly"></param>
         void RemoveAssembly(IAssemblyView assembly);
 
+        /// <summary>
+        /// 
+        /// </summary>
         IEnumerable<KeyValuePair<string, string[]>> StringArrays { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="elementManager"></param>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        void ImportElement(IElementManager elementManager, string name, object value);
     }
 }

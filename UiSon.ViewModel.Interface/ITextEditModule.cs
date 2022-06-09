@@ -3,7 +3,7 @@
 namespace UiSon.ViewModel.Interface
 {
     /// <summary>
-    /// For identification
+    /// A module for editing a text value
     /// </summary>
     public interface ITextEditModule : IEditorModule
     {

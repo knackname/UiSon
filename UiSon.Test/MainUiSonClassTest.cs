@@ -8,37 +8,40 @@ namespace UiSon.Test
     [UiSonElement]
     public class UiSonClassTest
     {
-        [UiSonMemberElement]
+        [UiSonMemberElementUi]
+        public SingleSelector _singleSelector;
+
+        [UiSonMemberElementUi]
         public Sliders _sliders;
 
-        [UiSonMemberElement]
+        [UiSonMemberElementUi]
         public Attribulteless attribulteless;
 
-        [UiSonMemberElement]
+        [UiSonMemberElementUi]
         public TextEdits _textEdits;
 
-        [UiSonMemberElement]
+        [UiSonMemberElementUi]
         public Checkboxes _checkboxes;
 
-        [UiSonMemberElement]
+        [UiSonMemberElementUi]
         public Selectors _selectors;
 
-        [UiSonMemberElement]
+        [UiSonMemberElementUi]
         public ClassSelectors _classSelectors;
 
-        [UiSonMemberElement]
+        [UiSonMemberElementUi]
         public Groups _groups;
 
-        [UiSonMemberElement]
+        [UiSonMemberElementUi]
         public Collections _collections;
 
-        [UiSonMemberElement]
+        [UiSonMemberElementUi]
         public SelfRef _selfRef;
 
-        [UiSonMemberElement]
-        public MultiChoiceUi multiChoice; 
-        
-        [UiSonMemberElement]
+        [UiSonMemberElementUi]
+        public MultiChoiceUi multiChoice;
+
+        [UiSonMemberElementUi]
         public TextBlocks _textBlocks;
     }
 }

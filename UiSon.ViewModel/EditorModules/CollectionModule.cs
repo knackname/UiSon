@@ -1,11 +1,9 @@
 ﻿// UiSon, by Cameron Gale 2022
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
-using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -13,7 +11,8 @@ using System.Windows.Input;
 using UiSon.Attribute;
 using UiSon.Command;
 using UiSon.Element;
-using UiSon.Notify.Interface;
+using UiSon.View;
+using UiSon.View.Interface;
 using UiSon.ViewModel.Interface;
 
 namespace UiSon.ViewModel
@@ -21,135 +20,179 @@ namespace UiSon.ViewModel
     /// <summary>
     /// An expandable collection of one kind of <see cref="IEditorModule"/>
     /// </summary>
-    public class CollectionModule : GroupModule, ICollectionModule
+    public class CollectionModule : NPCBase, ICollectionModule
     {
-        public override object Value
+        /// <inheritdoc/>
+        public object Value
+        {
+            get => _view.DisplayValue;
+            set => _view.TrySetValue(value);
+        }
+
+        /// <inheritdoc/>
+        public DisplayMode DisplayMode => _view.DisplayMode;
+
+        /// <inheritdoc/>
+        public string Name => _view.Name;
+
+        /// <inheritdoc/>
+        public int DisplayPriority => _view.DisplayPriority;
+
+        /// <inheritdoc/>
+        public ModuleState State
         {
             get
             {
-                // some implimentations of ICollection<> may have rules about what can be added and throw an error
-                // in that case refresh the old value back into the child moduels
-                try
+                foreach (var entry in _entries)
                 {
-                    var value = Activator.CreateInstance(_collectionType);
-
-                    foreach (var member in _members)
+                    if (entry.State == ModuleState.Error)
                     {
-                        _collectionAdd.Invoke(value, new object[] { member.Value });
+                        _stateJustification = $"{entry.Name}: {entry.StateJustification}";
+                        return ModuleState.Error;
                     }
-
-                    _isValueBad = false;
-                    return value;
                 }
-                catch
+
+                if (_view.IsValueBad)
                 {
-                    _isValueBad= true;
-                    _notifier.Notify($"{nameof(UiSonCollectionAttribute)} {Name}: Invalid entries, reverting.", "Invalid Collection Entries");
-                    return null;
+                    _stateJustification = "Invalid value.";
+                    return ModuleState.Error;
                 }
-            }
-            set
-            {
-                if (value is IEnumerable enumerable
-                    && value.GetType()
-                            .GetInterfaces()
-                            .FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ICollection<>))
-                            .GetGenericArguments()
-                            .FirstOrDefault() == _entryType)
-                {
-                    _members.Clear();
 
-                    foreach (var entry in enumerable)
-                    {
-                        var newMember = _factory.MakeCollectionEntryVM(this, _entryType, _attribute, _uiAttribute);
-                        newMember.Value = entry;
-                        _members.Add(newMember);
-                    }
-
-                    _isValueBad = false;
-                    OnPropertyChanged();
-                    OnPropertyChanged(nameof(Members));
-                    OnPropertyChanged(nameof(State));
-                }
+                _stateJustification = null;
+                return ModuleState.Normal;
             }
         }
-        private bool _isValueBad;
 
-        public bool CanModifyCollection => _canMoodifyCollection;
-        private readonly bool _canMoodifyCollection;
+        /// <inheritdoc/>
+        public string StateJustification => _stateJustification;
+        private string _stateJustification;
 
-        public override ModuleState State => _isValueBad ? ModuleState.Error : base.State;
+        /// <inheritdoc/>
+        public bool CanModifyCollection => _view.IsModifiable;
 
-        private readonly ValueMemberInfo _info;
-        private readonly EditorModuleFactory _factory;
-        private readonly ICollection<IEditorModule> _members;
-        private readonly Type _entryType;
-        private readonly Type _collectionType;
-        private readonly MethodInfo _collectionAdd;
-        private readonly UiSonCollectionAttribute _attribute;
-        private readonly UiSonUiAttribute _uiAttribute;
+        /// <inheritdoc/>
+        public ObservableCollection<ICollectionEntryModule> Entries => _entries;
+        private readonly ObservableCollection<ICollectionEntryModule> _entries = new ObservableCollection<ICollectionEntryModule>();
+
+        /// <inheritdoc/>
+        public IUiValueView View => _view;
+        private readonly ICollectionValueView _view;
+
         private readonly ModuleTemplateSelector _templateSelector;
-        private readonly INotifier _notifier;
+        private readonly EditorModuleFactory _factory;
 
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        public CollectionModule(ValueMemberInfo info,
-                                ModuleTemplateSelector templateSelector,
-                                string name,
-                                int displayPriority,
-                                bool canModifyCollection,
-                                DisplayMode displayMode,
-                                Type collectionType,
-                                Type entryType,
-                                UiSonUiAttribute uiAttribute,
-                                UiSonCollectionAttribute collectionAttribute,
+        public CollectionModule(ICollectionValueView view,
                                 EditorModuleFactory factory,
-                                INotifier notifier,
-                                NotifyingCollection<IEditorModule> members,
-                                bool hideName = false)
-            : base(members, name, displayPriority, displayMode, hideName)
+                                ModuleTemplateSelector templateSelector)
         {
-            _info = info;
-            _collectionType = collectionType ?? throw new ArgumentNullException(nameof(collectionType));
-            _collectionAdd = _collectionType.GetInterfaces()
-                                            .FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ICollection<>))
-                                            .GetMethod("Add");
-
-            _notifier = notifier ?? throw new ArgumentNullException(nameof(notifier));
-
-            _entryType = entryType ?? throw new ArgumentNullException(nameof(entryType));
-
-            _members = members ?? throw new ArgumentNullException(nameof(members));
+            _view = view ?? throw new ArgumentNullException(nameof(view));
+            _view.PropertyChanged += OnViewPropertyChanged;
 
             _factory = factory ?? throw new ArgumentNullException(nameof(factory));
             _templateSelector = templateSelector ?? throw new ArgumentNullException(nameof(templateSelector));
 
-            _uiAttribute = uiAttribute;
-            _attribute = collectionAttribute;
-            _canMoodifyCollection = canModifyCollection;
+            RepopulateCollection();
         }
 
-        private void AddEntry()
+        private void OnViewPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            var newEntry = _factory.MakeCollectionEntryVM(this, _entryType, _attribute, _uiAttribute);
-            newEntry.PropertyChanged += OnMemberPropertyChanged;
-            _members.Add(newEntry);
-            OnPropertyChanged(nameof(Members));
+            switch (e.PropertyName)
+            {
+                case nameof(ICollectionValueView.DisplayMode):
+                    OnPropertyChanged(nameof(DisplayMode));
+                    break;
+                case nameof(ICollectionValueView.DisplayPriority):
+                    OnPropertyChanged(nameof(DisplayPriority));
+                    break;
+                case nameof(ICollectionValueView.IsValueBad):
+                    OnPropertyChanged(nameof(State));
+                    break;
+                case nameof(ICollectionValueView.IsModifiable):
+                    OnPropertyChanged(nameof(CanModifyCollection));
+                    break;
+                case nameof(ICollectionValueView.Entries):
+                    RepopulateCollection();
+                    break;
+                case nameof(IUiValueView.DisplayValue):
+                    OnPropertyChanged(nameof(Value));
+                    break;
+            }
         }
 
-        public void RemoveEntry(IEditorModule entry)
+        private void OnEntryPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            entry.PropertyChanged -= OnMemberPropertyChanged;
-            _members.Remove(entry);
-            OnPropertyChanged(nameof(Members));
+            switch (e.PropertyName)
+            {
+                case nameof(ICollectionEntryModule.State):
+                    OnPropertyChanged(nameof(State));
+                    break;
+            }
         }
 
-        public override void Read(object instance) => Value = _info.GetValue(instance);
+        /// <summary>
+        /// Clears entries and regenerates them from the view
+        /// </summary>
+        private void RepopulateCollection()
+        {
+            foreach (var entry in _entries)
+            {
+                entry.PropertyChanged -= OnEntryPropertyChanged;
+            }
 
-        public override void Write(object instance) => _info.SetValue(instance, Value);
+            _entries.Clear();
 
-        public override IEnumerable<DataGridColumn> GenerateColumns(string path)
+            _view.PropertyChanged -= OnViewPropertyChanged;
+
+            foreach (var entryView in _view.Entries)
+            {
+                var newEntry = new CollectionEntryModule(this, _factory.MakeUiValueEditorModule(entryView));
+                newEntry.PropertyChanged += OnEntryPropertyChanged;
+                _entries.Add(newEntry);
+            }
+
+            _view.PropertyChanged += OnViewPropertyChanged;
+
+            OnPropertyChanged(nameof(Entries));
+            OnPropertyChanged(nameof(State));
+            OnPropertyChanged(nameof(Value));
+        }
+
+        /// <inheritdoc/>
+        public void AddEntry()
+        {
+            _view.PropertyChanged -= OnViewPropertyChanged;
+
+            var newEntry = new CollectionEntryModule(this, _factory.MakeUiValueEditorModule(_view.AddEntry()));
+            newEntry.PropertyChanged += OnEntryPropertyChanged;
+            _entries.Add(newEntry);
+
+            _view.PropertyChanged += OnViewPropertyChanged;
+
+            OnPropertyChanged(nameof(Entries));
+            OnPropertyChanged(nameof(State));
+            OnPropertyChanged(nameof(Value));
+        }
+
+        /// <inheritdoc/>
+        public void RemoveEntry(ICollectionEntryModule entry)
+        {
+            // unsubscribe from viewPC so we don't have to remake the whole
+            // frontend for each addition/removal
+            _view.PropertyChanged -= OnViewPropertyChanged;
+
+            entry.PropertyChanged -= OnEntryPropertyChanged;
+            _entries.Remove(entry);
+            _view.RemoveEntry(entry.View);
+
+            _view.PropertyChanged += OnViewPropertyChanged;
+
+            OnPropertyChanged(nameof(Entries));
+            OnPropertyChanged(nameof(State));
+            OnPropertyChanged(nameof(Value));
+        }
+
+        /// <inheritdoc/>
+        public IEnumerable<DataGridColumn> GenerateColumns(string path)
         {
             var valCol = new DataGridTemplateColumn
             {
@@ -176,6 +219,7 @@ namespace UiSon.ViewModel
 
         #region Commands
 
+        /// <inheritdoc/>
         public ICommand AddEntryCommand => new UiSonActionCommand((s) => AddEntry());
 
         #endregion

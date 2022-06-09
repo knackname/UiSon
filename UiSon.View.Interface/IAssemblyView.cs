@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// UiSon, by Cameron Gale 2022
+
+using System.ComponentModel;
 
 namespace UiSon.View.Interface
 {
-    public interface IAssemblyView
+    public interface IAssemblyView : INotifyPropertyChanged
     {
         string Path { get; }
         IEnumerable<IElementManager> ElementManagers { get; }

@@ -32,7 +32,10 @@ namespace UiSon.ViewModel
         public IEnumerable<IElementManager> ElementManagers => _project.ElementManagers;
         public IEnumerable<string> SkinOptions => _skinDict.Keys;
 
-        public IUiSonProject Project
+        /// <summary>
+        /// The current project
+        /// </summary>
+        private IUiSonProject Project
         {
             get => _project;
             set
@@ -44,7 +47,6 @@ namespace UiSon.ViewModel
 
                 _project = value;
 
-                _editorModuleFactory.Project = _project;
                 _skinDict.ChangeSource(_project.Skin);
 
                 OnPropertyChanged(nameof(ProjectName));
@@ -65,7 +67,7 @@ namespace UiSon.ViewModel
         /// <summary>
         /// Constructor
         /// </summary>
-        public UiSonUi(IUiSonProject project,
+        public UiSonUi(ProjectSave projectSave,
                        INotifier notifier,
                        DynamicResourceDictionary skinDict,
                        EditorModuleFactory editorModuleFactory,
@@ -74,8 +76,9 @@ namespace UiSon.ViewModel
         {
             _editorModuleFactory = editorModuleFactory ?? throw new ArgumentNullException(nameof(editorModuleFactory));
             _skinDict = skinDict ?? throw new ArgumentNullException(nameof(skinDict));
-            Project = project ?? throw new ArgumentNullException(nameof(project));
             _notifier = notifier ?? throw new ArgumentNullException(nameof(notifier));
+
+            Project = new UiSonProjectView(projectSave, _notifier);
 
             DataContext = this;
             InitializeComponent();
@@ -86,7 +89,7 @@ namespace UiSon.ViewModel
 
                 foreach (var view in initialViews)
                 {
-                    var newTab = _editorModuleFactory.MakeElementEditorTab(view, this.TabControl);
+                    var newTab = new ElementEditorTab(view, _editorModuleFactory.MakeEditorModule(view.MainView), this.TabControl);
 
                     if (view == selectedView)
                     {
@@ -189,7 +192,7 @@ namespace UiSon.ViewModel
         /// Opens the view in a <see cref="IElementEditorTab"/>
         /// </summary>
         /// <param name="view">The element view to open</param>
-        private void OpenEditorTab(ElementView view)
+        private void OpenEditorTab(IElementView view)
         {
             // if the view is already open focus it
             foreach (var tab in this.TabControl.Items)
@@ -203,7 +206,7 @@ namespace UiSon.ViewModel
             }
 
             // if it wasn't, open it in a new tab
-            var newTab = _editorModuleFactory.MakeElementEditorTab(view, this.TabControl);
+            var newTab = new ElementEditorTab(view, _editorModuleFactory.MakeEditorModule(view.MainView), this.TabControl);
 
             this.TabControl.Items.Add(newTab);
             this.TabControl.SelectedItem = newTab;
@@ -212,7 +215,7 @@ namespace UiSon.ViewModel
         /// <summary>
         /// Saves the current project
         /// </summary>
-        private void Save() 
+        private void Save()
         {
             if (_project.SaveFileDirectory == null)
             {
@@ -239,11 +242,6 @@ namespace UiSon.ViewModel
                 _project.SaveFileDirectory = Path.GetDirectoryName(dlg.FileName);
                 _project.Save();
             }
-        }
-
-        private void RemoveElementManager()
-        {
-
         }
 
         private void RemoveElementView(ElementView view)
@@ -311,7 +309,7 @@ namespace UiSon.ViewModel
 
         private void ElementManagerAdd_Click(object sender, RoutedEventArgs e)
         {
-            ((ElementManager)((Button)sender).DataContext).NewElement();
+            ((ElementManager)((Button)sender).DataContext).NewDefaultElement();
         }
 
         private void ElementManagerImport_Click(object sender, RoutedEventArgs e)
@@ -335,7 +333,7 @@ namespace UiSon.ViewModel
                 }
                 else
                 {
-                    elementManager.NewElement(Path.GetFileNameWithoutExtension(dlg.FileName), intialValue);
+                    Project.ImportElement(elementManager, Path.GetFileNameWithoutExtension(dlg.FileName), intialValue);
                 }
             }
         }
@@ -356,6 +354,34 @@ namespace UiSon.ViewModel
             view.Manager.RemoveElement(view);
         }
 
+        private void ChangeSkin(string name)
+        {
+            _skinDict.ChangeSource(name);
+
+            // reopen all the editor tabs, unfortunatly nessisary since 
+            // the converters don't update dynamically
+
+            var selectedView = (this.TabControl.SelectedItem as IElementEditorTab).View;
+            var openElements = new List<IElementView>();
+
+            foreach (var tab in this.TabControl.Items)
+            {
+                if (tab is IElementEditorTab elementEditorTab)
+                {
+                    openElements.Add(elementEditorTab.View);
+                }
+            }
+
+            this.TabControl.Items.Clear();
+
+            foreach (var view in openElements)
+            {
+                OpenEditorTab(view);
+            }
+
+            OpenEditorTab(selectedView);
+        }
+
         #region Commands
 
         public ICommand NewCommand => new UiSonActionCommand((s) => NewProject());
@@ -366,13 +392,13 @@ namespace UiSon.ViewModel
 
         public ICommand SaveAsCommand => new UiSonActionCommand((s) => SaveAs());
 
-        public ICommand ChangeSkinCommand => new UiSonActionCommand((s) => _skinDict.ChangeSource(s as string));
+        public ICommand ChangeSkinCommand => new UiSonActionCommand((s) => ChangeSkin(s as string));
 
         #endregion
 
         #region INotifyPropertyChanged
 
-        public event PropertyChangedEventHandler? PropertyChanged;
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public void OnPropertyChanged([CallerMemberName] string? name = null)
         {

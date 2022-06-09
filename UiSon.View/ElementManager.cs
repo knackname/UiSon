@@ -1,5 +1,6 @@
 ﻿// UiSon, by Cameron Gale 2022
 
+using System.ComponentModel;
 using UiSon.Attribute;
 using UiSon.Element;
 using UiSon.View.Interface;
@@ -30,39 +31,52 @@ namespace UiSon.View
         public Type ElementType => _type;
         private Type _type;
 
-        private UiSonElementAttribute _elementAtt;
+        private readonly UiSonElementAttribute _elementAtt;
+        private readonly ViewFactory _factory;
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="type">Element type</param>
         /// <param name="elementAtt">Element attribute</param>
-        public ElementManager(Type type, UiSonElementAttribute elementAtt)
+        public ElementManager(Type type, UiSonElementAttribute elementAtt, ViewFactory factory)
         {
             _type = type ?? throw new ArgumentNullException(nameof(type));
             _elementAtt = elementAtt ?? throw new ArgumentNullException(nameof(elementAtt));
+            _factory = factory ?? throw new ArgumentNullException(nameof(factory));
+        }
+
+        private void OnElementPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case nameof(IElementView.Value):
+                    OnPropertyChanged("Element");
+                    break;
+            }
         }
 
         /// <summary>
         /// Adds a new element with the given name, corrected for uniqueness
         /// </summary>
         /// <param name="name"></param>
-        public IElementView NewElement(string name, object? initialValue)
+        public IElementView NewElement(string name)
         {
-            var newElement = new ElementView(name, initialValue, this);
+            var newElement = _factory.MakeElementView(name, _type, _elementAtt.AutoGenerateMemberAttributes, this);
+            newElement.PropertyChanged += OnElementPropertyChanged;
             _elements.Add(newElement);
             OnPropertyChanged(nameof(Elements));
             return newElement;
         }
 
         /// <summary>
-        /// Adds a new element with the given name, corrected for uniqueness
+        /// Adds a new element with default name and value
         /// </summary>
-        public IElementView NewElement()
+        /// <returns></returns>
+        public IElementView NewDefaultElement()
         {
-            var newElement = new ElementView($"New {ElementName}", Activator.CreateInstance(_type), this);
-            _elements.Add(newElement);
-            OnPropertyChanged(nameof(Elements));
+            var newElement = NewElement($"New {ElementName}");
+            newElement.MainView.TrySetValue(Activator.CreateInstance(_type));
             return newElement;
         }
 
@@ -72,6 +86,7 @@ namespace UiSon.View
         /// <param name="elementVM"></param>
         public void RemoveElement(ElementView elementVM)
         {
+            elementVM.PropertyChanged -= OnElementPropertyChanged;
             _elements.Remove(elementVM);
             OnPropertyChanged(nameof(Elements));
         }

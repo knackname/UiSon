@@ -12,6 +12,9 @@ namespace UiSon.Attribute
     /// </summary>
     public class UiSonSelectorUiAttribute : UiSonUiAttribute
     {
+        /// <inheritdoc/>
+        public override UiType Type => UiType.Selector;
+
         /// <summary>
         /// Options to select from. 
         /// </summary>

@@ -7,20 +7,15 @@ namespace UiSon.ViewModel.Interface
     /// <summary>
     /// Describes a collection member that can remove itself from its parent.
     /// </summary>
-    public interface ICollectionEntryModule : IEditorModule
+    public interface ICollectionEntryModule : IValueEditorModule
     {
         /// <summary>
-        /// The decorated editor module
-        /// </summary>
-        IEditorModule Decorated { get; }
-
-        /// <summary>
-        /// Removes the entry from its parent collection
+        /// Removes the entry from its parent collection.
         /// </summary>
         ICommand RemoveElement { get; }
 
         /// <summary>
-        /// If the parent collection can be modified
+        /// If the parent collection can be modified by this entry.
         /// </summary>
         bool CanModifyCollection { get; }
     }

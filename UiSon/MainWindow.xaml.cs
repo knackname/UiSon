@@ -70,10 +70,10 @@ namespace UiSon
 
             InitializeComponent();
 
-            UiSonUiContainer.Child = new UiSonUi(new UiSonProjectView(projectSave, notifier),
+            UiSonUiContainer.Child = new UiSonUi(projectSave,
                                                  notifier,
                                                  skinDict,
-                                                 new EditorModuleFactory(notifier, new ModuleTemplateSelector()));
+                                                 new EditorModuleFactory(new ModuleTemplateSelector()));
         }
     }
 }

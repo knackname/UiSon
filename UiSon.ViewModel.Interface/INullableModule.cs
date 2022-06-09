@@ -3,9 +3,9 @@
 namespace UiSon.ViewModel.Interface
 {
     /// <summary>
-    /// For identification
+    /// A module able to be set to null and expanded 
     /// </summary>
-    public interface INullableModule : IEditorModule
+    public interface INullableModule : IValueEditorModule
     {
         /// <summary>
         /// If the collapsable is expanded
@@ -13,13 +13,13 @@ namespace UiSon.ViewModel.Interface
         bool IsExpanded { get; set; }
 
         /// <summary>
-        /// If the value is null
+        /// If the null checkbox is checked
         /// </summary>
         bool IsNull { get; set; }
 
         /// <summary>
         /// The decorated module
         /// </summary>
-        IEditorModule Decorated { get; }
+        IValueEditorModule Decorated { get; }
     }
 }

@@ -27,16 +27,30 @@ namespace UiSon.View
 
         private readonly Assembly _assembly;
         private readonly INotifier _notifier;
+        private readonly ViewFactory _factory;
 
         public AssemblyView(Assembly assembly,
                             Dictionary<string, string[]> stringArrays,
-                            INotifier notifier)
+                            INotifier notifier,
+                            ViewFactory factory)
         {
             _assembly = assembly ?? throw new ArgumentNullException(nameof(assembly));
             _stringArrays = stringArrays ?? throw new ArgumentNullException(nameof(stringArrays));
             _notifier = notifier ?? throw new ArgumentNullException(nameof(notifier));
+            _factory = factory ?? throw new ArgumentNullException(nameof(factory));
 
             Load();
+        }
+
+        private void OnElementManagerPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case "Element":
+                case nameof(ElementManager.Elements):
+                    OnPropertyChanged("Value");
+                    break;
+            }
         }
 
         /// <summary>
@@ -71,7 +85,8 @@ namespace UiSon.View
                 {
                     if (type.IsValueType || type.GetConstructor(new Type[] { }) != null)
                     {
-                        var newElementManager = new ElementManager(type, elementAtt);
+                        var newElementManager = new ElementManager(type, elementAtt, _factory);
+                        newElementManager.PropertyChanged += OnElementManagerPropertyChanged;
                         _elementManagers.Add(newElementManager);
                     }
                     else

@@ -10,33 +10,33 @@ namespace UiSon.ViewModel.Interface
     /// <summary>
     /// Describes a representing a value that can be get/set/read/write -ed
     /// </summary>
-    public interface IEditorModule : INotifyPropertyChanged, INamedOrderedViewModel
+    public interface IEditorModule : INotifyPropertyChanged
     {
         /// <summary>
-        /// The moduel's value.
+        /// The module's name
         /// </summary>
-        object Value { get; set; }
+        string Name { get; }
 
         /// <summary>
-        /// The module's current state
+        /// Disctates the order in which modules are displayed
+        /// </summary>
+        int DisplayPriority { get; }
+
+        /// <summary>
+        /// The module's current state.
         /// </summary>
         ModuleState State { get; }
 
         /// <summary>
-        /// 
+        /// The reason for the current state.
         /// </summary>
-        void Read(object instance);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        void Write(object instance);
+        string StateJustification { get; }
 
         /// <summary>
         /// Generates data grid columns for parent data grids.
         /// </summary>
         /// <param name="bindingPath">The binding path.</param>
         /// <returns>An enumerable of the generated columns.</returns>
-        public IEnumerable<DataGridColumn> GenerateColumns(string bindingPath);
+        IEnumerable<DataGridColumn> GenerateColumns(string bindingPath);
     }
 }

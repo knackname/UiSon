@@ -1,44 +1,42 @@
 ﻿// UiSon, by Cameron Gale 2022
 
 using System;
-using System.Collections.Generic;
-using UiSon.Attribute;
+using System.ComponentModel;
 using UiSon.View;
+using UiSon.View.Interface;
 using UiSon.ViewModel.Interface;
 
 namespace UiSon.ViewModel
 {
-    public class EncapsulatingModule : GroupModule
+    public class EncapsulatingModule : GroupModule, IValueEditorModule
     {
-        public override object Value
+        /// <inheritdoc/>
+        public object Value
         {
-            get
-            {
-                var instance = Activator.CreateInstance(_type);
-
-                Write(instance);
-
-                return instance;
-            }
-            set
-            {
-                if (value?.GetType().IsAssignableTo(_type) ?? false)
-                {
-                    Read(value);
-                }
-            }
+            get => _view.DisplayValue;
+            set => _view.TrySetValue(value);
         }
 
-        private readonly Type _type;
+        /// <inheritdoc/>
+        public IUiValueView View => _view;
+        private readonly EncapsulatingView _view;
 
-        public EncapsulatingModule(Type type,
-                                   IEnumerable<IEditorModule> members,
-                                   string name,
-                                   int displayPriority,
-                                   DisplayMode displayMode)
-            : base(members, name, displayPriority, displayMode)
+        public EncapsulatingModule(EncapsulatingView view,
+                                   IEditorModule[] members)
+            : base(view.Name, view.DisplayPriority, view.DisplayMode, members)
         {
-            _type = type ?? throw new ArgumentNullException(nameof(type));
+            _view = view ?? throw new ArgumentNullException(nameof(view));
+            _view.PropertyChanged += OnViewPropertyChanged;
+        }
+
+        private void OnViewPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            { 
+                case nameof(EncapsulatingView.DisplayValue):
+                    OnPropertyChanged(nameof(Value));
+                    break;
+            }
         }
     }
 }

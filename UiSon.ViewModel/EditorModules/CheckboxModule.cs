@@ -1,6 +1,6 @@
 ﻿// UiSon, by Cameron Gale 2021
 
-using UiSon.View;
+using UiSon.View.Interface;
 using UiSon.ViewModel.Interface;
 
 namespace UiSon.ViewModel
@@ -10,14 +10,19 @@ namespace UiSon.ViewModel
     /// </summary>
     public class CheckboxModule : BaseEditorModule, ICheckboxModule
     {
+        /// <inheritdoc/>
+        public override object Value
+        {
+            get => base.Value ?? false;
+            set => base.Value = value;
+        }
+
         /// <summary>
         /// Constructor
         /// </summary>
-        public CheckboxModule(ValueView<bool> view,
-                              ModuleTemplateSelector templateSelector,
-                              string name,
-                              int priority)
-            :base(view, templateSelector, name, priority)
+        public CheckboxModule(IUiValueView view,
+                              ModuleTemplateSelector templateSelector)
+            :base(view, templateSelector)
         {
         }
     }

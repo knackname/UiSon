@@ -1,120 +1,155 @@
 ﻿// UiSon, by Cameron Gale 2022
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Reflection;
 using UiSon.Attribute;
 using UiSon.Element;
-using UiSon.Extension;
+using UiSon.View.Interface;
 using UiSon.ViewModel.Interface;
 
 namespace UiSon.ViewModel
 {
-    public class MultiChoiceModule : GroupModule
+    public class MultiChoiceModule : GroupModule, IValueEditorModule
     {
-        public override object Value
+        /// <inheritdoc/>
+        public object Value
         {
-            get
-            {
-                var value = Activator.CreateInstance(_collectionType);
-
-                // some implimentations of ICollection<> may have rules about what can be added and throw an error
-                // in that case refresh the old value back into the child moduels
-                try
-                {
-                    foreach (var member in Members)
-                    {
-                        if ((bool)member.Value)
-                        {
-                            _collectionAdd.Invoke(value, new[] { member.Name.ParseAs(_entryType) });
-                        }
-                    }
-
-                    _isValueBad = false;
-                    return value;
-                }
-                catch
-                {
-                    _isValueBad = true;
-                    return null;
-                }
-            }
-            set
-            {
-                if (value is IEnumerable enumerable
-                    && value.GetType()
-                            .GetInterfaces()
-                            .FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ICollection<>))
-                            .GetGenericArguments()
-                            .FirstOrDefault() == _entryType)
-                {
-                    foreach (var member in Members)
-                    {
-                        member.Value = false;
-                    }
-
-                    foreach (var entry in enumerable)
-                    {
-                        var member = Members.FirstOrDefault(x => x.Name == entry.ToString());
-
-                        if (member != null)
-                        {
-                            member.Value = true;
-                        }
-                    }
-
-                    _isValueBad = true;
-                    OnPropertyChanged(nameof(Members));
-                    OnPropertyChanged(nameof(Value));
-                    OnPropertyChanged(nameof(State));
-                }
-            }
+            get => _view.DisplayValue;
+            set => _view.TrySetValue(value);
         }
-        private bool _isValueBad;
 
-        public override ModuleState State => _isValueBad ? ModuleState.Error : base.State;
+        //public object Value
+        //{
+        //    get
+        //    {
+        //        var value = Activator.CreateInstance(_collectionType);
 
-        private readonly Type _collectionType;
-        private readonly Type _entryType;
-        private readonly MethodInfo _collectionAdd;
-        private readonly ValueMemberInfo _info;
+        //        // some implimentations of ICollection<> may have rules about what can be added and throw an error
+        //        // in that case refresh the old value back into the child moduels
+        //        try
+        //        {
+        //            foreach (var member in Members)
+        //            {
+        //                if (((bool?)member.Value) ?? false)
+        //                {
+        //                    _collectionAdd.Invoke(value, new[] { member.Name.ParseAs(_entryType) });
+        //                }
+        //            }
 
-        public MultiChoiceModule(ValueMemberInfo info,
-                                 NotifyingCollection<CheckboxModule> members,
-                                 Type collectionType,
-                                 Type entryType,
+        //            _isValueBad = false;
+        //            return value;
+        //        }
+        //        catch
+        //        {
+        //            _isValueBad = true;
+        //            return null;
+        //        }
+        //    }
+        //    set
+        //    {
+        //        if (value is IEnumerable enumerable
+        //            && value.GetType()
+        //                    .GetInterfaces()
+        //                    .FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ICollection<>))
+        //                    .GetGenericArguments()
+        //                    .FirstOrDefault() == _entryType)
+        //        {
+        //            foreach (var member in Members)
+        //            {
+        //                member.Value = false;
+        //            }
+
+        //            foreach (var entry in enumerable)
+        //            {
+        //                var member = Members.FirstOrDefault(x => x.Name == entry.ToString());
+
+        //                if (member != null)
+        //                {
+        //                    member.Value = true;
+        //                }
+        //            }
+
+        //            _isValueBad = true;
+        //            OnPropertyChanged(nameof(Members));
+        //            OnPropertyChanged(nameof(Value));
+        //            OnPropertyChanged(nameof(State));
+        //        }
+        //    }
+        //}
+        //private bool _isValueBad;
+
+        /// <inheritdoc/>
+        public override ModuleState State => _view.IsValueBad ? ModuleState.Error : base.State;
+
+        public IUiValueView View => null;
+
+        private readonly IValueEditorModule[] _members;
+        private readonly ICollectionValueView _view;
+
+        public MultiChoiceModule(ICollectionValueView view,
                                  string name,
                                  int priority,
-                                 DisplayMode displayMode)
-            :base(members, name, priority, displayMode)
+                                 DisplayMode displayMode,
+                                 IValueEditorModule[] members)
+            :base(name, priority, displayMode, members)
         {
-            _info = info;
-            _collectionType = collectionType ?? throw new ArgumentNullException(nameof(collectionType));
-            _entryType = entryType ?? throw new ArgumentNullException(nameof(entryType));
+            _view = view ?? throw new ArgumentNullException(nameof(view));
+            _view.PropertyChanged += OnViewPropertyChanged;
 
-            members.PropertyChanged += OnMembersPropertyChanged;
-
-            _collectionAdd = _collectionType.GetInterfaces()
-                .FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ICollection<>))
-                .GetMethod("Add");
+            foreach(var member in members)
+            {
+                member.PropertyChanged += OnMemberPropertyChanged;
+            }
         }
 
-        private void OnMembersPropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void OnViewPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)
             {
-                case nameof(IEditorModule.Value):
+                case nameof(ICollectionValueView.DisplayValue):
+                    RepopulateMembers();
                     OnPropertyChanged(nameof(Value));
+                    break;
+                case nameof(ICollectionValueView.DisplayMode):
+                    OnPropertyChanged(nameof(DisplayMode));
+                    break;
+                case nameof(ICollectionValueView.DisplayPriority):
+                    OnPropertyChanged(nameof(DisplayPriority));
+                    break;
+                case nameof(ICollectionValueView.IsValueBad):
                     OnPropertyChanged(nameof(State));
                     break;
             }
         }
 
-        public override void Read(object instance) => Value = _info.GetValue(instance);
+        private void OnMemberPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case nameof(IValueEditorModule.Value):
 
-        public override void Write(object instance) => _info.SetValue(instance, Value);
+                    OnPropertyChanged(nameof(Value));
+                    break;
+            }
+        }
+
+        private void RepopulateMembers()
+        {
+            foreach (var member in _members)
+            {
+                member.Value = false;
+            }
+
+            foreach (var entry in _view.Entries)
+            {
+                var member = _members.FirstOrDefault(x => x.Name == entry.ToString());
+
+                if (member != null)
+                {
+                    member.Value = true;
+                }
+            }
+        }
     }
 }

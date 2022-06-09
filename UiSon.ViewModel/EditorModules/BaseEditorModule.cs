@@ -13,18 +13,22 @@ using UiSon.ViewModel.Interface;
 
 namespace UiSon.ViewModel
 {
-    public abstract class BaseEditorModule : NPCBase, IEditorModule
+    /// <summary>
+    /// basic implimentation of <see cref="IEditorModule"/>
+    /// </summary>
+    public abstract class BaseEditorModule : NPCBase, IValueEditorModule
     {
+        /// <inheritdoc/>
         public virtual object Value
         {
-            get => _badValue ?? _view.Value;
+            get => _isValueBad ? _badValue : _view.DisplayValue;
             set
             {
-                if (Value != value)
+                if (_view.DisplayValue != value)
                 {
-                    _badValue = _view.TrySetValue(value)
-                        ? null
-                        : value;
+                    _isValueBad = !_view.TrySetValue(value);
+
+                    _badValue = _isValueBad ? value : null;
 
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(State));
@@ -32,44 +36,74 @@ namespace UiSon.ViewModel
             }
         }
         private object _badValue;
+        private bool _isValueBad;
 
-        public string Name => _name;
-        private string _name;
+        /// <inheritdoc/>
+        public string Name => _view.Name;
 
-        public int DisplayPriority => _displayPriority;
-        private readonly int _displayPriority;
+        /// <inheritdoc/>
+        public int DisplayPriority => _view.DisplayPriority;
 
+        /// <inheritdoc/>
         public virtual bool IsNameVisible => !string.IsNullOrWhiteSpace(Name);
-        public virtual ModuleState State => _badValue == null ? ModuleState.Normal : ModuleState.Error;
 
-        protected readonly IReadWriteView _view;
+        /// <inheritdoc/>
+        public virtual ModuleState State
+        {
+            get
+            {
+                if (_isValueBad || _view.IsValueBad)
+                {
+                    _stateJustification = "Invalid value.";
+                    return ModuleState.Error;
+                }
+
+                if (Value == null || (Value as string) == "null")
+                {
+                    _stateJustification = "Value is null.";
+                    return ModuleState.Special;
+                }
+
+                _stateJustification = null;
+                return ModuleState.Normal;
+            }
+        }
+
+        /// <inheritdoc/>
+        public string StateJustification => _stateJustification;
+        private string _stateJustification;
+
+        /// <inheritdoc/>
+        public IUiValueView View => _view;
+        private readonly IUiValueView _view;
+        
         private readonly ModuleTemplateSelector _templateSelector;
 
-        public BaseEditorModule(IReadWriteView view, ModuleTemplateSelector templateSelector, string name, int displayPriority)
+        public BaseEditorModule(IUiValueView view, ModuleTemplateSelector templateSelector)
         {
             _view = view ?? throw new ArgumentNullException(nameof(view));
             view.PropertyChanged += OnViewPropertyChanged;
 
             _templateSelector = templateSelector ?? throw new ArgumentNullException(nameof(templateSelector));
-
-            _name = name;
-            _displayPriority = displayPriority;
         }
 
         private void OnViewPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)
             {
-                case nameof(ValueView<bool>.Value):
+                case nameof(IUiValueView.DisplayValue):
+                    _badValue = null;
+                    _isValueBad = false;
+                    OnPropertyChanged(nameof(State));
                     OnPropertyChanged(nameof(Value));
+                    break;
+                case nameof(IUiValueView.IsValueBad):
+                    OnPropertyChanged(nameof(State));
                     break;
             }
         }
 
-        public void Read(object instance) => _view.Read(instance);
-
-        public void Write(object instance) => _view.Write(instance);
-
+        /// <inheritdoc/>
         public IEnumerable<DataGridColumn> GenerateColumns(string bindingPath)
         {
             var valCol = new DataGridTemplateColumn

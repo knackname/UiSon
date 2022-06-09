@@ -13,7 +13,7 @@ namespace UiSon.Attribute
         /// <summary>
         /// The name of the group this element belongs to.
         /// </summary>
-        public string GroupName { get; protected set; }
+        public bool AutoGenerateMemberAttributes { get; protected set; }
 
         /// <summary>
         /// The file extension for json files made from this.
@@ -24,12 +24,12 @@ namespace UiSon.Attribute
         /// Constructor
         /// </summary>
         /// <param name="extension">The file extension for json files made from this.</param>
-        /// <param name="groupName">The name of the group this element belongs to.</param>
+        /// <param name="autoGenerateMemberAttributes">If UiSon should generate default attributes for those without any.</param>
         public UiSonElementAttribute(string extension = ".json",
-                                     string groupName = null)
+                                     bool autoGenerateMemberAttributes = true)
         {
             Extension = string.IsNullOrWhiteSpace(extension) ? ".json" : extension;
-            GroupName = groupName;
+            AutoGenerateMemberAttributes = autoGenerateMemberAttributes;
         }
     }
 }

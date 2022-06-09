@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace UiSon.ViewModel.Interface
 {
     /// <summary>
-    /// For identification
+    /// A module with options to choose from.
     /// </summary>
     public interface ISelectorModule : IEditorModule
     {

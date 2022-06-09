@@ -7,12 +7,15 @@ namespace UiSon.Attribute
     /// <summary>
     /// An attribute used to define an Ui element.
     /// Only one Ui attribute may be used per property/field.
-    /// 
-    /// Only one Ui attribute may be used per property/field.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false)]
     public abstract class UiSonUiAttribute : System.Attribute
     {
+        /// <summary>
+        /// The attribute's corresponding Ui Type
+        /// </summary>
+        public abstract UiType Type { get; }
+
         /// <summary>
         /// The name of the group this Ui belongs to.
         /// </summary>

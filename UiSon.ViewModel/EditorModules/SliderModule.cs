@@ -2,30 +2,29 @@
 
 using System;
 using System.ComponentModel;
-using UiSon.View;
+using UiSon.View.Interface;
 using UiSon.ViewModel.Interface;
 
 namespace UiSon.ViewModel
 {
     public class SliderModule : BaseEditorModule, ISliderModule
     {
+        /// <inheritdoc/>
         public double Min => _view.Min;
 
+        /// <inheritdoc/>
         public double Max => _view.Max;
 
-        public bool IsVertical { get; private set; }
+        /// <inheritdoc/>
+        public bool IsVertical => _view.IsVertical;
 
-        private new readonly RangeView _view;
-        public SliderModule(RangeView view,
-                            ModuleTemplateSelector templateSelector,
-                            string name,
-                            int displayPriority,
-                            bool isVertical)
-            :base(view, templateSelector, name, displayPriority)
+        private readonly IRangeView _view;
+
+        public SliderModule(IRangeView view,
+                            ModuleTemplateSelector templateSelector)
+            :base(view, templateSelector)
         {
             _view = view ?? throw new ArgumentNullException(nameof(view));
-
-            IsVertical = isVertical;
 
             _view.PropertyChanged += OnViewPropertyChanged;
         }
@@ -34,11 +33,14 @@ namespace UiSon.ViewModel
         {
             switch (e.PropertyName)
             {
-                case nameof(RangeView.Min):
+                case nameof(IRangeView.Min):
                     OnPropertyChanged(nameof(Min));
                     break;
-                case nameof(RangeView.Max):
+                case nameof(IRangeView.Max):
                     OnPropertyChanged(nameof(Max));
+                    break;
+                case nameof(IRangeView.IsVertical):
+                    OnPropertyChanged(nameof(IsVertical));
                     break;
             }
         }

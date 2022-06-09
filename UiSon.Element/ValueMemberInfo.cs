@@ -25,6 +25,25 @@ namespace UiSon.Element
         public override Type ReflectedType => _decorated.ReflectedType;
 
         /// <summary>
+        /// The value's type
+        /// </summary>
+        public Type ValueType
+        {
+            get
+            {
+                switch (_decorated.MemberType)
+                {
+                    case MemberTypes.Field:
+                        return ((FieldInfo)_decorated).FieldType;
+                    case MemberTypes.Property:
+                        return ((PropertyInfo)_decorated).PropertyType;
+                    default:
+                        throw new Exception(NotFieldOrPropertyError);
+                }
+            }
+        }
+
+        /// <summary>
         /// The decorated <see cref="MemberInfo"/>.
         /// </summary>
         private readonly MemberInfo _decorated;

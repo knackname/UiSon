@@ -15,10 +15,15 @@ namespace UiSon.Extension
         /// <returns>True if successful, false otherwise.</returns>
         public static bool TryCast(this object value, Type type, out object result)
         {
-            if (type == null || value == null)
+            if (type == null)
             {
                 result = null;
                 return false;
+            }
+            else if (value == null)
+            {
+                result = null;
+                return !type.IsValueType || Nullable.GetUnderlyingType(type) != null;
             }
             else if (type.IsEnum
                      && value.TryCast(typeof(int), out object asInt)

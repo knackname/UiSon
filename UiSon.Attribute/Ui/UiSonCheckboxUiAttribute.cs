@@ -10,6 +10,9 @@ namespace UiSon.Attribute
     /// </summary>
     public class UiSonCheckboxUiAttribute : UiSonUiAttribute
     {
+        /// <inheritdoc/>
+        public override UiType Type => UiType.Checkbox;
+
         /// <summary>
         /// Constructor
         /// </summary>

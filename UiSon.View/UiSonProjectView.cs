@@ -1,5 +1,6 @@
 ﻿// UiSon, by Cameron Gale 2021
 
+using System.ComponentModel;
 using System.Reflection;
 using System.Text.Json;
 using UiSon.Element;
@@ -11,40 +12,35 @@ namespace UiSon.View
     /// <summary>
     /// Project class, constains editor data for elements and assemblies
     /// </summary>
-    public class UiSonProjectView : NPCBase, IUiSonProject
+    public class UiSonProjectView : NPCBase, IUiSonProject, IHaveProject
     {
+        /// <inheritdoc/>
+        public event PropertyChangedEventHandler? ProjectChanged;
+
+        /// <inheritdoc/>
         public string? Skin
         {
             get => _projectSave.Skin;
             set => _projectSave.Skin = value; 
         }
 
-        /// <summary>
-        /// Discription displayed in editor
-        /// </summary>
+        /// <inheritdoc/>
         public string Description => _projectSave.Description;
 
-        /// <summary>
-        /// If assamblies are allowed to be added or removed from the project
-        /// </summary>
+        /// <inheritdoc/>
         public bool AllowAssemblyMod => _projectSave.AllowAssemblyMod;
 
-        /// <summary>
-        /// Assemblies uesd by this project
-        /// </summary>
+        /// <inheritdoc/>
         public IEnumerable<IAssemblyView> Assemblies => _assemblies.OrderBy(x => x.Path);
         private List<IAssemblyView> _assemblies = new List<IAssemblyView>();
 
-        /// <summary>
-        /// Element managers used by this project
-        /// </summary>
+        /// <inheritdoc/>
         public IEnumerable<IElementManager> ElementManagers => _assemblies.SelectMany(x => x.ElementManagers);
 
+        /// <inheritdoc/>
         public IEnumerable<KeyValuePair<string, string[]>> StringArrays => _assemblies.SelectMany(x => x.StringArrays);
 
-        /// <summary>
-        /// if project has unsaved changes
-        /// </summary>
+        /// <inheritdoc/>
         public bool HasUnsavedChanges
         {
             get => _hasUnsavedChanges;
@@ -59,25 +55,42 @@ namespace UiSon.View
         }
         private bool _hasUnsavedChanges = false;
 
-        /// <summary>
-        /// The project's name
-        /// </summary>
+        /// <inheritdoc/>
         public string? Name { get; set; }
 
+        /// <inheritdoc/>
         public string? SaveFileDirectory { get; set; }
+
+        /// <inheritdoc/>
+        public IUiSonProject Project => this;
 
         private readonly ProjectSave _projectSave;
         private readonly INotifier _notifier;
+        private readonly ViewFactory _factory;
 
         public UiSonProjectView(ProjectSave projectSave, INotifier notifier, string? name = "New Project", string? saveFileDirectory = null)
         {
             _projectSave = projectSave ?? throw new ArgumentNullException(nameof(projectSave));
             _notifier = notifier ?? throw new ArgumentNullException(nameof(notifier));
+            _factory = new ViewFactory(this);
 
             Name = name;
             SaveFileDirectory = saveFileDirectory;
 
             Load();
+
+            HasUnsavedChanges = false;
+        }
+
+        private void OnAssemblyPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case "Value":
+                    HasUnsavedChanges = true;
+                    break;
+            }
+
         }
 
         private void Load()
@@ -88,6 +101,8 @@ namespace UiSon.View
                 {
                     AddAssembly(Path.Combine(SaveFileDirectory, assembly));
                 }
+
+                var elementValuePairs = new List<KeyValuePair<IElementView, object>>();
 
                 // make a new element for each file
                 foreach (var elementManager in ElementManagers)
@@ -110,15 +125,25 @@ namespace UiSon.View
                                 }
                                 else
                                 {
-                                    elementManager.NewElement(Path.GetFileNameWithoutExtension(file), intialValue);
+                                    elementValuePairs.Add(new KeyValuePair<IElementView, object>(elementManager.NewElement(Path.GetFileNameWithoutExtension(file)), intialValue));
                                 }
                             }
                         }
                     }
                 }
+
+                // now notify the project changed to allow the ref views to find their elements
+                ProjectChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Project)));
+
+                // then init them all.
+                foreach (var pair in elementValuePairs)
+                {
+                    pair.Key.MainView.TrySetValue(pair.Value);
+                }
             }
         }
 
+        /// <inheritdoc/>
         public bool Save()
         {
             if (!string.IsNullOrWhiteSpace(SaveFileDirectory) && !string.IsNullOrWhiteSpace(Name))
@@ -141,14 +166,10 @@ namespace UiSon.View
             return false;
         }
 
-        /// <summary>
-        /// Adds the assembly from the given path to the project
-        /// </summary>
-        /// <param name="path">File path to the assembly</param>
+        /// <inheritdoc/>
         public void AddAssembly(string path)
         {
-            var assemblyView = _assemblies.FirstOrDefault(x => x.Path == path);
-            if (assemblyView == null)
+            if (!_assemblies.Any(x => x.Path == path))
             {
                 Assembly assembly = null;
 
@@ -165,7 +186,10 @@ namespace UiSon.View
                 {
                     var newAssemblyView = new AssemblyView(assembly,
                                                            new Dictionary<string, string[]>(),
-                                                           _notifier);
+                                                           _notifier,
+                                                           _factory);
+
+                    newAssemblyView.PropertyChanged += OnAssemblyPropertyChanged;
 
                     _assemblies.Add(newAssemblyView);
 
@@ -177,18 +201,26 @@ namespace UiSon.View
             }
         }
 
-        /// <summary>
-        /// Removes an assembly from the project
-        /// </summary>
-        /// <param name="assembly"></param>
+        /// <inheritdoc/>
         public void RemoveAssembly(IAssemblyView assembly)
         {
+            assembly.PropertyChanged -= OnAssemblyPropertyChanged;
             _assemblies.Remove(assembly);
 
             OnPropertyChanged(nameof(Assemblies));
             OnPropertyChanged(nameof(ElementManagers));
             OnPropertyChanged(nameof(StringArrays));
             HasUnsavedChanges = true;
+        }
+
+        /// <inheritdoc/>
+        public void ImportElement(IElementManager elementManager, string name, object value)
+        {
+            var newElement = elementManager.NewElement(name);
+
+            ProjectChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Project)));
+
+            newElement.MainView.TrySetValue(value);
         }
     }
 }
