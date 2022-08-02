@@ -122,7 +122,7 @@ namespace UiSon.ViewModel
                             members.Add(new CollectionModule(collectionView, this, _templateSelector, _clipBoardManager, _notifier));
                         }
 
-                        var encapsulatingModule =  new EncapsulatingModule(encapsulatingView,
+                        var encapsulatingModule = new EncapsulatingModule(encapsulatingView,
                                                                            _clipBoardManager,
                                                                            _notifier,
                                                                            members.OrderByDescending(x => x.DisplayPriority).ToArray());

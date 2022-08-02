@@ -6,7 +6,6 @@ using System.IO;
 using System.Windows;
 using UiSon.Notify;
 using UiSon.Resource;
-using UiSon.ViewModel;
 
 namespace UiSon
 {
@@ -15,7 +14,7 @@ namespace UiSon
     /// </summary>
     public partial class App : Application
     {
-       private readonly Dictionary<string, string> DefaultSkins = new Dictionary<string, string>()
+        private readonly Dictionary<string, string> DefaultSkins = new Dictionary<string, string>()
         {
             { "Dark", "pack://application:,,,/UiSon.Resource;Component/Skins/DarkSkin.xaml" },
             { "Light", "pack://application:,,,/UiSon.Resource;Component/Skins/LightSkin.xaml" }

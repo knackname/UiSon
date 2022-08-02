@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UiSon.View.Interface;
 using UiSon.ViewModel.Interface;
 
 namespace UiSon.ViewModel
@@ -33,7 +29,7 @@ namespace UiSon.ViewModel
 
                 redoEntries.Push(top);
             }
-            
+
         }
 
         public void Redo()

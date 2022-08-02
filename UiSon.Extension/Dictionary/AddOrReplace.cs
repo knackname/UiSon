@@ -15,7 +15,7 @@ namespace UiSon.Extension
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
         /// <exception cref="ArgumentNullException"></exception>
-        public static void AddOrReplace<TKey,TValue>(this Dictionary<TKey,TValue> dictionary, TKey key, TValue value)
+        public static void AddOrReplace<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, TValue value)
         {
             if (dictionary == null) { throw new ArgumentNullException(nameof(dictionary)); }
 

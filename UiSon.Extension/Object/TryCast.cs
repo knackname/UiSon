@@ -1,6 +1,5 @@
 ﻿// UiSon, by Cameron Gale 2022
 
-using Newtonsoft.Json;
 using System;
 using System.Reflection;
 
@@ -44,7 +43,7 @@ namespace UiSon.Extension
                     if (parameters.Length == 1
                         && parameters[0].ParameterType == value.GetType())
                     {
-                        result = method.Invoke(null, new[] { value } );
+                        result = method.Invoke(null, new[] { value });
                         return true;
                     }
                 }

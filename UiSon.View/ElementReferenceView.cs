@@ -131,7 +131,7 @@ namespace UiSon.View
             {
                 _element.PropertyChanged -= OnElementPropertyChanged;
             }
-            
+
             _element = null;
             _identifingView = null;
 

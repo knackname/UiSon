@@ -21,7 +21,7 @@ namespace UiSon.View
         public string? Skin
         {
             get => _projectSave.Skin;
-            set => _projectSave.Skin = value; 
+            set => _projectSave.Skin = value;
         }
 
         /// <inheritdoc/>

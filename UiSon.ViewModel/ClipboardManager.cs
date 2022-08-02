@@ -39,7 +39,7 @@ namespace UiSon.ViewModel
                 {
                     _notifier.Notify(e.ToString(), "Paste Failed");
                 }
-                
+
             }
         }
     }

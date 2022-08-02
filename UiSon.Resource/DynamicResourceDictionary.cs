@@ -16,11 +16,11 @@ namespace UiSon.Resource
 
         public string? Current { get; private set; }
 
-        private readonly Dictionary<string,Uri> sources = new Dictionary<string, Uri>();
+        private readonly Dictionary<string, Uri> sources = new Dictionary<string, Uri>();
 
         public void AddSource(string name, Uri uri)
         {
-             sources.AddOrReplace(name, uri);
+            sources.AddOrReplace(name, uri);
 
             if (base.Source == null)
             {

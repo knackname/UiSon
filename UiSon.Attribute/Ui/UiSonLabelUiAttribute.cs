@@ -1,7 +1,5 @@
 ﻿// UiSon, by Cameron Gale 2022
 
-using System;
-
 namespace UiSon.Attribute
 {
     /// <summary>

@@ -26,7 +26,7 @@ namespace UiSon.ViewModel
     /// </summary>
     public partial class UiSonUi : UserControl, INotifyPropertyChanged
     {
-        public string? ProjectName => _project.HasUnsavedChanges ? _project.Name + "*": _project.Name ;
+        public string? ProjectName => _project.HasUnsavedChanges ? _project.Name + "*" : _project.Name;
         public string Description => _project.Description;
         public bool AllowAssemblyMod => _project.AllowAssemblyMod;
         public IEnumerable<IAssemblyView> Assemblies => _project.Assemblies;
@@ -321,7 +321,7 @@ namespace UiSon.ViewModel
 
             // reopen all the editor tabs, unfortunatly nessisary since 
             // the converters don't update dynamically
-            
+
             var openElements = new List<IElementView>();
 
             foreach (var tab in _tabItems)

@@ -7,7 +7,6 @@ using System.Windows;
 using UiSon.Element;
 using UiSon.Notify.Interface;
 using UiSon.Resource;
-using UiSon.View;
 using UiSon.ViewModel;
 using UiSon.ViewModel.Interface;
 
@@ -23,7 +22,7 @@ namespace UiSon
         public MainWindow(DynamicResourceDictionary skinDict, INotifier notifier, string? filePath)
         {
             this.Title = $"UiSon {_version}";
-            
+
             ProjectSave? projectSave = null;
 
             if (filePath != null)

@@ -280,7 +280,8 @@ namespace UiSon.View
                                                    name,
                                                    collectionType,
                                                    valueMemberInfo,
-                                                   () => {
+                                                   () =>
+                                                   {
                                                        var members = new List<MultiChoiceOptionView>();
 
                                                        foreach (var option in optionsArray)
@@ -319,7 +320,8 @@ namespace UiSon.View
                                               name,
                                               collectionType,
                                               valueMemberInfo,
-                                              () => {
+                                              () =>
+                                              {
                                                   var view = new CollectionValueView(this,
                                                                     collectionType,
                                                                     autoGenerateMemberAttributes,
@@ -368,7 +370,8 @@ namespace UiSon.View
                                                name,
                                                nonNullableType,
                                                valueMemberInfo,
-                                               () => {
+                                               () =>
+                                               {
                                                    var view = new EncapsulatingView(nonNullableType,
                                                                                     displayPriority,
                                                                                     null,
@@ -591,20 +594,20 @@ namespace UiSon.View
             // add groups
             foreach (var groupAtt in groupAttributesByName)
             {
-                    var newGroupVM = new GroupView(groupAtt.Value.Priority,
-                               groupAtt.Value.Name,
-                               groupAtt.Value.DisplayMode,
-                               groups[groupAtt.Key].OrderByDescending(x => x.DisplayPriority).ToArray());
+                var newGroupVM = new GroupView(groupAtt.Value.Priority,
+                           groupAtt.Value.Name,
+                           groupAtt.Value.DisplayMode,
+                           groups[groupAtt.Key].OrderByDescending(x => x.DisplayPriority).ToArray());
 
-                    if (string.IsNullOrEmpty(groupAtt.Value.GroupName))
-                    {
-                        members.Add(newGroupVM);
-                    }
-                    else
-                    {
-                        // all missing group parent groups were added earlier, so it's here
-                        groups.First(x => x.Key == groupAtt.Value.GroupName).Value.Add(newGroupVM);
-                    }
+                if (string.IsNullOrEmpty(groupAtt.Value.GroupName))
+                {
+                    members.Add(newGroupVM);
+                }
+                else
+                {
+                    // all missing group parent groups were added earlier, so it's here
+                    groups.First(x => x.Key == groupAtt.Value.GroupName).Value.Add(newGroupVM);
+                }
             }
 
             return members.OrderByDescending(x => x.DisplayPriority).ToArray();
@@ -649,7 +652,7 @@ namespace UiSon.View
 
                         if (identifiersArray == null)
                         {
-                            return new StaticView($"{nameof(UiSonSelectorUiAttribute)} {info?.Name}: {selectorUiAttribute.IdentifiersArrayName ?? "null"} is not an exsisting {nameof(UiSonArrayAttribute)}.", 
+                            return new StaticView($"{nameof(UiSonSelectorUiAttribute)} {info?.Name}: {selectorUiAttribute.IdentifiersArrayName ?? "null"} is not an exsisting {nameof(UiSonArrayAttribute)}.",
                                                   selectorUiAttribute.DisplayPriority,
                                                   ModuleState.Error,
                                                   "Failed to decorate view");
@@ -724,7 +727,7 @@ namespace UiSon.View
             {
                 return new UiSonTextEditUiAttribute();
             }
-            else 
+            else
             {
                 var collectionInterface = type.GetInterfaces().FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ICollection<>));
 
@@ -740,7 +743,7 @@ namespace UiSon.View
 
             return new UiSonLabelUiAttribute();
         }
-        
+
         private Map<string, object> MakeSelectorMap(IEnumerable<string> options, IEnumerable<object> identifiers)
         {
             var newMap = new Map<string, object>();

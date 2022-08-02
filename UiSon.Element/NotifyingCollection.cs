@@ -38,7 +38,7 @@ namespace UiSon.Element
         /// </summary>
         public NotifyingCollection()
         {
-            _collection.CollectionChanged += (s, e) => CollectionChanged.Invoke(s,e);
+            _collection.CollectionChanged += (s, e) => CollectionChanged.Invoke(s, e);
         }
 
         /// <summary>
@@ -65,7 +65,7 @@ namespace UiSon.Element
         /// <inheritdoc cref="ICollection{T}.Clear" />
         public void Clear()
         {
-            foreach(var item in _collection)
+            foreach (var item in _collection)
             {
                 item.PropertyChanged -= OnItemPropertyChanged;
             }

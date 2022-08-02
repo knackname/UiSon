@@ -45,7 +45,7 @@ namespace UiSon.View
         private readonly string _formatString;
 
         public RangeUiValueView(IUiValueView decorated, ValueMemberInfo? info, double min, double max, int percision, bool isVertical)
-            :base(decorated, info)
+            : base(decorated, info)
         {
             _min = min;
             _max = max;

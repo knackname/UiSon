@@ -48,7 +48,7 @@ namespace UiSon.ViewModel
         private void OnViewPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)
-            { 
+            {
                 case nameof(EncapsulatingView.DisplayValue):
                     OnPropertyChanged(nameof(Value));
                     OnPropertyChanged(nameof(HasError));

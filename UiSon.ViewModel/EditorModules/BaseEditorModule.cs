@@ -58,7 +58,7 @@ namespace UiSon.ViewModel
         /// <inheritdoc/>
         public IUiValueView View => _view;
         private readonly IUiValueView _view;
-        
+
         private readonly ModuleTemplateSelector _templateSelector;
         private readonly ClipBoardManager _clipBoardManager;
         private readonly INotifier _notifier;

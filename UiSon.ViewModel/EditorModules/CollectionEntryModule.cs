@@ -66,7 +66,7 @@ namespace UiSon.ViewModel
         private void OnDecoratedPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)
-            { 
+            {
                 case nameof(IValueEditorModule.Value):
                     OnPropertyChanged(nameof(Value));
                     break;

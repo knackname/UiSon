@@ -10,7 +10,7 @@ namespace UiSon.View
     /// <summary>
     /// A view representing an instance of a type directly
     /// </summary>
-    public class PrimitivishUiValueView: NPCBase, IUiValueView
+    public class PrimitivishUiValueView : NPCBase, IUiValueView
     {
         /// <inheritdoc/>
         public object? Value => _value;
@@ -54,7 +54,7 @@ namespace UiSon.View
             DisplayPriority = displayPriority;
             Name = name;
             _info = info;
-            
+
             var utype = Nullable.GetUnderlyingType(type);
             _isNullable = !type.IsValueType || utype != null;
             _type = utype ?? type;

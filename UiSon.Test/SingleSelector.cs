@@ -4,7 +4,7 @@ using UiSon.Attribute;
 namespace UiSon.Test
 {
     [UiSonElement]
-    [UiSonArray("MultiChoiceOptions", new object[] {1,2,3})]
+    [UiSonArray("MultiChoiceOptions", new object[] { 1, 2, 3 })]
     public class SingleSelector
     {
         [UiSonMultiChoiceUi("MultiChoiceOptions")]

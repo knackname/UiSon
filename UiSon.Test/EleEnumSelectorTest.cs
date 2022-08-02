@@ -4,8 +4,8 @@ using UiSon.Attribute;
 namespace UiSon.Test
 {
     [UiSonElement]
-    [UiSonArray("names", new object[] {"A","B","C"})]
-    [UiSonArray("ids", new object[] { 1,2,3 })]
+    [UiSonArray("names", new object[] { "A", "B", "C" })]
+    [UiSonArray("ids", new object[] { 1, 2, 3 })]
     public class EleEnumSelectorTest
     {
         [UiSonElementSelectorUi(nameof(EleEnumSelectorRef), 0, "Items", "Id", "names", "ids")]

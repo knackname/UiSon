@@ -28,7 +28,7 @@ namespace UiSon.View
                 int index = 0;
                 foreach (var entry in _entries)
                 {
-                    if (entry.Value.TryCast(_entryType, out object cast) )
+                    if (entry.Value.TryCast(_entryType, out object cast))
                     {
                         value[index] = cast;
                     }
@@ -47,15 +47,15 @@ namespace UiSon.View
                               string name,
                               DisplayMode displayMode,
                               ValueMemberInfo? info)
-            :base(factory,
+            : base(factory,
                   type,
                   false,// arrays wont have any
-                  type.GetElementType(), 
+                  type.GetElementType(),
                   entryAttribute,
-                  canModify, 
-                  displayPriority, 
+                  canModify,
+                  displayPriority,
                   name,
-                  displayMode, 
+                  displayMode,
                   info,
                   Array.Empty<IReadWriteView>())
         {

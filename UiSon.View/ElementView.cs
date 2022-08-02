@@ -96,7 +96,7 @@ namespace UiSon.View
         private void OnViewPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)
-            { 
+            {
                 case nameof(IUiValueView.Value):
                     OnPropertyChanged(nameof(Value));
                     break;

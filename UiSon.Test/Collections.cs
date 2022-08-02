@@ -69,7 +69,7 @@ namespace UiSon.Test
 
         [UiSonCollection(false, false, DisplayMode.Grid)]
         [UiSonElementSelectorUi(nameof(ReferencedUiSonClass))]
-        public List<string> eleSelector_grid = new List<string> {"null",null,"null"};
+        public List<string> eleSelector_grid = new List<string> { "null", null, "null" };
 
         [UiSonCollection(false, false, DisplayMode.Vertial)]
         [UiSonElementSelectorUi(nameof(ReferencedUiSonClass))]
@@ -78,7 +78,7 @@ namespace UiSon.Test
 
     public class ParameteredClass
     {
-        public string Name {get; private set;}
+        public string Name { get; private set; }
         public ParameteredClass(string name)
         {
             Name = name;

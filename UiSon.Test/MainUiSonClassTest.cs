@@ -10,7 +10,7 @@ namespace UiSon.Test
     public class UiSonClassTest
     {
         [UiSonEncapsulatingUi]
-        public List<Tuple<int,int>> Int_List;
+        public List<Tuple<int, int>> Int_List;
 
         [UiSonEncapsulatingUi]
         public poop? Struct_Nullable;

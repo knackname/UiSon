@@ -1,7 +1,6 @@
 ﻿// UiSon, by Cameron Gale 2022
 
 using System.Collections;
-using System.ComponentModel;
 using System.Reflection;
 using UiSon.Attribute;
 using UiSon.Element;
@@ -26,7 +25,7 @@ namespace UiSon.View
                     {
                         if (member.IsChecked)
                         {
-                           entries.Add(member.TrueValue);
+                            entries.Add(member.TrueValue);
                         }
                     }
 

@@ -33,8 +33,8 @@ namespace UiSon.ViewModel.Interface
                 }
                 else if (item is ISliderModule slider)
                 {
-                    return slider.IsVertical 
-                        ? frameworkElement.FindResource("SliderVerticalTemplate") as DataTemplate 
+                    return slider.IsVertical
+                        ? frameworkElement.FindResource("SliderVerticalTemplate") as DataTemplate
                         : frameworkElement.FindResource("SliderHorizontalTemplate") as DataTemplate;
                 }
                 else if (item is ITextEditModule)

@@ -22,7 +22,7 @@ namespace UiSon.ViewModel
                                ModuleTemplateSelector templateSelector,
                                ClipBoardManager clipBoardManager,
                                INotifier notifier)
-            :base(view, templateSelector, clipBoardManager, notifier)
+            : base(view, templateSelector, clipBoardManager, notifier)
         {
         }
     }

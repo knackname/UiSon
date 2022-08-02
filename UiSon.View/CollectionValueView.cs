@@ -62,7 +62,7 @@ namespace UiSon.View
         public IEnumerable<IUiValueView> Entries => _entries;
 
         /// <inheritdoc/>
-        public bool IsModifiable {get; private set;}
+        public bool IsModifiable { get; private set; }
 
         protected readonly List<IUiValueView> _entries = new List<IUiValueView>();
 
@@ -83,7 +83,7 @@ namespace UiSon.View
                                    DisplayMode displayMode,
                                    ValueMemberInfo? info,
                                    IReadWriteView[] members)
-            :base (type, displayPriority, name, displayMode, info, members)
+            : base(type, displayPriority, name, displayMode, info, members)
         {
             _factory = factory ?? throw new ArgumentNullException(nameof(factory));
 
@@ -216,7 +216,7 @@ namespace UiSon.View
                 OnPropertyChanged(nameof(Members));
                 OnPropertyChanged(nameof(Entries));
                 return true;
-            }    
+            }
 
             return false;
         }

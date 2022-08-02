@@ -22,7 +22,7 @@ namespace UiSon.View
         private readonly string _regexValidation;
 
         public RegexValueView(IUiValueView decorated, ValueMemberInfo? info, string regexValidation)
-            : base (decorated, info)
+            : base(decorated, info)
         {
             _regexValidation = regexValidation ?? throw new ArgumentNullException(nameof(regexValidation));
         }

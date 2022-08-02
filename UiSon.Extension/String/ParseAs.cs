@@ -42,7 +42,7 @@ namespace UiSon.Extension
         /// <returns>the parsed string or null if unsuccessful</returns>
         public static object ParseAs(this string value, Type type)
         {
-            if (type == null || value == null) 
+            if (type == null || value == null)
             {
                 return null;
             }

@@ -1,12 +1,12 @@
 ﻿// UiSon, by Cameron Gale 2021
 
+using Newtonsoft.Json;
 using System.ComponentModel;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using UiSon.Attribute;
 using UiSon.Notify.Interface;
 using UiSon.View.Interface;
-using Newtonsoft.Json;
 
 namespace UiSon.View
 {
