@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Windows;
 using UiSon.Element;
 using UiSon.Notify.Interface;
+using UiSon.Resource;
 using UiSon.View;
 using UiSon.ViewModel;
 using UiSon.ViewModel.Interface;
@@ -73,7 +74,7 @@ namespace UiSon
             UiSonUiContainer.Child = new UiSonUi(projectSave,
                                                  notifier,
                                                  skinDict,
-                                                 new EditorModuleFactory(new ModuleTemplateSelector()));
+                                                 new EditorModuleFactory(new ModuleTemplateSelector(), new ClipBoardManager(notifier), notifier));
         }
     }
 }

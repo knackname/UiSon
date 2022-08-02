@@ -1,6 +1,7 @@
 ﻿// UiSon, by Cameron Gale 2022
 
 using System.ComponentModel;
+using UiSon.Element;
 
 namespace UiSon.View.Interface
 {
@@ -56,7 +57,7 @@ namespace UiSon.View.Interface
         /// 
         /// </summary>
         /// <param name="path"></param>
-        void AddAssembly(string path);
+        void AddAssembly(string directory, string relativePath);
 
         /// <summary>
         /// 
@@ -67,7 +68,7 @@ namespace UiSon.View.Interface
         /// <summary>
         /// 
         /// </summary>
-        IEnumerable<KeyValuePair<string, string[]>> StringArrays { get; }
+        IEnumerable<KeyValuePair<string, object[]>> Arrays { get; }
 
         /// <summary>
         /// 
@@ -76,5 +77,10 @@ namespace UiSon.View.Interface
         /// <param name="name"></param>
         /// <param name="value"></param>
         void ImportElement(IElementManager elementManager, string name, object value);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        ProjectSave ProjectSave { get; }
     }
 }

@@ -31,21 +31,27 @@ namespace UiSon.ViewModel
 
         public IElementView View => _view;
         private readonly IElementView _view;
+        private readonly UiSonUi _parent;
 
-        private readonly TabControl _controller;
-
-        public ElementEditorTab(IElementView view, IEditorModule mainModule, TabControl controller)
+        public ElementEditorTab(IElementView view, IEditorModule mainModule, UiSonUi parent)
         {
             _view = view ?? throw new ArgumentNullException(nameof(view));
-            _mainModule = mainModule ?? throw new ArgumentNullException(nameof(mainModule));
-            _controller = controller ?? throw new ArgumentNullException(nameof(controller));
-
             _view.PropertyChanged += OnViewPropertyChanged;
+
+            _mainModule = mainModule ?? throw new ArgumentNullException(nameof(mainModule));
+            _parent = parent ?? throw new ArgumentNullException(nameof(parent));
 
             DataContext = this;
 
             InitializeComponent();
         }
+
+        public void Destroy()
+        {
+            DataContext = null;
+        }
+
+        private void CloseButton_Click(object sender, RoutedEventArgs e) => _parent.CloseTab(this);
 
         private void OnViewPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
@@ -54,25 +60,8 @@ namespace UiSon.ViewModel
                 case nameof(ElementView.Name):
                     OnPropertyChanged(nameof(Name));
                     break;
-                case nameof(ElementView.Value): // somehow notify unsaved changes in doc
-                    OnPropertyChanged(nameof(Name));
-                    break;
             }
         }
-
-        private void OnModulePropertyChanged(object? sender, PropertyChangedEventArgs e)
-        {
-            switch (e.PropertyName)
-            {
-                case nameof(ElementView.Name):
-                case nameof(ElementView.Value):
-                    
-                    OnPropertyChanged(nameof(Name));
-                    break;
-            }
-        }
-
-        private void Close(object sender, RoutedEventArgs e) => _controller.Items.Remove(this);
 
         private void DataGridCollection_Initialized(object sender, EventArgs e)
         {

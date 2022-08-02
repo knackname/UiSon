@@ -19,9 +19,13 @@ namespace UiSon.ViewModel.Interface
                 {
                     return frameworkElement.FindResource("TextBlockTemplate") as DataTemplate;
                 }
-                else if (item is IDecoratingModule)
+                else if (item is IBorderedModule)
                 {
                     return frameworkElement.FindResource("BorderedTemplate") as DataTemplate;
+                }
+                else if (item is IBorderedValueModule)
+                {
+                    return frameworkElement.FindResource("BorderedValueTemplate") as DataTemplate;
                 }
                 else if (item is INullableModule)
                 {

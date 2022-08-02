@@ -11,5 +11,6 @@ namespace UiSon.View.Interface
         IElementView NewElement(string name);
         Type ElementType { get; }
         void Save(string path);
+        void RemoveElement(IElementView elementVM);
     }
 }

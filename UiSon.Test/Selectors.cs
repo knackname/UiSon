@@ -10,12 +10,10 @@ namespace UiSon.Test
     [UiSonArray("Selectors_num", new object[] { 2, 3, 4 })]
     [UiSonArray("Selectors_num", new object[] { 1337, 69, 420 })]
     [UiSonArray("Selectors_abc_&_num", new object[] { "Apple", "Banana", "Cat", 1337, 69, 420 })]
-    [UiSonArray("BadEnumType", typeof(int), null)]
-    [UiSonArray("TestEnum_Strings", typeof(TestEnum), typeof(string))]
-    [UiSonArray("TestEnum_Nullable_Strings", typeof(TestEnum?), typeof(string))]
-    [UiSonArray("TestEnum_Ints", typeof(TestEnum), typeof(int))]
-    [UiSonArray("TestEnum_Nullable_Ints", typeof(TestEnum?), typeof(int))]
-    [UiSonArray(null, null, null)]
+    [UiSonArray("TestEnum_Strings", typeof(TestEnum))]
+    [UiSonArray("TestEnum_Nullable_Strings", typeof(TestEnum?))]
+    [UiSonArray("TestEnum_Ints", typeof(TestEnum))]
+    [UiSonArray("TestEnum_Nullable_Ints", typeof(TestEnum?))]
     public class Selectors
     {
         [UiSonSelectorUi(null)]

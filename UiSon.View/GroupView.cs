@@ -2,6 +2,7 @@
 
 using System.ComponentModel;
 using UiSon.Attribute;
+using UiSon.Element;
 using UiSon.View.Interface;
 
 namespace UiSon.View
@@ -13,9 +14,6 @@ namespace UiSon.View
         private readonly IReadWriteView[] _members;
 
         /// <inheritdoc/>
-        public virtual bool IsValueBad => _members.Any(x => x.IsValueBad);
-
-        /// <inheritdoc/>
         public int DisplayPriority { get; private set; }
 
         /// <inheritdoc/>
@@ -24,6 +22,22 @@ namespace UiSon.View
         /// <inheritdoc/>
         public string? Name { get; private set; }
 
+        /// <inheritdoc/>
+        public virtual ModuleState State => _state;
+        private ModuleState _state;
+
+        /// <inheritdoc/>
+        public virtual string StateJustification => _stateJustification;
+        private string _stateJustification = string.Empty;
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="displayPriority"></param>
+        /// <param name="name"></param>
+        /// <param name="displayMode"></param>
+        /// <param name="members"></param>
+        /// <exception cref="ArgumentNullException"></exception>
         public GroupView(int displayPriority, string? name, DisplayMode displayMode, IReadWriteView[] members)
         {
             _members = members ?? throw new ArgumentNullException(nameof(members));
@@ -42,8 +56,9 @@ namespace UiSon.View
         {
             switch (e.PropertyName)
             {
-                case nameof(IUiValueView.IsValueBad):
-                    OnPropertyChanged(nameof(IsValueBad));
+                case nameof(IUiValueView.State):
+                    _state = _members.Any(x => x.State == ModuleState.Error) ? ModuleState.Error : ModuleState.Normal;
+                    OnPropertyChanged(nameof(State));
                     break;
                 case nameof(IUiValueView.Value):
                     OnPropertyChanged(nameof(IUiValueView.Value));
@@ -52,7 +67,16 @@ namespace UiSon.View
         }
 
         /// <inheritdoc/>
+        public virtual void SetValue(object? value)
+        {
+            // no op
+        }
+
+        /// <inheritdoc/>
         public virtual bool TrySetValue(object? value) => false;
+
+        /// <inheritdoc/>
+        public void SetValueFromRead(object? value) => SetValue(value);
 
         /// <inheritdoc/>
         public bool TrySetValueFromRead(object? value) => TrySetValue(value);

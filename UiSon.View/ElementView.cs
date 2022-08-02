@@ -56,7 +56,7 @@ namespace UiSon.View
         public object? Value => _view.Value;
 
         /// <inheritdoc/>
-        public ElementManager Manager => _manager;
+        public IElementManager Manager => _manager;
         private readonly ElementManager _manager;
 
         /// <inheritdoc/>

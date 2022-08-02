@@ -18,17 +18,10 @@ namespace UiSon.View
         }
 
         /// <inheritdoc/>
-        public virtual object? DisplayValue
-        {
-            get => _reference.HasReference ? _reference.DisplayValue : _decorated.DisplayValue;
-            set => Value = value;
-        }
+        public virtual object? DisplayValue => _reference.HasReference ? _reference.DisplayValue : _decorated.DisplayValue;
 
         /// <inheritdoc/>
         public IEnumerable<string> Options => _decorated.Options.Concat(_reference.ElementOptions).Distinct();
-
-        /// <inheritdoc/>
-        public bool IsValueBad => !Options.Contains(DisplayValue);
 
         /// <inheritdoc/>
         public int DisplayPriority => _decorated.DisplayPriority;
@@ -41,6 +34,14 @@ namespace UiSon.View
 
         /// <inheritdoc/>
         Type? IUiValueView.Type => _decorated.Type;
+
+        /// <inheritdoc/>
+        public ModuleState State => _state ?? _decorated.State;
+        private ModuleState? _state;
+
+        /// <inheritdoc/>
+        public string StateJustification => _stateJustification ?? _decorated.StateJustification;
+        private string? _stateJustification;
 
         private readonly ISelectorValueView _decorated;
         private readonly ElementReferenceView _reference;
@@ -65,7 +66,6 @@ namespace UiSon.View
             {
                 case nameof(ElementReferenceView.ElementOptions):
                     OnPropertyChanged(nameof(Options));
-                    OnPropertyChanged(nameof(IsValueBad));
                     break;
                 case nameof(ElementReferenceView.HasReference):
                     OnPropertyChanged(nameof(Value));
@@ -82,7 +82,6 @@ namespace UiSon.View
                         break;
                     case nameof(ElementReferenceView.DisplayValue):
                         OnPropertyChanged(nameof(DisplayValue));
-                        OnPropertyChanged(nameof(IsValueBad));
                         break;
                 }
             }
@@ -99,9 +98,79 @@ namespace UiSon.View
                         break;
                     case nameof(IUiValueView.DisplayValue):
                         OnPropertyChanged(nameof(DisplayValue));
-                        OnPropertyChanged(nameof(IsValueBad));
+                        break;
+                    case nameof(IUiValueView.State):
+                        OnPropertyChanged(nameof(State));
                         break;
                 }
+            }
+        }
+
+        /// <inheritdoc/>
+        public void SetValue(object? value)
+        {
+            var strValue = value?.ToString() ?? "null";
+
+            if (_reference.TrySetElementFromName(strValue))
+            {
+                _state = ModuleState.Normal;
+                _stateJustification = string.Empty;
+
+                OnPropertyChanged(nameof(Value));
+                OnPropertyChanged(nameof(DisplayValue));
+                OnPropertyChanged(nameof(State));
+            }
+            else
+            {
+                _state = null;
+                _stateJustification = null;
+                _reference.ClearReference();
+
+                _decorated.SetValue(strValue);
+            }
+        }
+
+        /// <inheritdoc/>
+        public bool TrySetValue(object? value)
+        {
+            var strValue = value?.ToString() ?? "null";
+
+            if (_reference.TrySetElementFromName(strValue))
+            {
+                _state = ModuleState.Normal;
+                _stateJustification = string.Empty;
+                OnPropertyChanged(nameof(Value));
+                return true;
+            }
+            else if (_decorated.TrySetValue(strValue))
+            {
+                _state = null;
+                _stateJustification = null;
+                _reference.ClearReference();
+                OnPropertyChanged(nameof(Value));
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <inheritdoc/>
+        public void SetValueFromRead(object? value)
+        {
+            var strValue = value?.ToString() ?? "null";
+
+            if (_reference.TrySetElementFromValue(strValue))
+            {
+                _state = ModuleState.Normal;
+                _stateJustification = string.Empty;
+                OnPropertyChanged(nameof(Value));
+            }
+            else
+            {
+                _state = null;
+                _stateJustification = null;
+                _decorated.SetValueFromRead(value);
+                _reference.ClearReference();
             }
         }
 
@@ -112,31 +181,15 @@ namespace UiSon.View
 
             if (_reference.TrySetElementFromValue(strValue))
             {
+                _state = ModuleState.Normal;
+                _stateJustification = string.Empty;
                 OnPropertyChanged(nameof(Value));
                 return true;
             }
-            else if (_decorated.TrySetValueFromRead(strValue))
+            else if (_decorated.TrySetValueFromRead(value))
             {
-                _reference.ClearReference();
-                OnPropertyChanged(nameof(Value));
-                return true;
-            }
-
-            return false;
-        }
-
-        /// <inheritdoc/>
-        public bool TrySetValue(object? value)
-        {
-            var strValue = value?.ToString() ?? "null";
-
-            if (_reference.TrySetElementFromName(strValue))
-            {
-                OnPropertyChanged(nameof(Value));
-                return true;
-            }
-            else if (_decorated.TrySetValue(strValue))
-            {
+                _state = null;
+                _stateJustification = null;
                 _reference.ClearReference();
                 OnPropertyChanged(nameof(Value));
                 return true;
@@ -153,7 +206,7 @@ namespace UiSon.View
                 throw new Exception("Read called on view without member info");
             }
 
-            TrySetValue(_info.GetValue(instance));
+            TrySetValueFromRead(_info.GetValue(instance));
         }
 
         /// <inheritdoc/>

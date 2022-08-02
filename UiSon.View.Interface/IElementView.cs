@@ -10,5 +10,6 @@ namespace UiSon.View.Interface
         Type ElementType { get; }
         IReadOnlyDictionary<string, IUiValueView> TagNameToView { get; }
         IUiValueView MainView { get; }
+        IElementManager Manager { get; }
     }
 }

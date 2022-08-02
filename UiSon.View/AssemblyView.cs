@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using UiSon.Attribute;
 using UiSon.Notify.Interface;
 using UiSon.View.Interface;
+using Newtonsoft.Json;
 
 namespace UiSon.View
 {
@@ -17,25 +18,28 @@ namespace UiSon.View
         /// <summary>
         /// Path to the assembly on disk, on save reroutes to relative path from save file location
         /// </summary>
-        public string Path => _assembly.Location;
+        public string Path => _path;
+        private readonly string _path;
 
         public IEnumerable<IElementManager> ElementManagers => _elementManagers;
         private List<ElementManager> _elementManagers = new List<ElementManager>();
 
-        public IEnumerable<KeyValuePair<string, string[]>> StringArrays => _stringArrays;
-        private readonly Dictionary<string, string[]> _stringArrays;
+        public IEnumerable<KeyValuePair<string, object[]>> Arrays => _arrays;
+        private readonly Dictionary<string, object[]> _arrays;
 
         private readonly Assembly _assembly;
         private readonly INotifier _notifier;
         private readonly ViewFactory _factory;
 
         public AssemblyView(Assembly assembly,
-                            Dictionary<string, string[]> stringArrays,
+                            string path,
+                            Dictionary<string, object[]> arrays,
                             INotifier notifier,
                             ViewFactory factory)
         {
             _assembly = assembly ?? throw new ArgumentNullException(nameof(assembly));
-            _stringArrays = stringArrays ?? throw new ArgumentNullException(nameof(stringArrays));
+            _path = path ?? throw new ArgumentNullException(nameof(path));
+            _arrays = arrays ?? throw new ArgumentNullException(nameof(arrays));
             _notifier = notifier ?? throw new ArgumentNullException(nameof(notifier));
             _factory = factory ?? throw new ArgumentNullException(nameof(factory));
 
@@ -61,20 +65,20 @@ namespace UiSon.View
             foreach (Type type in _assembly.GetTypes())
             {
                 // check for string arrays
-                var strArrays = type.GetCustomAttributes(typeof(UiSonArrayAttribute)) as IEnumerable<UiSonArrayAttribute>;
+                var arrayAtts = type.GetCustomAttributes(typeof(UiSonArrayAttribute)) as IEnumerable<UiSonArrayAttribute>;
 
-                if (strArrays != null)
+                if (arrayAtts != null)
                 {
-                    foreach (var array in strArrays)
+                    foreach (var arrayAtt in arrayAtts)
                     {
-                        if (array.Name != null)
-                        {
-                            if (!_stringArrays.ContainsKey(array.Name))
-                            {
-                                _stringArrays.Add(array.Name, null);
-                            }
 
-                            _stringArrays[array.Name] = array.Array;
+
+                        if (arrayAtt.Name != null)
+                        {
+                            _arrays.TryAdd(arrayAtt.Name,
+                                           arrayAtt.JsonDeserializeType == null
+                                            ? arrayAtt.Array
+                                            : arrayAtt.Array.Select(x => JsonConvert.DeserializeObject(x?.ToString() ?? "null", arrayAtt.JsonDeserializeType) ?? "null").ToArray());
                         }
                     }
                 }

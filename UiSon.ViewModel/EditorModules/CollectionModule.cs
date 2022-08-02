@@ -11,6 +11,7 @@ using System.Windows.Input;
 using UiSon.Attribute;
 using UiSon.Command;
 using UiSon.Element;
+using UiSon.Notify.Interface;
 using UiSon.View;
 using UiSon.View.Interface;
 using UiSon.ViewModel.Interface;
@@ -26,8 +27,11 @@ namespace UiSon.ViewModel
         public object Value
         {
             get => _view.DisplayValue;
-            set => _view.TrySetValue(value);
+            set => _view.SetValue(value);
         }
+
+        /// <inheritdoc/>
+        public Type ValueType => _view.Type;
 
         /// <inheritdoc/>
         public DisplayMode DisplayMode => _view.DisplayMode;
@@ -39,36 +43,16 @@ namespace UiSon.ViewModel
         public int DisplayPriority => _view.DisplayPriority;
 
         /// <inheritdoc/>
-        public ModuleState State
-        {
-            get
-            {
-                foreach (var entry in _entries)
-                {
-                    if (entry.State == ModuleState.Error)
-                    {
-                        _stateJustification = $"{entry.Name}: {entry.StateJustification}";
-                        return ModuleState.Error;
-                    }
-                }
-
-                if (_view.IsValueBad)
-                {
-                    _stateJustification = "Invalid value.";
-                    return ModuleState.Error;
-                }
-
-                _stateJustification = null;
-                return ModuleState.Normal;
-            }
-        }
+        public ModuleState State => _view.State;
 
         /// <inheritdoc/>
-        public string StateJustification => _stateJustification;
-        private string _stateJustification;
+        public string StateJustification => _view.StateJustification;
 
         /// <inheritdoc/>
         public bool CanModifyCollection => _view.IsModifiable;
+
+        /// <inheritdoc/>
+        public bool HasError => _view.State == ModuleState.Error;
 
         /// <inheritdoc/>
         public ObservableCollection<ICollectionEntryModule> Entries => _entries;
@@ -80,16 +64,24 @@ namespace UiSon.ViewModel
 
         private readonly ModuleTemplateSelector _templateSelector;
         private readonly EditorModuleFactory _factory;
+        private readonly INotifier _notifier;
+        private readonly ClipBoardManager _clipBoardManager;
 
         public CollectionModule(ICollectionValueView view,
                                 EditorModuleFactory factory,
-                                ModuleTemplateSelector templateSelector)
+                                ModuleTemplateSelector templateSelector,
+                                ClipBoardManager clipBoardManager,
+                                INotifier notifier)
         {
             _view = view ?? throw new ArgumentNullException(nameof(view));
             _view.PropertyChanged += OnViewPropertyChanged;
 
             _factory = factory ?? throw new ArgumentNullException(nameof(factory));
             _templateSelector = templateSelector ?? throw new ArgumentNullException(nameof(templateSelector));
+
+            _clipBoardManager = clipBoardManager ?? throw new ArgumentNullException(nameof(clipBoardManager));
+
+            _notifier = notifier ?? throw new ArgumentNullException(nameof(notifier));
 
             RepopulateCollection();
         }
@@ -104,8 +96,9 @@ namespace UiSon.ViewModel
                 case nameof(ICollectionValueView.DisplayPriority):
                     OnPropertyChanged(nameof(DisplayPriority));
                     break;
-                case nameof(ICollectionValueView.IsValueBad):
+                case nameof(ICollectionValueView.State):
                     OnPropertyChanged(nameof(State));
+                    OnPropertyChanged(nameof(HasError));
                     break;
                 case nameof(ICollectionValueView.IsModifiable):
                     OnPropertyChanged(nameof(CanModifyCollection));
@@ -221,6 +214,15 @@ namespace UiSon.ViewModel
 
         /// <inheritdoc/>
         public ICommand AddEntryCommand => new UiSonActionCommand((s) => AddEntry());
+
+        /// <inheritdoc/>
+        public ICommand CopyCommand => new UiSonActionCommand((s) => _clipBoardManager.Copy(this));
+
+        /// <inheritdoc/>
+        public ICommand PasteCommand => new UiSonActionCommand((s) => _clipBoardManager.Paste(this));
+
+        /// <inheritdoc/>
+        public ICommand ShowErrorCommand => new UiSonActionCommand((s) => _notifier.Notify(_view.StateJustification, "Error"));
 
         #endregion
     }

@@ -1,6 +1,7 @@
 ﻿// UiSon, by Cameron Gale 2022
 
-using UiSon.Element;
+using System;
+using UiSon.Notify.Interface;
 using UiSon.View.Interface;
 using UiSon.ViewModel.Interface;
 
@@ -18,9 +19,14 @@ namespace UiSon.ViewModel
             set => base.Value = value;
         }
 
+        /// <inheritdoc/>
+        public override Type ValueType => typeof(string);
+
         public TextEditModule(IUiValueView view,
-                              ModuleTemplateSelector templateSelector)
-            :base(view, templateSelector)
+                              ModuleTemplateSelector templateSelector,
+                              ClipBoardManager clipBoardManager,
+                              INotifier notifier)
+            :base(view, templateSelector, clipBoardManager, notifier)
         {
         }
     }

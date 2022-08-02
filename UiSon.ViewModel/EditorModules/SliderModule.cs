@@ -2,6 +2,7 @@
 
 using System;
 using System.ComponentModel;
+using UiSon.Notify.Interface;
 using UiSon.View.Interface;
 using UiSon.ViewModel.Interface;
 
@@ -18,11 +19,16 @@ namespace UiSon.ViewModel
         /// <inheritdoc/>
         public bool IsVertical => _view.IsVertical;
 
+        /// <inheritdoc/>
+        public override Type ValueType => typeof(double);
+
         private readonly IRangeView _view;
 
         public SliderModule(IRangeView view,
-                            ModuleTemplateSelector templateSelector)
-            :base(view, templateSelector)
+                            ModuleTemplateSelector templateSelector,
+                            ClipBoardManager clipBoardManager,
+                            INotifier notifier)
+            :base(view, templateSelector, clipBoardManager, notifier)
         {
             _view = view ?? throw new ArgumentNullException(nameof(view));
 

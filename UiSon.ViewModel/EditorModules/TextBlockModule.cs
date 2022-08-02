@@ -1,5 +1,7 @@
 ﻿// UiSon, by Cameron Gale 2022
 
+using System;
+using UiSon.Notify.Interface;
 using UiSon.View.Interface;
 using UiSon.ViewModel.Interface;
 
@@ -10,12 +12,17 @@ namespace UiSon.ViewModel
     /// </summary>
     public class TextBlockModule : BaseEditorModule, ITextBlockModule
     {
+        /// <inheritdoc/>
+        public override Type ValueType => typeof(string);
+
         /// <summary>
         /// constructor
         /// </summary>
         public TextBlockModule(IUiValueView view,
-                               ModuleTemplateSelector templateSelector)
-            :base(view, templateSelector)
+                               ModuleTemplateSelector templateSelector,
+                               ClipBoardManager clipBoardManager,
+                               INotifier notifier)
+            :base(view, templateSelector, clipBoardManager, notifier)
         {
         }
     }

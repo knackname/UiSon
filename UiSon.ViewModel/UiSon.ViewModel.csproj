@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net6.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
+    <Nullable>warnings</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,6 +14,7 @@
     <ProjectReference Include="..\UiSon.Event\UiSon.Event.csproj" />
     <ProjectReference Include="..\UiSon.Extension\UiSon.Extension.csproj" />
     <ProjectReference Include="..\UiSon.Notifier\UiSon.Notify.csproj" />
+    <ProjectReference Include="..\UiSon.Resource\UiSon.Resource.csproj" />
     <ProjectReference Include="..\UiSon.ViewModel.Interface\UiSon.ViewModel.Interface.csproj" />
     <ProjectReference Include="..\UiSon.View\UiSon.View.csproj" />
   </ItemGroup>

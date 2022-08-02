@@ -8,7 +8,7 @@ namespace UiSon.Attribute
     /// An attribute used to define an Ui element.
     /// Only one Ui attribute may be used per property/field.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
     public abstract class UiSonUiAttribute : System.Attribute
     {
         /// <summary>

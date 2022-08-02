@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using UiSon.Notify.Interface;
 using UiSon.View.Interface;
 using UiSon.ViewModel.Interface;
 
@@ -17,11 +18,16 @@ namespace UiSon.ViewModel
         /// <inheritdoc/>
         public virtual IEnumerable<string> Options => _view.Options;
 
+        /// <inheritdoc/>
+        public override Type ValueType => typeof(string);
+
         private readonly ISelectorValueView _view;
 
         public SelectorModule(ISelectorValueView view,
-                              ModuleTemplateSelector templateSelector)
-            :base(view, templateSelector)
+                              ModuleTemplateSelector templateSelector,
+                              ClipBoardManager clipBoardManager,
+                              INotifier notifier)
+            :base(view, templateSelector, clipBoardManager, notifier)
         {
             _view = view ?? throw new ArgumentNullException(nameof(view));
             _view.PropertyChanged += OnViewPropertyChanged;
@@ -34,7 +40,7 @@ namespace UiSon.ViewModel
                 case nameof(ISelectorValueView.Options):
                     if (!Options.Contains(Value))
                     {
-                        Value = "null";
+                        Value = Options.FirstOrDefault();
                     }
                     OnPropertyChanged(nameof(Options));
                     break;

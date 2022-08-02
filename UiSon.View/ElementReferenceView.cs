@@ -63,21 +63,8 @@ namespace UiSon.View
         {
             switch (e.PropertyName)
             {
-                case nameof(IElementView.Value):
-                    OnPropertyChanged(nameof(Value));
-                    break;
                 case nameof(IElementView.Name):
                     OnPropertyChanged(nameof(DisplayValue));
-                    break;
-            }
-        }
-
-        private void OnIdentifyingViewPropertyChanged(object? sender, PropertyChangedEventArgs e)
-        {
-            switch (e.PropertyName)
-            {
-                case nameof(IUiValueView.Value):
-                    OnPropertyChanged(nameof(Value));
                     break;
             }
         }
@@ -94,11 +81,6 @@ namespace UiSon.View
                 _element = element;
                 _element.PropertyChanged += OnElementPropertyChanged;
 
-                if (_identifingView != null)
-                {
-                    _identifingView.PropertyChanged -= OnIdentifyingViewPropertyChanged;
-                }
-
                 _identifingView = null;
 
                 if (_identifingTagName != null)
@@ -110,11 +92,6 @@ namespace UiSon.View
 
                     // when grabbing the element we've already confirmed it has the tag
                     _identifingView = _element.TagNameToView[_identifingTagName];
-
-                    if (_identifingView != null)
-                    {
-                        _identifingView.PropertyChanged += OnIdentifyingViewPropertyChanged;
-                    }
                 }
 
                 OnPropertyChanged(nameof(Value));
@@ -156,12 +133,6 @@ namespace UiSon.View
             }
             
             _element = null;
-
-            if (_identifingView != null)
-            {
-                _identifingView.PropertyChanged -= OnIdentifyingViewPropertyChanged;
-            }
-
             _identifingView = null;
 
             OnPropertyChanged(nameof(HasReference));

@@ -1,6 +1,7 @@
 ﻿// UiSon, by Cameron Gale 2022
 
 using UiSon.Attribute;
+using UiSon.Element;
 using UiSon.View.Interface;
 
 namespace UiSon.View
@@ -18,9 +19,6 @@ namespace UiSon.View
         public object? DisplayValue => Value;
 
         /// <inheritdoc/>
-        public bool IsValueBad { get; private set; }
-
-        /// <inheritdoc/>
         public int DisplayPriority { get; private set; }
 
         /// <inheritdoc/>
@@ -32,18 +30,39 @@ namespace UiSon.View
         /// <inheritdoc/>
         public Type? Type => null;
 
-        public StaticView(object? value, bool isValueBad, int displayPriority)
+        /// <inheritdoc/>
+        public ModuleState State => _state;
+        private readonly ModuleState _state;
+
+        /// <inheritdoc/>
+        public string StateJustification => _stateJustification;
+        private readonly string _stateJustification;
+
+        public StaticView(object? value, int displayPriority, ModuleState state, string stateJustification)
         {
             _value = value;
-            IsValueBad = isValueBad;
+            _state = state;
+            _stateJustification = stateJustification;
             DisplayPriority = displayPriority;
+        }
+
+        /// <inheritdoc/>
+        public void SetValue(object? value)
+        {
+            // no op
         }
 
         /// <inheritdoc/>
         public bool TrySetValue(object? value) => true;
 
         /// <inheritdoc/>
-        public bool TrySetValueFromRead(object? instance) => true;
+        public void SetValueFromRead(object? value)
+        {
+            // no op
+        }
+
+        /// <inheritdoc/>
+        public bool TrySetValueFromRead(object? value) => true;
 
         /// <inheritdoc/>
         public void Read(object instance)

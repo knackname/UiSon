@@ -5,16 +5,16 @@ using System.Collections.Generic;
 using System.Windows;
 using UiSon.Extension;
 
-namespace UiSon.ViewModel
+namespace UiSon.Resource
 {
     /// <summary>
     /// Dictionary containing multiple sources, capable of switching between them
     /// </summary>
     public class DynamicResourceDictionary : ResourceDictionary
     {
-        public IEnumerable<string> Keys => sources.Keys;
+        public new IEnumerable<string>? Keys => sources.Keys;
 
-        public string Current { get; private set; }
+        public string? Current { get; private set; }
 
         private readonly Dictionary<string,Uri> sources = new Dictionary<string, Uri>();
 
@@ -33,9 +33,9 @@ namespace UiSon.ViewModel
         /// Changes the source to the one of the given name
         /// </summary>
         /// <param name="name">Name of the source</param>
-        public void ChangeSource(string name)
+        public void ChangeSource(string? name)
         {
-            if (sources.ContainsKey(name))
+            if (name != null && sources.ContainsKey(name))
             {
                 base.Source = sources[name];
                 Current = name;

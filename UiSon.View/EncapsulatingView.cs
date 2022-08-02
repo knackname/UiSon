@@ -3,6 +3,7 @@
 using System.ComponentModel;
 using UiSon.Attribute;
 using UiSon.Element;
+using UiSon.Extension;
 using UiSon.View.Interface;
 
 namespace UiSon.View
@@ -10,14 +11,14 @@ namespace UiSon.View
     /// <summary>
     /// A view representing a class or struct
     /// </summary>
-    public class EncapsulatingView : GroupView, IUiValueView
+    public class EncapsulatingView : GroupView, IEncapsulatingView
     {
         /// <inheritdoc/>
         public virtual object? Value
         {
             get
             {
-                var instance = Activator.CreateInstance(_type);
+                var instance = _type.GetDefaultValue();
 
                 if (instance != null)
                 {
@@ -39,6 +40,15 @@ namespace UiSon.View
 
         /// <inheritdoc/>
         public Type Type => _type;
+
+        /// <inheritdoc/>
+        public override ModuleState State => _state ?? base.State;
+        private ModuleState? _state;
+
+        /// <inheritdoc/>
+        public override string StateJustification => _stateJustification ?? base.StateJustification;
+        private string? _stateJustification;
+
         private readonly Type _type;
 
         private readonly ValueMemberInfo? _info;
@@ -72,18 +82,34 @@ namespace UiSon.View
         }
 
         /// <inheritdoc/>
+        public override void SetValue(object? value)
+        {
+            if (value != null)
+            {
+                var valueType = value.GetType();
+
+                if (valueType.IsAssignableTo(_type))
+                {
+                    _state = ModuleState.Normal;
+                    _stateJustification = string.Empty;
+
+                    foreach (var member in Members)
+                    {
+                        member.Read(value);
+                    }
+                }
+            }
+            else
+            {
+                throw new Exception("Encapsulating view cannot be set directly to null");
+            }
+        }
+
+        /// <inheritdoc/>
         public override bool TrySetValue(object? value)
         {
-            if (value?.GetType().IsAssignableTo(_type) ?? false)
-            {
-                foreach (var member in Members)
-                {
-                    member.Read(value);
-                }
-                return true;
-            }
-
-            return false;
+            SetValue(value);
+            return true;
         }
 
         /// <inheritdoc/>
@@ -105,7 +131,7 @@ namespace UiSon.View
                 throw new Exception("Write called on view without member info");
             }
 
-            if (!IsValueBad)
+            if (State != ModuleState.Error)
             {
                 _info.SetValue(instance, Value);
             }

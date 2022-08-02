@@ -10,5 +10,6 @@ namespace UiSon.ViewModel.Interface
     public interface IElementEditorTab
     {
         IElementView View { get; }
+        void Destroy();
     }
 }

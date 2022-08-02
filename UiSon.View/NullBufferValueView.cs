@@ -12,38 +12,6 @@ namespace UiSon.View
     /// </summary>
     public class NullBufferValueView : NPCBase, IUiValueView
     {
-        /// <summary>
-        /// If the value is null.
-        /// </summary>
-        public bool IsNull
-        {
-            get => _isNull;
-            set
-            {
-                if (!value && _decorated == null)
-                {
-                    _decorated = _makeDecorated.Invoke();
-                    _decorated.PropertyChanged += OnDecoratedPropertyChanged;
-
-                    // make null so it can be cleaned up, only used here this once
-                    _makeDecorated = null;
-
-                    //OnPropertyChanged();
-                    //OnPropertyChanged(nameof(Value));
-                    //OnPropertyChanged(nameof(DisplayValue));
-                    //OnPropertyChanged(nameof(IsValueBad));
-                }
-
-                if (_isNull != value)
-                {
-                    _isNull = value;
-                    OnPropertyChanged();
-                    OnPropertyChanged(nameof(Value));
-                }
-            }
-        }
-        private bool _isNull = true;
-
         /// <inheritdoc/>
         public int DisplayPriority => _decorated?.DisplayPriority ?? _displayPriority;
         private readonly int _displayPriority;
@@ -53,16 +21,14 @@ namespace UiSon.View
         private readonly string _name;
 
         /// <inheritdoc/>
-        public Type? Type => _decorated?.Type;
+        public Type Type => _decorated?.Type ?? _type;
+        private readonly Type _type;
 
         /// <inheritdoc/>
         public object? Value => _isNull ? null : Decorated.Value;
 
         /// <inheritdoc/>
-        public object? DisplayValue => _isNull ? null : Decorated.DisplayValue;
-
-        /// <inheritdoc/>
-        public bool IsValueBad => _isNull ? false : Decorated.IsValueBad;
+        public object? DisplayValue => _isNull ? "null" : Decorated.DisplayValue;
 
         /// <inheritdoc/>
         public UiType UiType => Decorated.UiType;
@@ -71,13 +37,24 @@ namespace UiSon.View
         /// The buffer's decorated view
         /// </summary>
         public IUiValueView Decorated => _decorated == null ? throw new Exception("Decorated dependant property accessed before becoming non-null") : _decorated;
+
+        /// <inheritdoc/>
+        public ModuleState State => _state ?? Decorated.State;
+        private ModuleState? _state = ModuleState.Special;
+
+        /// <inheritdoc/>
+        public string StateJustification => _stateJustification ?? Decorated.StateJustification;
+        private string? _stateJustification = string.Empty;
+
         private IUiValueView? _decorated;
         private Func<IUiValueView> _makeDecorated;
+        private bool _isNull = true;
 
         private readonly ValueMemberInfo? _info;
 
-        public NullBufferValueView(int displayPriority, string name, ValueMemberInfo? info, Func<IUiValueView> makeDecorated)
+        public NullBufferValueView(int displayPriority, string name, Type type, ValueMemberInfo? info, Func<IUiValueView> makeDecorated)
         {
+            _type = type ?? throw new ArgumentNullException(nameof(type));
             _makeDecorated = makeDecorated ?? throw new ArgumentNullException(nameof(makeDecorated));
 
             _displayPriority = displayPriority;
@@ -95,35 +72,90 @@ namespace UiSon.View
                 case nameof(IUiValueView.DisplayValue):
                     OnPropertyChanged(nameof(DisplayValue));
                     break;
-                case nameof(IUiValueView.IsValueBad):
-                    OnPropertyChanged(nameof(IsValueBad));
+                case nameof(IUiValueView.State):
+                    OnPropertyChanged(nameof(State));
                     break;
-                case nameof(IUiValueView.UiType):
-                    OnPropertyChanged(nameof(UiType));
-                    break;
+            }
+        }
+
+        public void UnNull()
+        {
+            _isNull = false;
+            _state = null;
+            _stateJustification = null;
+
+            if (_decorated == null)
+            {
+                _decorated = _makeDecorated.Invoke();
+
+                // make null so it can be cleaned up, will only be called that one time.
+                _makeDecorated = null;
+            }
+
+            OnPropertyChanged(nameof(State));
+            OnPropertyChanged(nameof(Value));
+            OnPropertyChanged(nameof(DisplayValue));
+        }
+
+        /// <inheritdoc/>
+        public void SetValue(object? value)
+        {
+            if (value == null || value.ToString() == "null")
+            {
+                _isNull = true;
+                _state = ModuleState.Special;
+                _stateJustification = string.Empty;
+
+                OnPropertyChanged(nameof(State));
+                OnPropertyChanged(nameof(Value));
+                OnPropertyChanged(nameof(DisplayValue));
+            }
+            else
+            {
+                UnNull();
+                Decorated.SetValue(value);
             }
         }
 
         /// <inheritdoc/>
         public bool TrySetValue(object? value)
         {
-            if (value == null)
+            if (value == null || value.ToString() == "null")
             {
-                IsNull = true;
+                _isNull = true;
+                _state = ModuleState.Special;
+                _stateJustification = string.Empty;
+
+                OnPropertyChanged(nameof(State));
+                OnPropertyChanged(nameof(Value));
+                OnPropertyChanged(nameof(DisplayValue));
                 return true;
             }
             else
             {
-                IsNull = false;
-
-                if (Decorated.TrySetValue(value))
-                {
-                    IsNull = false;
-                    return true;
-                }
+                UnNull();
+                return Decorated.TrySetValue(value);
             }
+        }
 
-            return false;
+        /// <inheritdoc/>
+        public void SetValueFromRead(object? value)
+        {
+            if (value == null)
+            {
+                _isNull = true;
+                _state = ModuleState.Special;
+                _stateJustification = string.Empty;
+
+                OnPropertyChanged(nameof(State));
+                OnPropertyChanged(nameof(Value));
+                OnPropertyChanged(nameof(DisplayValue));
+            }
+            else
+            {
+                UnNull();
+                Decorated.SetValueFromRead(value);
+            }
         }
 
         /// <inheritdoc/>
@@ -131,22 +163,21 @@ namespace UiSon.View
         {
             if (value == null)
             {
-                IsNull = true;
-                OnPropertyChanged(nameof(IsNull));
+                _isNull = true;
+                _state = ModuleState.Special;
+                _stateJustification = string.Empty;
+
+                OnPropertyChanged(nameof(State));
+                OnPropertyChanged(nameof(Value));
+                OnPropertyChanged(nameof(DisplayValue));
+
                 return true;
             }
             else
             {
-                IsNull = false;
-
-                if (Decorated.TrySetValueFromRead(value))
-                {
-                    OnPropertyChanged(nameof(IsNull));
-                    return true;
-                }
+                UnNull();
+                return Decorated.TrySetValueFromRead(value);
             }
-
-            return false;
         }
 
         /// <inheritdoc/>
@@ -168,7 +199,7 @@ namespace UiSon.View
                 throw new Exception("Write called on view without member info");
             }
 
-            if (!IsValueBad)
+            if (State != ModuleState.Error)
             {
                 _info.SetValue(instance, Value);
             }

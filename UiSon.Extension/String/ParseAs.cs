@@ -1,8 +1,10 @@
 ﻿// UiSon, by Cameron Gale 2022
 
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Reflection;
 
 namespace UiSon.Extension
 {
@@ -40,7 +42,10 @@ namespace UiSon.Extension
         /// <returns>the parsed string or null if unsuccessful</returns>
         public static object ParseAs(this string value, Type type)
         {
-            if (type == null || value == null)  { return null; }
+            if (type == null || value == null) 
+            {
+                return null;
+            }
 
             // strip nullable value types
             type = Nullable.GetUnderlyingType(type) ?? type;
@@ -92,6 +97,40 @@ namespace UiSon.Extension
                         return TypeDescriptor.GetConverter(type).ConvertFromInvariantString(value);
                     default:
                         return null;
+                }
+            }
+
+            // try json
+            try
+            {
+                var jsonConverted = JsonConvert.DeserializeObject(value, type);
+                if (jsonConverted != null)
+                {
+                    return jsonConverted;
+                }
+            }
+            catch // ignore it if it fails
+            {
+            }
+
+
+            // Try explicit conversions
+            foreach (var mi in type.GetMethods())
+            {
+                if (mi.Name == "op_Explicit"
+                    && mi is MethodInfo method)
+                {
+                    var parameters = method.GetParameters();
+
+                    if (parameters.Length == 1
+                        && TypeToId.ContainsKey(parameters[0].ParameterType))
+                    {
+                        var parsed = value.ParseAs(parameters[0].ParameterType);
+                        if (parsed != null)
+                        {
+                            return method.Invoke(null, new[] { parsed });
+                        }
+                    }
                 }
             }
 

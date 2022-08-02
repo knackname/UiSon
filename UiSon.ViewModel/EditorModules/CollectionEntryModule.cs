@@ -26,6 +26,9 @@ namespace UiSon.ViewModel
         }
 
         /// <inheritdoc/>
+        public Type ValueType => _decorated.ValueType;
+
+        /// <inheritdoc/>
         public string Name => _decorated.Name;
 
         /// <inheritdoc/>
@@ -42,6 +45,9 @@ namespace UiSon.ViewModel
 
         /// <inheritdoc/>
         public IUiValueView View => _decorated.View;
+
+        /// <inheritdoc/>
+        public bool HasError => _decorated.HasError;
 
         /// <inheritdoc/>
         public IEditorModule Decorated => _decorated;
@@ -72,6 +78,7 @@ namespace UiSon.ViewModel
                     break;
                 case nameof(IValueEditorModule.State):
                     OnPropertyChanged(nameof(State));
+                    OnPropertyChanged(nameof(HasError));
                     break;
                 case nameof(IValueEditorModule.View):
                     OnPropertyChanged(nameof(View));
@@ -89,6 +96,15 @@ namespace UiSon.ViewModel
 
         /// <inheritdoc/>
         public ICommand RemoveElement => new UiSonActionCommand((s) => _parent.RemoveEntry(this));
+
+        /// <inheritdoc/>
+        public ICommand CopyCommand => _decorated.CopyCommand;
+
+        /// <inheritdoc/>
+        public ICommand PasteCommand => _decorated.PasteCommand;
+
+        /// <inheritdoc/>
+        public ICommand ShowErrorCommand => _decorated.ShowErrorCommand;
 
         #endregion
     }

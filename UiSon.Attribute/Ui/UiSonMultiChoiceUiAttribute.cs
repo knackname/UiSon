@@ -1,5 +1,6 @@
 ﻿// UiSon, by Cameron Gale 2022
 
+using System;
 using System.Collections.Generic;
 
 namespace UiSon.Attribute

@@ -1,5 +1,7 @@
 ﻿// UiSon, by Cameron Gale 2021
 
+using System;
+
 namespace UiSon.Attribute
 {
     /// <summary>
@@ -28,10 +30,10 @@ namespace UiSon.Attribute
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="options">Options to select from.</param>
-        /// <param name="displayPriority">The display priority of this Ui.</param>
+        /// <param name="optionsArrayName">Array of options to select from.</param>
+        /// <param name="displayPriority">The display priority of the element.</param>
         /// <param name="groupName">The name of the group this Ui belongs to.</param>
-        /// <param name="identifiers">Identifiers to be paired with the Options.</param>
+        /// <param name="identifiersArrayName">Array of values paired with the options array to use as the real values written.</param>
         public UiSonSelectorUiAttribute(string optionsArrayName,
                                         int displayPriority = 0,
                                         string groupName = null,

@@ -34,9 +34,6 @@
 
     <SolidColorBrush x:Key="WindowBackgroundBrush" Color="{StaticResource WindowBackgroundColor}"/>
     <SolidColorBrush x:Key="WindowForegroundBrush" Color="{StaticResource NormalModuleColor}"/>
-
-    <!--Window-->
-
     <SolidColorBrush x:Key="ElementsBorderBrush" Color="{StaticResource ControlStaticBorderColor}"/>
 
     <!--Menu-->

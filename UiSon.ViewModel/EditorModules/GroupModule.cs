@@ -29,27 +29,10 @@ namespace UiSon.ViewModel
         private readonly DisplayMode _displayMode;
 
         /// <inheritdoc/>
-        public virtual ModuleState State
-        {
-            get
-            {
-                foreach (var member in _members)
-                {
-                    if (member.State == ModuleState.Error)
-                    {
-                        _stateJustification = $"{member.Name} is invalid.";
-                        return ModuleState.Error;
-                    }
-                }
-
-                _stateJustification = null;
-                return ModuleState.Normal;
-            }
-        }
+        public virtual ModuleState State => ModuleState.Normal;
 
         /// <inheritdoc/>
-        public string StateJustification => _stateJustification;
-        private string _stateJustification;
+        public string StateJustification => null;
 
         /// <inheritdoc/>
         public IList<IEditorModule> Members => _members;

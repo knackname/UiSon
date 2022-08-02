@@ -7,12 +7,12 @@ using System.Linq;
 namespace UiSon.Attribute
 {
     /// <summary>
-    /// Defines a string array to be used by other UiSon attributes.
-    /// Used to define a common string array for multiple parameters.
+    /// Defines an array to be used by other UiSon attributes.
+    /// Used to define a common array for multiple parameters.
     /// The array will be available to all UiSon attributes in the assembly,
     /// not just those in the class on which it's defined.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true)]
+    [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
     public class UiSonArrayAttribute : System.Attribute
     {
         /// <summary>
@@ -23,17 +23,23 @@ namespace UiSon.Attribute
         /// <summary>
         /// The array.
         /// </summary>
-        public string[] Array { get; private set; }
+        public object[] Array { get; private set; }
+
+        /// <summary>
+        /// The array.
+        /// </summary>
+        public Type JsonDeserializeType { get; private set; }
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="name">The array's name.</param>
         /// <param name="array">The array.</param>
-        public UiSonArrayAttribute(string name, object[] array)
+        public UiSonArrayAttribute(string name, object[] array, Type jsonDeserializeType = null)
         {
             Name = name;
-            Array = array?.Select(x => x?.ToString()).ToArray();
+            Array = array;
+            JsonDeserializeType = jsonDeserializeType;
         }
 
         /// <summary>
@@ -41,14 +47,13 @@ namespace UiSon.Attribute
         /// </summary>
         /// <param name="name">The array's name.</param>
         /// <param name="enumType">The enum type to extrace the array from.</param>
-        /// <param name="castAs">The type to cast the enum to. Must be a value type or the string type.</param>
-        public UiSonArrayAttribute(string name, Type enumType, Type castAs)
+        public UiSonArrayAttribute(string name, Type enumType)
         {
             Name = name;
 
             if (enumType != null)
             {
-                var list = new List<string>();
+                var list = new List<object>();
 
                 var uType = Nullable.GetUnderlyingType(enumType);
                 if (uType != null)
@@ -59,25 +64,17 @@ namespace UiSon.Attribute
 
                 if (enumType.IsEnum)
                 {
-                    if (castAs == null || castAs == typeof(string))
+                    foreach (var enumValue in Enum.GetValues(enumType))
                     {
-                        foreach (var entry in Enum.GetNames(enumType))
-                        {
-                            list.Add(entry);
-                        }
-                    }
-                    else if (castAs.IsValueType)
-                    {
-                        foreach (var a in Enum.GetValues(enumType))
-                        {
-                            list.Add(Convert.ChangeType(a, castAs).ToString());
-                        }
-
-                        Array = list.ToArray();
+                        list.Add(enumValue);
                     }
                 }
 
                 Array = list.ToArray();
+            }
+            else
+            {
+                Array = System.Array.Empty<string>();
             }
         }
     }

@@ -1,6 +1,8 @@
 ﻿// UiSon, by Cameron Gale 2022
 
+using Newtonsoft.Json;
 using System;
+using System.Reflection;
 
 namespace UiSon.Extension
 {
@@ -25,11 +27,58 @@ namespace UiSon.Extension
                 result = null;
                 return !type.IsValueType || Nullable.GetUnderlyingType(type) != null;
             }
-            else if (type.IsEnum
-                     && value.TryCast(typeof(int), out object asInt)
-                     && Enum.IsDefined(type, asInt))
+            else if (type == value.GetType())
             {
-                result = Enum.ToObject(type, asInt);
+                result = value;
+                return true;
+            }
+
+            // then check for explicit conversions
+            foreach (var mi in type.GetMethods())
+            {
+                if (mi.Name == "op_Explicit"
+                    && mi is MethodInfo method)
+                {
+                    var parameters = method.GetParameters();
+
+                    if (parameters.Length == 1
+                        && parameters[0].ParameterType == value.GetType())
+                    {
+                        result = method.Invoke(null, new[] { value } );
+                        return true;
+                    }
+                }
+            }
+
+            // then implicite conversions
+            foreach (var mi in value.GetType().GetMethods())
+            {
+                if (mi.Name == "op_Implicit"
+                    && mi is MethodInfo method
+                    && method.ReturnType == type)
+                {
+                    result = method.Invoke(null, new[] { value });
+                    return true;
+                }
+            }
+
+            // then try primitive-ish types
+            if (type.IsEnum && Enum.IsDefined(type, value))
+            {
+                if (value.TryCast(typeof(int), out object asInt))
+                {
+                    result = Enum.ToObject(type, asInt);
+                }
+                else if (value is string asString)
+                {
+                    result = asString.ParseAs(type);
+                }
+                else
+                {
+                    result = null;
+                    return false;
+                }
+
                 return true;
             }
             else if (value is string parseString)

@@ -17,4 +17,8 @@
         <Setter Property="Foreground" Value="{DynamicResource WindowForegroundBrush}"/>
     </Style>
 
+    <Style x:Key="{x:Type ToolTip}" TargetType="{x:Type ToolTip}">
+        <Setter Property="Background" Value="{DynamicResource MenuItem.Highlight.Background}"/>
+    </Style>
+
 </ResourceDictionary>

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Windows;
 using UiSon.Notify;
+using UiSon.Resource;
 using UiSon.ViewModel;
 
 namespace UiSon

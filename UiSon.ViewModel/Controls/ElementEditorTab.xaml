@@ -22,6 +22,21 @@
                                                                                    ErrorBrush="{DynamicResource ErrorModuleBrush}"
                                                                                    SpecialBrush="{DynamicResource SpecialModuleBrush}"/>
 
+        <!--contextMenu-->
+
+        <ContextMenu x:Key="CopyPasteContextMenu">
+            <MenuItem Header="{Binding Name}" IsEnabled="False"/>
+            <Separator/>
+            <MenuItem Header="Copy" Command="{Binding CopyCommand}" CommandParameter="{Binding}"/>
+            <MenuItem Header="Paste" Command="{Binding PasteCommand}" CommandParameter="{Binding}"/>
+            <Separator Visibility="{Binding HasError, Converter={StaticResource boolToVisibilityConverter}}"/>
+            <MenuItem Header="Show Error" Command="{Binding ShowErrorCommand}" Visibility="{Binding HasError, Converter={StaticResource boolToVisibilityConverter}}" />
+        </ContextMenu>
+
+        <ToolTip x:Key="ErrorTooltip">
+            <TextBlock Text="Error bud"/>
+        </ToolTip>
+
         <!--borders-->
 
         <DataTemplate x:Key="NullableTemplate">
@@ -29,7 +44,8 @@
                     HorizontalAlignment="Stretch"
                     Margin="4"
                     CornerRadius="{DynamicResource GroupCornerRadius}"
-                    BorderBrush="{Binding State, Converter={StaticResource moduleStateToBrushConverter}}">
+                    BorderBrush="{Binding State, Converter={StaticResource moduleStateToBrushConverter}}"
+                    ContextMenu="{StaticResource CopyPasteContextMenu}">
                 <Expander HorizontalAlignment="Stretch"
                           IsExpanded="{Binding IsExpanded}">
                     <Expander.Header>
@@ -79,6 +95,23 @@
             </Border>
         </DataTemplate>
 
+        <DataTemplate x:Key="BorderedValueTemplate">
+            <Border BorderThickness="4"
+                    HorizontalAlignment="Stretch"
+                    Margin="4"
+                    ContextMenu="{StaticResource CopyPasteContextMenu}"
+                    CornerRadius="{DynamicResource GroupCornerRadius}"
+                    BorderBrush="{Binding State, Converter={StaticResource moduleStateToBrushConverter}}">
+                <Expander IsExpanded="True"
+                          HorizontalAlignment="Stretch"
+                          Header="{Binding Name}">
+                    <ContentPresenter HorizontalAlignment="Stretch"
+                                      Content="{Binding Decorated}"
+                                      ContentTemplateSelector="{StaticResource templateSelector}"/>
+                </Expander>
+            </Border>
+        </DataTemplate>
+
         <!--entries-->
 
         <DataTemplate x:Key="CollectionEntryTemplate">
@@ -93,8 +126,8 @@
                         <ColumnDefinition Width="auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <Button Margin="0,0,4,0"
-                            VerticalAlignment="Center"
+                    <Button Margin="0,8,4,0"
+                            VerticalAlignment="top"
                             Grid.Column="0"
                             Grid.Row="0"
                             Command="{Binding RemoveElement}"
@@ -279,7 +312,7 @@
         </DataTemplate>
 
         <DataTemplate x:Key="TextEditTemplate">
-            <Grid Margin="4">
+            <Grid Margin="4" ContextMenu="{StaticResource CopyPasteContextMenu}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="auto"/>
                     <ColumnDefinition Width="*"/>
@@ -298,7 +331,7 @@
         </DataTemplate>
 
         <DataTemplate x:Key="SelectorTemplate">
-            <Grid Margin="4">
+            <Grid Margin="4" ContextMenu="{StaticResource CopyPasteContextMenu}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="auto"/>
                     <ColumnDefinition Width="*"/>
@@ -323,6 +356,7 @@
                       Margin="0,4,4,4"
                       VerticalAlignment="Center"
                       HorizontalAlignment="Left"
+                      ContextMenu="{StaticResource CopyPasteContextMenu}"
                       IsChecked="{Binding Value}"
                       BorderBrush="{Binding State, Converter={StaticResource moduleStateToBrushConverter}}">
                 <CheckBox.Content>
@@ -341,6 +375,7 @@
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Center"
                     Orientation="Horizontal"
+                    ContextMenu="{StaticResource CopyPasteContextMenu}"
                     Minimum="{Binding Min}"
                     Maximum="{Binding Max}"
                     Value="{Binding Value}"/>
@@ -352,6 +387,7 @@
                     VerticalAlignment="Stretch"
                     HorizontalAlignment="Center"
                     Orientation="Vertical"
+                    ContextMenu="{StaticResource CopyPasteContextMenu}"
                     Minimum="{Binding Min}"
                     Maximum="{Binding Max}"
                     Value="{Binding Value}"/>
@@ -370,7 +406,7 @@
                        Text="{Binding ElementName}"
                        VerticalAlignment="Center"
                        HorizontalAlignment="Stretch"/>
-            <Button Click="Close"
+            <Button Click="CloseButton_Click"
                     Margin="4,0,0,0"
                     VerticalAlignment="Center"
                     HorizontalAlignment="Right"

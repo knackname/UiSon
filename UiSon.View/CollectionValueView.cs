@@ -30,12 +30,16 @@ namespace UiSon.View
                         }
                     }
 
-                    SetIsValueBad(false);
+                    _state = null;
+                    _stateJustification = null;
+                    OnPropertyChanged(nameof(State));
                     return value;
                 }
-                catch
+                catch (Exception e)
                 {
-                    SetIsValueBad(true);
+                    _state = ModuleState.Error;
+                    _stateJustification = $"Exception thrown while assembling collection: {e}";
+                    OnPropertyChanged(nameof(State));
                     return value;
                 }
             }
@@ -46,19 +50,13 @@ namespace UiSon.View
         /// </summary>
         public UiSonCollectionAttribute? CollectionAttribute { get; private set; }
 
-        /// <summary>
-        /// If the collection's members don't make a valid collection of this view's type.
-        /// </summary>
-        public override bool IsValueBad => _isValueBad || base.IsValueBad;
-        protected void SetIsValueBad(bool value)
-        {
-            if (_isValueBad != value)
-            {
-                _isValueBad = value;
-                OnPropertyChanged(nameof(IsValueBad));
-            }
-        }
-        private bool _isValueBad;
+        /// <inheritdoc/>
+        public override ModuleState State => _state ?? base.State;
+        private ModuleState? _state;
+
+        /// <inheritdoc/>
+        public override string StateJustification => _stateJustification ?? base.StateJustification;
+        private string? _stateJustification;
 
         /// <inheritdoc/>
         public IEnumerable<IUiValueView> Entries => _entries;
@@ -127,10 +125,7 @@ namespace UiSon.View
                                              _entryAttribute,
                                              CollectionAttribute);
             // non-value types can init as null, their null buffers will init them
-            if (_entryType.IsValueType)
-            {
-                newEntry.TrySetValue(_entryType.GetDefaultValue());
-            }
+            newEntry.SetValue(_entryType.GetDefaultValue());
 
             newEntry.PropertyChanged += OnEntryPropertyChanged;
 
@@ -161,6 +156,37 @@ namespace UiSon.View
         }
 
         /// <inheritdoc/>
+        public override void SetValue(object? value)
+        {
+            base.SetValue(value);
+
+            if (value is IEnumerable enumerable
+                && value.GetType()
+                        .GetInterfaces()
+                        .FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ICollection<>))?
+                        .GetGenericArguments()
+                        .FirstOrDefault() == _entryType)
+            {
+                _entries.Clear();
+
+                foreach (var entry in enumerable)
+                {
+                    var newMember = _factory.MakeView(_entryType, _autoGenerateMemberAttributes, null, _entryAttribute, CollectionAttribute);
+                    newMember.SetValueFromRead(entry);
+                    _entries.Add(newMember);
+                }
+            }
+
+            _state = null;
+            _stateJustification = null;
+
+            OnPropertyChanged(nameof(Value));
+            OnPropertyChanged(nameof(State));
+            OnPropertyChanged(nameof(Members));
+            OnPropertyChanged(nameof(Entries));
+        }
+
+        /// <inheritdoc/>
         public override bool TrySetValue(object? value)
         {
             if (base.TrySetValue(value))
@@ -177,13 +203,16 @@ namespace UiSon.View
                     foreach (var entry in enumerable)
                     {
                         var newMember = _factory.MakeView(_entryType, _autoGenerateMemberAttributes, null, _entryAttribute, CollectionAttribute);
-                        newMember.TrySetValueFromRead(entry);
+                        newMember.SetValueFromRead(entry);
                         _entries.Add(newMember);
                     }
                 }
 
-                SetIsValueBad(false);
+                _state = null;
+                _stateJustification = null;
+
                 OnPropertyChanged(nameof(Value));
+                OnPropertyChanged(nameof(State));
                 OnPropertyChanged(nameof(Members));
                 OnPropertyChanged(nameof(Entries));
                 return true;

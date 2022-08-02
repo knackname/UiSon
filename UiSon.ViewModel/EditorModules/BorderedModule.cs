@@ -13,7 +13,7 @@ namespace UiSon.ViewModel
     /// <summary>
     /// Decorates another module with a border.
     /// </summary>
-    public class BorderedModule : NPCBase, IDecoratingModule
+    public class BorderedModule : NPCBase, IDecoratingModule, IBorderedModule
     {
         /// <inheritdoc/>
         public string Name => _decorated.Name;

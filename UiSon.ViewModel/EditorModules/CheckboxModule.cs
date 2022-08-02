@@ -1,5 +1,7 @@
 ﻿// UiSon, by Cameron Gale 2021
 
+using System;
+using UiSon.Notify.Interface;
 using UiSon.View.Interface;
 using UiSon.ViewModel.Interface;
 
@@ -17,12 +19,15 @@ namespace UiSon.ViewModel
             set => base.Value = value;
         }
 
+        /// <inheritdoc/>
+        public override Type ValueType => typeof(bool);
+
         /// <summary>
         /// Constructor
         /// </summary>
         public CheckboxModule(IUiValueView view,
-                              ModuleTemplateSelector templateSelector)
-            :base(view, templateSelector)
+                              ModuleTemplateSelector templateSelector, ClipBoardManager clipBoardManager, INotifier notifier)
+            :base(view, templateSelector, clipBoardManager, notifier)
         {
         }
     }

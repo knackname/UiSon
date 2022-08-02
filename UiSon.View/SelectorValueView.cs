@@ -1,7 +1,5 @@
 ﻿// UiSon, by Cameron Gale 2022
 
-using System.ComponentModel;
-using UiSon.Attribute;
 using UiSon.Element;
 using UiSon.View.Interface;
 
@@ -10,132 +8,104 @@ namespace UiSon.View
     /// <summary>
     /// Allows only specific values to be set
     /// </summary>
-    public class SelectorValueView : NPCBase, ISelectorValueView
+    public class SelectorValueView : DecoratingView, ISelectorValueView
     {
+        /// <inheritdoc/>
+        public override object? DisplayValue
+        {
+            get
+            {
+                var cleanValue = base.Value ?? "null";
+
+                return _converter.SecondValues.Contains(cleanValue)
+                    ? _converter.SecondToFirst[cleanValue]
+                    : base.DisplayValue;
+            }
+        }
+
         /// <inheritdoc/>
         public IEnumerable<string> Options => _converter.FirstValues;
 
         /// <inheritdoc/>
-        public object? Value => _decorated.Value;
+        public override ModuleState State => _state ?? base.State;
+        private ModuleState? _state;
 
         /// <inheritdoc/>
-        public object? DisplayValue => IsValueBad ? null : _converter.SecondToFirst[_decorated.DisplayValue?.ToString() ?? "null"]; // Display value is not null here, IsValueBad checks
+        public override string StateJustification => _stateJustification ?? base.StateJustification;
+        private string? _stateJustification;
 
-        /// <inheritdoc/>
-        public bool IsValueBad => !_converter.SecondValues.Any(x => x == (_decorated.DisplayValue?.ToString() ?? "null"));
+        private readonly Map<string, object> _converter;
 
-        /// <inheritdoc/>
-        public int DisplayPriority => _decorated.DisplayPriority;
-
-        /// <inheritdoc/>
-        public string? Name => _decorated.Name;
-
-        /// <inheritdoc/>
-        public UiType UiType => _decorated.UiType;
-
-        /// <inheritdoc/>
-        public Type? Type => _decorated.Type;
-
-        private readonly IUiValueView _decorated;
-        private readonly Map<string, string> _converter;
-        private readonly ValueMemberInfo? _info;
-
-        public SelectorValueView(IUiValueView decorated, Map<string, string> converter, ValueMemberInfo? info)
+        public SelectorValueView(IUiValueView decorated, ValueMemberInfo? info, Map<string, object> converter)
+            : base(decorated, info)
         {
             _converter = converter ?? throw new ArgumentNullException(nameof(converter));
-            _decorated = decorated ?? throw new ArgumentNullException(nameof(decorated));
-            _decorated.PropertyChanged += OnDecoratedPropertyChanged;
-
-            _info = info;
         }
 
-        private void OnDecoratedPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        /// <inheritdoc/>
+        public override void SetValue(object? value)
         {
-            switch (e.PropertyName)
+            var strValue = value?.ToString() ?? "null";
+
+            if (_converter.FirstValues.Contains(strValue))
             {
-                case nameof(IUiValueView.Value):
-                    OnPropertyChanged(nameof(Value));
-                    break;
-                case nameof(IUiValueView.DisplayValue):
-                    OnPropertyChanged(nameof(DisplayValue));
-                    break;
-                case nameof(IUiValueView.IsValueBad):
-                    OnPropertyChanged(nameof(IsValueBad));
-                    break;
+                _state = null;
+                _stateJustification = null;
+                _decorated.SetValue(_converter.FirstToSecond[strValue]);
+            }
+            else
+            {
+                _state = ModuleState.Error;
+                _stateJustification = $"{strValue} is not an exsisting option";
+                _decorated.SetValue(value);
             }
         }
 
         /// <inheritdoc/>
-        public bool TrySetValue(object? value)
+        public override bool TrySetValue(object? value)
         {
-            var strValue = value?.ToString();
+            var strValue = value?.ToString() ?? "null";
 
-            if (strValue == null || strValue == "null")
+            if (_converter.FirstValues.Contains(strValue))
             {
-                if (_converter.FirstValues.Contains("null")
-                    && _decorated.TrySetValue(null))
-                {
-                    OnPropertyChanged(nameof(Value));
-                    return true;
-                }
-            }
-            else if (strValue != null && _converter.FirstValues.Contains(strValue)
-                     && _decorated.TrySetValue(_converter.FirstToSecond[strValue]))
-            {
-                OnPropertyChanged(nameof(Value));
-                return true;
+                _state = null;
+                _stateJustification = null;
+
+                return _decorated.TrySetValue(value);
             }
 
             return false;
         }
 
         /// <inheritdoc/>
-        public virtual bool TrySetValueFromRead(object? value)
+        public override void SetValueFromRead(object? value)
         {
-            var strValue = value?.ToString();
-
-            if (strValue == null || strValue == "null")
+            if (_converter.SecondValues.Contains(value ?? "null"))
             {
-                if (_converter.FirstValues.Contains("null")
-                    && _decorated.TrySetValueFromRead(null))
-                {
-                    OnPropertyChanged(nameof(Value));
-                    return true;
-                }
+                _state = null;
+                _stateJustification = null;
             }
-            else if (_converter.SecondValues.Contains(strValue)
-                     && _decorated.TrySetValueFromRead(value))
+            else
             {
-                OnPropertyChanged(nameof(Value));
-                return true;
+                _state = ModuleState.Error;
+                _stateJustification = $"{value?.ToString() ?? "null"} is not an exsisting option";
+            }
+
+            _decorated.SetValueFromRead(value);
+        }
+
+        /// <inheritdoc/>
+        public override bool TrySetValueFromRead(object? value)
+        {
+            if (_converter.SecondValues.Contains(value ?? "null"))
+            {
+                _state = null;
+                _stateJustification = null;
+
+                return _decorated.TrySetValueFromRead(value);
             }
 
             return false;
-        }
-
-        /// <inheritdoc/>
-        public void Read(object instance)
-        {
-            if (_info == null)
-            {
-                throw new Exception("Read called on view without member info");
-            }
-
-            TrySetValueFromRead(_info.GetValue(instance));
-        }
-
-        /// <inheritdoc/>
-        public void Write(object instance)
-        {
-            if (_info == null)
-            {
-                throw new Exception("Write called on view without member info");
-            }
-
-            if (!IsValueBad)
-            {
-                _info.SetValue(instance, Value);
-            }
         }
     }
 }

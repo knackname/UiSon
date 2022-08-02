@@ -26,7 +26,7 @@ namespace UiSon.Attribute
         /// <param name="extension">The file extension for json files made from this.</param>
         /// <param name="autoGenerateMemberAttributes">If UiSon should generate default attributes for those without any.</param>
         public UiSonElementAttribute(string extension = ".json",
-                                     bool autoGenerateMemberAttributes = true)
+                                     bool autoGenerateMemberAttributes = false)
         {
             Extension = string.IsNullOrWhiteSpace(extension) ? ".json" : extension;
             AutoGenerateMemberAttributes = autoGenerateMemberAttributes;

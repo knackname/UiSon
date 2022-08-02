@@ -140,7 +140,7 @@
                                                                 <ColumnDefinition Width="*"/>
                                                             </Grid.ColumnDefinitions>
                                                             <Button Content=" X " Click="ElementManagerRemove_Click" VerticalAlignment="Stretch" Margin="4" Grid.Column="0"/>
-                                                            <Button Click="Element_OpenClick" HorizontalContentAlignment="Left" VerticalAlignment="Center" Margin="0,4,4,4" Grid.Column="1">
+                                                            <Button Click="ElementOpen_Click" HorizontalContentAlignment="Left" VerticalAlignment="Center" Margin="0,4,4,4" Grid.Column="1">
                                                                 <TextBlock Text="{Binding Name}" TextWrapping="WrapWithOverflow"/>
                                                             </Button>
                                                         </Grid>
@@ -170,7 +170,7 @@
 
             <GridSplitter ResizeDirection="Columns" Width="4" Grid.Column="0"/>
 
-            <TabControl x:Name="TabControl" Grid.Column="1"/>
+            <TabControl x:Name="TabControl" ItemsSource="{Binding}" Grid.Column="1"/>
         </Grid>
     </Grid>
 </UserControl>

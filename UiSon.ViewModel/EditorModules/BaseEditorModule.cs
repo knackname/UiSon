@@ -6,7 +6,10 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input;
+using UiSon.Command;
 using UiSon.Element;
+using UiSon.Notify.Interface;
 using UiSon.View;
 using UiSon.View.Interface;
 using UiSon.ViewModel.Interface;
@@ -21,22 +24,18 @@ namespace UiSon.ViewModel
         /// <inheritdoc/>
         public virtual object Value
         {
-            get => _isValueBad ? _badValue : _view.DisplayValue;
+            get => _view.DisplayValue;
             set
             {
                 if (_view.DisplayValue != value)
                 {
-                    _isValueBad = !_view.TrySetValue(value);
-
-                    _badValue = _isValueBad ? value : null;
-
-                    OnPropertyChanged();
-                    OnPropertyChanged(nameof(State));
+                    _view.SetValue(value);
                 }
             }
         }
-        private object _badValue;
-        private bool _isValueBad;
+
+        /// <inheritdoc/>
+        public abstract Type ValueType { get; }
 
         /// <inheritdoc/>
         public string Name => _view.Name;
@@ -48,43 +47,32 @@ namespace UiSon.ViewModel
         public virtual bool IsNameVisible => !string.IsNullOrWhiteSpace(Name);
 
         /// <inheritdoc/>
-        public virtual ModuleState State
-        {
-            get
-            {
-                if (_isValueBad || _view.IsValueBad)
-                {
-                    _stateJustification = "Invalid value.";
-                    return ModuleState.Error;
-                }
-
-                if (Value == null || (Value as string) == "null")
-                {
-                    _stateJustification = "Value is null.";
-                    return ModuleState.Special;
-                }
-
-                _stateJustification = null;
-                return ModuleState.Normal;
-            }
-        }
+        public virtual ModuleState State => _view.State;
 
         /// <inheritdoc/>
-        public string StateJustification => _stateJustification;
-        private string _stateJustification;
+        public string StateJustification => _view.StateJustification;
+
+        /// <inheritdoc/>
+        public bool HasError => _view.State == ModuleState.Error;
 
         /// <inheritdoc/>
         public IUiValueView View => _view;
         private readonly IUiValueView _view;
         
         private readonly ModuleTemplateSelector _templateSelector;
+        private readonly ClipBoardManager _clipBoardManager;
+        private readonly INotifier _notifier;
 
-        public BaseEditorModule(IUiValueView view, ModuleTemplateSelector templateSelector)
+        public BaseEditorModule(IUiValueView view, ModuleTemplateSelector templateSelector, ClipBoardManager clipBoardManager, INotifier notifier)
         {
             _view = view ?? throw new ArgumentNullException(nameof(view));
             view.PropertyChanged += OnViewPropertyChanged;
 
+            _clipBoardManager = clipBoardManager ?? throw new ArgumentNullException(nameof(clipBoardManager));
+            _notifier = notifier ?? throw new ArgumentNullException(nameof(notifier));
+
             _templateSelector = templateSelector ?? throw new ArgumentNullException(nameof(templateSelector));
+            _clipBoardManager = clipBoardManager ?? throw new ArgumentNullException(nameof(clipBoardManager));
         }
 
         private void OnViewPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -92,13 +80,11 @@ namespace UiSon.ViewModel
             switch (e.PropertyName)
             {
                 case nameof(IUiValueView.DisplayValue):
-                    _badValue = null;
-                    _isValueBad = false;
-                    OnPropertyChanged(nameof(State));
                     OnPropertyChanged(nameof(Value));
                     break;
-                case nameof(IUiValueView.IsValueBad):
+                case nameof(IUiValueView.State):
                     OnPropertyChanged(nameof(State));
+                    OnPropertyChanged(nameof(HasError));
                     break;
             }
         }
@@ -128,5 +114,18 @@ namespace UiSon.ViewModel
 
             return new List<DataGridColumn>() { valCol };
         }
+
+        #region Commands
+
+        /// <inheritdoc/>
+        public ICommand CopyCommand => new UiSonActionCommand((s) => _clipBoardManager.Copy(this));
+
+        /// <inheritdoc/>
+        public ICommand PasteCommand => new UiSonActionCommand((s) => _clipBoardManager.Paste(this));
+
+        /// <inheritdoc/>
+        public ICommand ShowErrorCommand => new UiSonActionCommand((s) => _notifier.Notify(_view.StateJustification, "Error"));
+
+        #endregion
     }
 }

@@ -1,5 +1,6 @@
 ﻿// UiSon, by Cameron Gale 2021
 
+using System.Collections.Generic;
 using UiSon.Attribute;
 
 namespace UiSon.Element
@@ -39,7 +40,7 @@ namespace UiSon.Element
         /// <summary>
         /// Paths realative to the save file's directory to assemblies used by this project.
         /// </summary>
-        [UiSonMemberElementUi]
+        [UiSonEncapsulatingUi]
         public Dictionary<string, string> CustomSkins { get; set; } = new Dictionary<string, string>();
     }
 }

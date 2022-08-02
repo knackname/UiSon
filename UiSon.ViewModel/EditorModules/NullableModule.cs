@@ -6,7 +6,10 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input;
+using UiSon.Command;
 using UiSon.Element;
+using UiSon.Notify.Interface;
 using UiSon.View;
 using UiSon.View.Interface;
 using UiSon.ViewModel.Interface;
@@ -22,9 +25,12 @@ namespace UiSon.ViewModel
         /// <inheritdoc/>
         public object Value
         {
-            get => _view.IsNull ? null : _decorated.Value;
-            set => _view.TrySetValue(value);
+            get => _decorated.Value;
+            set => _view.SetValue(value);
         }
+
+        /// <inheritdoc/>
+        public Type ValueType => _view.Type;
 
         /// <inheritdoc/>
         public string Name => _view.Name;
@@ -36,21 +42,20 @@ namespace UiSon.ViewModel
         public bool IsNameVisible => !string.IsNullOrWhiteSpace(Name);
 
         /// <inheritdoc/>
-        public ModuleState State => _view.IsValueBad 
-            ? ModuleState.Error
-            : _view.IsNull 
-                ? ModuleState.Special
-                : _decorated.State;
+        public ModuleState State => _view.State;
+
+        /// <inheritdoc/>
+        public bool HasError => _view.State == ModuleState.Error;
 
         /// <inheritdoc/>
         public bool IsExpanded
         {
-            get => _isExpanded && !_view.IsNull;
+            get => _isExpanded && !IsNull;
             set
             {
-                if (_isExpanded != value && !_view.IsNull)
+                if (_isExpanded != value && !IsNull)
                 {
-                    _isExpanded = value && !_view.IsNull;
+                    _isExpanded = value;
                     OnPropertyChanged();
                 }
             }
@@ -60,12 +65,26 @@ namespace UiSon.ViewModel
         /// <inheritdoc/>
         public bool IsNull
         {
-            get => _view.IsNull;
-            set => _view.IsNull = value;
+            get => _view.DisplayValue?.ToString() == "null";
+            set
+            {
+                if (value == true)
+                {
+                    _view.SetValue(null);
+                    _isExpanded = false;
+                }
+                else
+                {
+                    _view.UnNull();
+                }
+
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsExpanded));
+            }
         }
 
         /// <inheritdoc/>
-        public string StateJustification => _view.IsNull ? "The value is null." : _decorated.StateJustification;
+        public string StateJustification => _view.StateJustification;
 
         /// <inheritdoc/>
         public IValueEditorModule Decorated => _decorated;
@@ -77,18 +96,24 @@ namespace UiSon.ViewModel
 
         private readonly ModuleTemplateSelector _templateSelector;
         private readonly EditorModuleFactory _factory;
+        private readonly ClipBoardManager _clipBoardManager;
+        private readonly INotifier _notifier;
 
         public NullableModule(NullBufferValueView view,
                               EditorModuleFactory factory,
-                              ModuleTemplateSelector templateSelector)
+                              ClipBoardManager clipBoardManager,
+                              ModuleTemplateSelector templateSelector,
+                              INotifier notifier)
         {
             _view = view ?? throw new ArgumentNullException(nameof(view));
             _view.PropertyChanged += OnViewPropertyChanged;
 
             _factory = factory ?? throw new ArgumentNullException(nameof(_factory));
+            _clipBoardManager = clipBoardManager ?? throw new ArgumentNullException(nameof(_clipBoardManager));
             _templateSelector = templateSelector ?? throw new ArgumentNullException(nameof(templateSelector));
+            _notifier = notifier ?? throw new ArgumentNullException(nameof(notifier));
 
-            if (!_view.IsNull)
+            if (_view.DisplayValue?.ToString() != "null")
             {
                 _decorated = _factory.MakeUiValueEditorModule(_view.Decorated);
                 _decorated.PropertyChanged += OnDecoratedPropertyChanged;
@@ -100,6 +125,14 @@ namespace UiSon.ViewModel
             switch (e.PropertyName)
             {
                 case nameof(NullBufferValueView.Value):
+                    if (_view.Value != null
+                        && _decorated == null)
+                    {
+                        _decorated = _factory.MakeUiValueEditorModule(_view.Decorated);
+                        _decorated.PropertyChanged += OnDecoratedPropertyChanged;
+
+                        OnPropertyChanged(nameof(Decorated));
+                    }
                     OnPropertyChanged(nameof(Value));
                     break;
                 case nameof(NullBufferValueView.DisplayPriority):
@@ -108,23 +141,8 @@ namespace UiSon.ViewModel
                 case nameof(NullBufferValueView.Name):
                     OnPropertyChanged(nameof(Name));
                     break;
-                case nameof(NullBufferValueView.IsValueBad):
+                case nameof(NullBufferValueView.State):
                     OnPropertyChanged(nameof(State));
-                    break;
-                case nameof(NullBufferValueView.IsNull):
-                    if (!_view.IsNull && _decorated == null)
-                    {
-                        _decorated = _factory.MakeUiValueEditorModule(_view.Decorated);
-                        _decorated.PropertyChanged += OnDecoratedPropertyChanged;
-
-                        OnPropertyChanged(nameof(Decorated));
-                    }
-
-                    OnPropertyChanged(nameof(Value));
-                    OnPropertyChanged(nameof(IsNull));
-                    OnPropertyChanged(nameof(State));
-                    OnPropertyChanged(nameof(IsExpanded));
-                    OnPropertyChanged(nameof(StateJustification));
                     break;
             }
         }
@@ -138,6 +156,7 @@ namespace UiSon.ViewModel
                     break;
                 case nameof(IValueEditorModule.State):
                     OnPropertyChanged(nameof(State));
+                    OnPropertyChanged(nameof(HasError));
                     break;
                 case nameof(IValueEditorModule.StateJustification):
                     OnPropertyChanged(nameof(StateJustification));
@@ -166,5 +185,13 @@ namespace UiSon.ViewModel
 
             return new List<DataGridColumn>() { valCol };
         }
+
+        #region Commands
+
+        public ICommand CopyCommand => new UiSonActionCommand((s) => _clipBoardManager.Copy(this));
+        public ICommand PasteCommand => new UiSonActionCommand((s) => _clipBoardManager.Paste(this));
+        public ICommand ShowErrorCommand => new UiSonActionCommand((s) => _notifier.Notify(_view.StateJustification, "Error"));
+
+        #endregion
     }
 }

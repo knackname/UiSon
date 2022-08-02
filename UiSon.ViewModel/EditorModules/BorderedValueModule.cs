@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows.Controls;
+using System.Windows.Input;
 using UiSon.Element;
 using UiSon.View;
 using UiSon.View.Interface;
@@ -14,7 +15,7 @@ namespace UiSon.ViewModel
     /// <summary>
     /// Decorates a <see cref="IValueEditorModule"/> with a border
     /// </summary>
-    public class BorderedValueModule : NPCBase, IDecoratingModule, IValueEditorModule
+    public class BorderedValueModule : NPCBase, IBorderedValueModule
     {
         /// <inheritdoc/>
         public object Value
@@ -24,22 +25,29 @@ namespace UiSon.ViewModel
         }
 
         /// <inheritdoc/>
+        public Type ValueType => _decorated.ValueType;
+
+        /// <inheritdoc/>
         public string Name => _decorated.Name;
 
         /// <inheritdoc/>
         public int DisplayPriority => _decorated.DisplayPriority;
 
         /// <inheritdoc/>
-        public ModuleState State => _decorated.State;
+        public ModuleState State => ModuleState.Normal;
 
         /// <inheritdoc/>
-        public string StateJustification => _decorated.StateJustification;
+        public string StateJustification => string.Empty;
 
         /// <inheritdoc/>
         public IUiValueView View => _decorated.View;
 
         /// <inheritdoc/>
         public IEditorModule Decorated => _decorated;
+
+        /// <inheritdoc/>
+        public bool HasError => false;
+
         private readonly IValueEditorModule _decorated;
 
         public BorderedValueModule(IValueEditorModule decorated)
@@ -63,6 +71,7 @@ namespace UiSon.ViewModel
                     break;
                 case nameof(IValueEditorModule.State):
                     OnPropertyChanged(nameof(State));
+                    OnPropertyChanged(nameof(HasError));
                     break;
                 case nameof(IValueEditorModule.View):
                     OnPropertyChanged(nameof(View));
@@ -75,5 +84,9 @@ namespace UiSon.ViewModel
 
         /// <inheritdoc/>
         public IEnumerable<DataGridColumn> GenerateColumns(string path) => _decorated.GenerateColumns(path + $".{nameof(Decorated)}");
+
+        public ICommand CopyCommand => null;
+        public ICommand PasteCommand => null;
+        public ICommand ShowErrorCommand => null;
     }
 }

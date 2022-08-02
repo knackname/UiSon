@@ -44,27 +44,27 @@ namespace UiSon.Test
         public List<ParameteredClass> parametered_members;
 
         [UiSonCollection]
-        [UiSonMemberElementUi]
+        [UiSonEncapsulatingUi]
         public List<SelfRef> selfRefing_members;
 
         [UiSonCollection(true, false, DisplayMode.Grid)]
-        [UiSonMemberElementUi]
+        [UiSonEncapsulatingUi]
         public List<SelfRef> selfRefing_members_grid;
 
         [UiSonCollection(true, false, DisplayMode.Vertial)]
-        [UiSonMemberElementUi]
+        [UiSonEncapsulatingUi]
         public Dictionary<string, string> dict_stack;
 
         [UiSonCollection(true, false, DisplayMode.Grid)]
-        [UiSonMemberElementUi]
+        [UiSonEncapsulatingUi]
         public Dictionary<string, string> dict_grid;
 
         [UiSonCollection(true, false, DisplayMode.Vertial)]
-        [UiSonMemberElementUi]
+        [UiSonEncapsulatingUi]
         public List<UnparameteredClass> unparam_stack;
 
         [UiSonCollection(true, false, DisplayMode.Grid)]
-        [UiSonMemberElementUi]
+        [UiSonEncapsulatingUi]
         public List<UnparameteredClass> unparam_grid;
 
         [UiSonCollection(false, false, DisplayMode.Grid)]

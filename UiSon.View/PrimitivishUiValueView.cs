@@ -14,13 +14,10 @@ namespace UiSon.View
     {
         /// <inheritdoc/>
         public object? Value => _value;
-        protected object? _value = null;
+        private object? _value = null;
 
         /// <inheritdoc/>
         public object? DisplayValue => Value;
-
-        /// <inheritdoc/>
-        public bool IsValueBad => (!_isNullable && _value == null) || (!Value?.TryCast(_type, out var _) ?? false);
 
         /// <inheritdoc/>
         public int DisplayPriority { get; private set; }
@@ -33,8 +30,16 @@ namespace UiSon.View
 
         /// <inheritdoc/>
         public Type Type => _type;
-        private readonly Type _type;
 
+        /// <inheritdoc/>
+        public virtual ModuleState State => _state;
+        private ModuleState _state = ModuleState.Normal;
+
+        /// <inheritdoc/>
+        public virtual string StateJustification => _stateJustification;
+        private string _stateJustification = string.Empty;
+
+        private readonly Type _type;
         private readonly bool _isNullable;
         private readonly ValueMemberInfo? _info;
 
@@ -56,6 +61,42 @@ namespace UiSon.View
         }
 
         /// <inheritdoc/>
+        public void SetValue(object? value)
+        {
+            if (value == null || (value as string) == "null")
+            {
+                _value = null;
+
+                if (_isNullable)
+                {
+                    _state = ModuleState.Special;
+                    _stateJustification = string.Empty;
+                }
+                else
+                {
+                    _state = ModuleState.Error;
+                    _stateJustification = "Value cannot be null";
+                }
+            }
+            else if (value.TryCast(_type, out var asT))
+            {
+                _value = asT;
+                _state = ModuleState.Normal;
+                _stateJustification = string.Empty;
+            }
+            else
+            {
+                _value = value;
+                _state = ModuleState.Error;
+                _stateJustification = $"Object with type {value?.GetType().ToString() ?? "null"} and value {value} cannot be cast as type {_type}";
+            }
+
+            OnPropertyChanged(nameof(Value));
+            OnPropertyChanged(nameof(DisplayValue));
+            OnPropertyChanged(nameof(State));
+        }
+
+        /// <inheritdoc/>
         public bool TrySetValue(object? value)
         {
             if (value == null || (value as string) == "null")
@@ -63,23 +104,32 @@ namespace UiSon.View
                 if (_isNullable)
                 {
                     _value = null;
+                    _state = ModuleState.Special;
+                    _stateJustification = string.Empty;
+
                     OnPropertyChanged(nameof(Value));
                     OnPropertyChanged(nameof(DisplayValue));
-                    OnPropertyChanged(nameof(IsValueBad));
+                    OnPropertyChanged(nameof(State));
                     return true;
                 }
             }
             else if (value.TryCast(_type, out var asT))
             {
                 _value = asT;
+                _state = ModuleState.Normal;
+                _stateJustification = string.Empty;
+
                 OnPropertyChanged(nameof(Value));
                 OnPropertyChanged(nameof(DisplayValue));
-                OnPropertyChanged(nameof(IsValueBad));
+                OnPropertyChanged(nameof(State));
                 return true;
             }
 
             return false;
         }
+
+        /// <inheritdoc/>
+        public virtual void SetValueFromRead(object? value) => SetValue(value);
 
         /// <inheritdoc/>
         public virtual bool TrySetValueFromRead(object? value) => TrySetValue(value);
@@ -92,7 +142,7 @@ namespace UiSon.View
                 throw new Exception("Read called on view without member info");
             }
 
-            TrySetValueFromRead(_info.GetValue(instance));
+            SetValueFromRead(_info.GetValue(instance));
         }
 
         /// <inheritdoc/>
@@ -103,9 +153,9 @@ namespace UiSon.View
                 throw new Exception("Write called on view without member info");
             }
 
-            if (!IsValueBad)
+            if (_state != ModuleState.Error)
             {
-                _info.SetValue(instance, IsValueBad ? _type.GetDefaultValue() : Value);
+                _info.SetValue(instance, Value);
             }
         }
     }

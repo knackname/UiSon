@@ -1,5 +1,7 @@
 ﻿// UiSon, by Cameron Gale 2021
 
+using System;
+
 namespace UiSon.Attribute
 {
     /// <summary>
@@ -7,7 +9,7 @@ namespace UiSon.Attribute
     /// 
     /// Only one Ui attribute may be used per property/field.
     /// </summary>
-    public class UiSonMemberElementUiAttribute : UiSonUiAttribute
+    public class UiSonEncapsulatingUiAttribute : UiSonUiAttribute
     {
         /// <inheritdoc/>
         public override UiType Type => UiType.Encapsulating;
@@ -23,7 +25,8 @@ namespace UiSon.Attribute
         /// <param name="displayPriority">The display priority of this Ui.</param>
         /// <param name="groupName">The name of the group this Ui belongs to.</param>
         /// <param name="displayMode">The display mode for the member's ui moduels.</param>
-        public UiSonMemberElementUiAttribute(int displayPriority = 0,
+        /// <param name="castType">The type to cast the value as when writing and reading.</param>
+        public UiSonEncapsulatingUiAttribute(int displayPriority = 0,
                                            string groupName = null,
                                            DisplayMode displayMode = DisplayMode.Vertial)
         {

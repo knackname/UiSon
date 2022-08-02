@@ -1,89 +1,56 @@
 ﻿// UiSon, by Cameron Gale 2022
 
-using System.ComponentModel;
-using UiSon.Attribute;
 using UiSon.Element;
 using UiSon.Extension;
 using UiSon.View.Interface;
 
 namespace UiSon.View
 {
-    public class RangeUiValueView : NPCBase, IRangeView
+    public class RangeUiValueView : DecoratingView, IRangeView
     {
         /// <inheritdoc/>
-        public object? Value => StringValue.ParseAs(_decorated.Type);
-
-        /// <inheritdoc/>
-        public object? DisplayValue => StringValue;
-
-        /// <summary>
-        /// The value as a string
-        /// </summary>
-        private string? StringValue => _decorated.Value.TryCast(typeof(double), out object casted) ? string.Format(_formatString, casted) : null;
+        public override object? DisplayValue => _displayValue ?? base.DisplayValue;
+        private string? _displayValue;
 
         /// <summary>
         /// Minimum value
         /// </summary>
-        public double Min { get; private set; }
+        public double Min => _min;
+        private readonly double _min;
 
         /// <summary>
         /// Maximum value
         /// </summary>
-        public double Max { get; private set; }
-
-        /// <inheritdoc/>
-        public bool IsValueBad
-        {
-            get
-            {
-                if (Value == null || Value as string == "null")
-                {
-                    return _decorated.IsValueBad;
-                }
-                else if (Value.TryCast(typeof(double), out object asDouble))
-                {
-                    return (double)asDouble > Max || (double)asDouble < Min;
-                }
-
-                return true;
-            }
-        }
-
-        /// <inheritdoc/>
-        public int DisplayPriority => _decorated.DisplayPriority;
-
-        /// <inheritdoc/>
-        public string? Name => _decorated.Name;
+        public double Max => _max;
+        private readonly double _max;
 
         /// <inheritdoc/>
         public int Percision => _precision;
-
-        /// <inheritdoc/>
-        public UiType UiType => _decorated.UiType;
-
-        /// <inheritdoc/>
-        public Type? Type => _decorated.Type;
+        private readonly int _precision;
 
         /// <summary>
         /// If the ui should be vertical rather than horizontal
         /// </summary>
-        public bool IsVertical { get; private set; }
+        public bool IsVertical => _isVertical;
+        private readonly bool _isVertical;
 
-        private readonly int _precision;
+        /// <inheritdoc/>
+        public override ModuleState State => _state ?? base.State;
+        private ModuleState? _state;
+
+        /// <inheritdoc/>
+        public override string StateJustification => _stateJustification ?? base.StateJustification;
+        private string? _stateJustification;
+
         private readonly string _formatString;
-        private readonly IUiValueView _decorated;
-        private readonly ValueMemberInfo? _info;
 
-        public RangeUiValueView(IUiValueView decorated, double min, double max, int percision, bool isVertical, ValueMemberInfo? info)
+        public RangeUiValueView(IUiValueView decorated, ValueMemberInfo? info, double min, double max, int percision, bool isVertical)
+            :base(decorated, info)
         {
-            _decorated = decorated ?? throw new ArgumentNullException(nameof(decorated));
-            _decorated.PropertyChanged += OnDecoratedPropertyChanged;
-
-            Min = min;
-            Max = max;
+            _min = min;
+            _max = max;
             _precision = percision;
-            IsVertical = isVertical;
-            _info = info;
+            _isVertical = isVertical;
 
             _formatString = '{' + $"0:{new string('0', Math.Max(Math.Round(Min, 0, MidpointRounding.ToNegativeInfinity).ToString().Length - (Min < 0 ? 1 : 0), Math.Round(Max, 0, MidpointRounding.ToPositiveInfinity).ToString().Length - (Max < 0 ? 1 : 0)))}";
 
@@ -95,75 +62,131 @@ namespace UiSon.View
             _formatString += '}';
         }
 
-        private void OnDecoratedPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        /// <inheritdoc/>
+        public override void SetValue(object? value)
         {
-            switch (e.PropertyName)
+            if (value == null || value as string == "null")
             {
-                case nameof(IUiValueView.Value):
-                    OnPropertyChanged(nameof(Value));
-                    break;
-                case nameof(IUiValueView.DisplayValue):
-                    OnPropertyChanged(nameof(DisplayValue));
-                    break;
-                case nameof(IUiValueView.IsValueBad):
-                    OnPropertyChanged(nameof(IsValueBad));
-                    break;
-                case nameof(IUiValueView.UiType):
-                    OnPropertyChanged(nameof(UiType));
-                    break;
+                _state = null;
+                _stateJustification = null;
+                _displayValue = null;
+                _decorated.SetValue(null);
+            }
+            else if (value.TryCast(typeof(double), out var asDouble))
+            {
+                _state = null;
+                _stateJustification = null;
+
+                var cleanValue = Math.Round(Math.Max(Min, Math.Min(Max, (double)asDouble)), _precision);
+                _displayValue = string.Format(_formatString, cleanValue);
+
+                _decorated.SetValue(cleanValue);
+            }
+            else
+            {
+                _state = ModuleState.Error;
+                _stateJustification = $"Value cannot be cast as a double";
+                _displayValue = null;
+                _decorated.SetValue(value);
             }
         }
 
         /// <inheritdoc/>
-        public bool TrySetValue(object? value)
+        public override bool TrySetValue(object? value)
         {
             if (value == null || value as string == "null")
             {
+                _state = null;
+                _stateJustification = null;
+                _displayValue = null;
+
                 return _decorated.TrySetValue(null);
             }
             else if (value.TryCast(typeof(double), out var asDouble))
             {
-                return _decorated.TrySetValue(Math.Round(Math.Max(Min, Math.Min(Max, (double)asDouble)), _precision));
+                _state = null;
+                _stateJustification = null;
+
+                var cleanValue = Math.Round(Math.Max(Min, Math.Min(Max, (double)asDouble)), _precision);
+                _displayValue = string.Format(_formatString, cleanValue);
+
+                if (_decorated.TrySetValue(cleanValue))
+                {
+                    _displayValue = string.Format(_formatString, cleanValue);
+                    return true;
+                }
+                else
+                {
+                    _displayValue = null;
+                    return false;
+                }
             }
 
             return false;
         }
 
         /// <inheritdoc/>
-        public bool TrySetValueFromRead(object? value)
+        public override void SetValueFromRead(object? value)
         {
             if (value == null || value as string == "null")
             {
+                _state = null;
+                _stateJustification = null;
+                _displayValue = null;
+                _decorated.SetValueFromRead(null);
+            }
+            else if (value.TryCast(typeof(double), out var asDouble))
+            {
+                _state = null;
+                _stateJustification = null;
+
+                var cleanValue = Math.Round(Math.Max(Min, Math.Min(Max, (double)asDouble)), _precision);
+                _displayValue = string.Format(_formatString, cleanValue);
+
+                _decorated.SetValueFromRead(cleanValue);
+            }
+            else
+            {
+                _state = ModuleState.Error;
+                _stateJustification = $"Value cannot be cast as a double";
+                _displayValue = null;
+                _decorated.SetValueFromRead(value);
+            }
+        }
+
+        /// <inheritdoc/>
+        public override bool TrySetValueFromRead(object? value)
+        {
+            if (value == null || value as string == "null")
+            {
+                _state = null;
+                _stateJustification = null;
+                _displayValue = null;
+
                 return _decorated.TrySetValueFromRead(null);
             }
             else if (value.TryCast(typeof(double), out var asDouble))
             {
-                return _decorated.TrySetValueFromRead(Math.Round(Math.Max(Min, Math.Min(Max, (double)asDouble)), _precision));
+                _state = null;
+                _stateJustification = null;
+
+                var cleanValue = Math.Round(Math.Max(Min, Math.Min(Max, (double)asDouble)), _precision);
+
+                if (_decorated.TrySetValueFromRead(cleanValue))
+                {
+                    _displayValue = string.Format(_formatString, cleanValue);
+                    OnPropertyChanged(nameof(DisplayValue));
+                    return true;
+                }
+                else
+                {
+                    _displayValue = null;
+                    OnPropertyChanged(nameof(DisplayValue));
+                    return false;
+                }
             }
 
             return false;
-        }
-
-        /// <inheritdoc/>
-        public void Read(object instance)
-        {
-            if (_info == null)
-            {
-                throw new Exception("Read called on view without member info");
-            }
-
-            TrySetValueFromRead(_info.GetValue(instance));
-        }
-
-        /// <inheritdoc/>
-        public void Write(object instance)
-        {
-            if (_info == null)
-            {
-                throw new Exception("Write called on view without member info");
-            }
-
-            _info.SetValue(instance, Value);
         }
     }
 }

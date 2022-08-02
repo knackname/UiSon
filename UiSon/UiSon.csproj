@@ -9,16 +9,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="UiSon.ico" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\UiSon.Command\UiSon.Command.csproj" />
     <ProjectReference Include="..\UiSon.Element\UiSon.Element.csproj" />
     <ProjectReference Include="..\UiSon.Resource\UiSon.Resource.csproj" />
     <ProjectReference Include="..\UiSon.View.Interface\UiSon.View.Interface.csproj" />
     <ProjectReference Include="..\UiSon.ViewModel\UiSon.ViewModel.csproj" />
     <ProjectReference Include="..\UiSon.View\UiSon.View.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="UiSon.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

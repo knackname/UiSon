@@ -19,13 +19,12 @@ namespace UiSon.View
         }
 
         /// <summary>
-        /// Creates an Element View
+        /// Makes an <see cref="ElementView"/> representing an instance of 'type'.
         /// </summary>
         /// <param name="name"></param>
         /// <param name="type"></param>
         /// <param name="autoGenerateMemberAttributes"></param>
         /// <param name="manager"></param>
-        /// <param name="initialValue"></param>
         /// <returns></returns>
         public ElementView MakeElementView(string name,
                                            Type type,
@@ -36,7 +35,7 @@ namespace UiSon.View
 
             IUiValueView? mainView;
 
-            if (type.IsEnum || type.IsArray || type.IsPrimitive || type == typeof(string))
+            if (type.IsEnum || type.IsPrimitive || type == typeof(string) || type == typeof(decimal))
             {
                 mainView = MakeView(type, autoGenerateMemberAttributes, null, null, null);
             }
@@ -54,41 +53,66 @@ namespace UiSon.View
                     if (entryType != null)
                     {
                         // attributes
-                        UiSonCollectionAttribute? collectionAttribute = type.GetCustomAttribute<UiSonCollectionAttribute>();
+                        var collectionAttribute = type.GetCustomAttribute<UiSonCollectionAttribute>();
+                        var uiAttribute = type.GetCustomAttribute<UiSonUiAttribute>() ?? GetDefaultUiAttribute(entryType);
 
-                        mainView = new CollectionValueView(this,
-                                                           type,
-                                                           autoGenerateMemberAttributes,
-                                                           entryType,
-                                                           type.GetCustomAttribute<UiSonUiAttribute>() ?? GetDefaultUiAttribute(entryType),
-                                                           collectionAttribute?.IsModifiable ?? true,
-                                                           0,
-                                                           null,
-                                                           collectionAttribute?.DisplayMode ?? DisplayMode.Vertial,
-                                                           null,
-                                                           (collectionAttribute?.IncludeMembers ?? true)
-                                                                ? MakeMemberViews(type, autoGenerateMemberAttributes, out tagToView)
-                                                                : Array.Empty<IReadWriteView>());
+                        if (uiAttribute is UiSonMultiChoiceUiAttribute multiChoiceUiAttribute)
+                        {
+                            var optionsArray = _hasProject.Project.Arrays.FirstOrDefault(x => x.Key == multiChoiceUiAttribute.OptionsArrayName).Value;
+
+                            if (optionsArray == null)
+                            {
+                                mainView = new StaticView($"{nameof(UiSonSelectorUiAttribute)} {name}: {multiChoiceUiAttribute.OptionsArrayName ?? "null"} is not an exsisting {nameof(UiSonArrayAttribute)}.",
+                                                          0, ModuleState.Error, "Failed to make element view");
+                            }
+                            else
+                            {
+                                var members = new List<MultiChoiceOptionView>();
+
+                                foreach (var option in optionsArray)
+                                {
+                                    members.Add(new MultiChoiceOptionView(option, option?.ToString() ?? "null"));
+                                }
+
+                                mainView = new MultiChoiceValueView(type, entryType, 0, name, multiChoiceUiAttribute.DisplayMode, null, members.ToArray());
+                            }
+                        }
+                        else
+                        {
+                            mainView = new CollectionValueView(this,
+                                   type,
+                                   autoGenerateMemberAttributes,
+                                   entryType,
+                                   type.GetCustomAttribute<UiSonUiAttribute>() ?? GetDefaultUiAttribute(entryType),
+                                   collectionAttribute?.IsModifiable ?? true,
+                                   0,
+                                   null,
+                                   collectionAttribute?.DisplayMode ?? DisplayMode.Vertial,
+                                   null,
+                                   (collectionAttribute?.IncludeMembers ?? true)
+                                        ? MakeMemberViews(type, autoGenerateMemberAttributes, out tagToView)
+                                        : Array.Empty<IReadWriteView>());
+                        }
                     }
                     else
                     {
-                        mainView = new StaticView($"{type}'s entry type was null.", true, 0);
+                        mainView = new StaticView($"{type}'s entry type was null.", 0, ModuleState.Error, "Failed to make element view");
                     }
                 }
                 // structs and classes
                 else
                 {
                     mainView = new EncapsulatingView(type,
-                                 0,
-                                 null,
-                                 DisplayMode.Vertial,
-                                 null,
-                                 MakeMemberViews(type, autoGenerateMemberAttributes, out tagToView));
+                                                     0,
+                                                     null,
+                                                     DisplayMode.Vertial,
+                                                     null,
+                                                     MakeMemberViews(type, autoGenerateMemberAttributes, out tagToView));
                 }
             }
             else
             {
-                mainView = new StaticView($"MakeElementView unhandled type: {type}", true, 0);
+                mainView = new StaticView($"MakeElementView unhandled type: {type}", 0, ModuleState.Error, "Failed to make element view");
             }
 
             return new ElementView(name, mainView, tagToView ?? new Dictionary<string, IUiValueView>(), manager);
@@ -113,7 +137,7 @@ namespace UiSon.View
             if (info != null)
             {
                 name = info.Name;
-                // unfourunatly compiler dependant, but it's just cosmetic so it shouldn't really matter
+                // unfortunatly compiler dependant, but it's just cosmetic so it shouldn't really matter
                 name = Regex.IsMatch(name, "<.+>k__BackingField") ? name.Substring(1, name.Length - 17) : name;
             }
             else
@@ -122,79 +146,199 @@ namespace UiSon.View
             }
 
             var valueMemberInfo = info == null ? null : new ValueMemberInfo(info);
+            var nonNullableType = Nullable.GetUnderlyingType(type) ?? type;
 
+            // make default uiAttribute if there isn't one
             if (uiAttribute == null)
             {
                 // enums without attributes make a selector instead of the normal default because I
                 // don't want to add new entries to the project's array dict and risk name conflicts from the user
-                if (type.IsEnum)
-                {
-                    var converter = new Map<string, string>();
 
-                    var strippedType = Nullable.GetUnderlyingType(type) ?? type;
-                    if (type != strippedType)
+                if (nonNullableType.IsEnum)
+                {
+                    var converter = new Map<string, object>();
+
+                    if (type != nonNullableType)
                     {
-                        converter.Add("null", "null");
+                        converter.Add("null", null);
                     }
 
-                    var names = Enum.GetNames(strippedType);
+                    var names = Enum.GetNames(nonNullableType);
                     int nameIndex = 0;
-                    foreach (var value in Enum.GetValues(strippedType))
+                    foreach (var value in Enum.GetValues(nonNullableType))
                     {
-                        // all enum values are int castable, so use that for common handling
-                        converter.Add(names[nameIndex], ((int)value).ToString());
+                        converter.Add(names[nameIndex], value);
                         nameIndex++;
                     }
 
-                    return new SelectorValueView(new PrimitivishUiValueView(typeof(int), 0, name, UiType.Selector, valueMemberInfo), converter, valueMemberInfo);
+                    return new SelectorValueView(new PrimitivishUiValueView(type, 0, name, UiType.Selector, valueMemberInfo), valueMemberInfo, converter);
                 }
 
-                uiAttribute = GetDefaultUiAttribute(type);
+                uiAttribute = GetDefaultUiAttribute(nonNullableType);
             }
 
-            var nonNullableType = Nullable.GetUnderlyingType(type) ?? type;
-
-            // make view from type
-            if (nonNullableType.IsEnum || nonNullableType.IsPrimitive || nonNullableType == typeof(decimal) || nonNullableType == typeof(string))
-            {
-                var view = new PrimitivishUiValueView(type, uiAttribute.DisplayPriority, name, uiAttribute.Type, valueMemberInfo);
-                return DecorateViewFromAttribute(type, view, uiAttribute, valueMemberInfo);
-            }
-            else
+            // collections
+            var collectionInterface = type.GetInterfaces().FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ICollection<>));
+            if (collectionInterface != null)
             {
                 var isModifiable = collectionAttribute?.IsModifiable ?? true;
-                var displayMode = collectionAttribute?.DisplayMode ?? (uiAttribute as UiSonMemberElementUiAttribute)?.DisplayMode ?? DisplayMode.Vertial;
+                var displayMode = collectionAttribute?.DisplayMode
+                    ?? (uiAttribute as UiSonEncapsulatingUiAttribute)?.DisplayMode
+                    ?? (uiAttribute as UiSonMultiChoiceUiAttribute)?.DisplayMode
+                    ?? DisplayMode.Vertial;
                 var includeCollectionMembers = collectionAttribute?.IncludeMembers ?? false;
 
-                if (nonNullableType.IsArray)
+                var entryType = collectionInterface.GetGenericArguments().FirstOrDefault();
+
+                if (entryType == null)
                 {
-                    return new NullBufferValueView(uiAttribute.DisplayPriority,
-                                                   name,
-                                                   valueMemberInfo,
-                                                   () => new ArrayValueView(this,
-                                                                            type,
-                                                                            uiAttribute,
-                                                                            isModifiable,
-                                                                            uiAttribute.DisplayPriority,
-                                                                            name,
-                                                                            displayMode,
-                                                                            valueMemberInfo));
+                    return new StaticView($"Unable to make collection view (due to a lack of entry type) from type: {type}", uiAttribute.DisplayPriority, ModuleState.Error, "Failed to make view");
+                }
+
+                return MakeCollectionView(type,
+                                          entryType,
+                                          uiAttribute.DisplayPriority,
+                                          name,
+                                          autoGenerateMemberAttributes,
+                                          isModifiable,
+                                          includeCollectionMembers,
+                                          displayMode,
+                                          uiAttribute,
+                                          valueMemberInfo);
+            }
+            else if (uiAttribute.Type == UiType.Encapsulating)
+            {
+                if (nonNullableType.IsEnum || nonNullableType.IsPrimitive || nonNullableType == typeof(decimal) || nonNullableType == typeof(string))
+                {
+                    return new StaticView($"Unable to make encapsulating view (due to a lack of members) from type: {type}", uiAttribute.DisplayPriority, ModuleState.Error, "Failed to make view");
                 }
                 else if (nonNullableType.IsValueType || nonNullableType.GetConstructor(Array.Empty<Type>()) != null)
                 {
+                    var displayMode = collectionAttribute?.DisplayMode
+                        ?? (uiAttribute as UiSonEncapsulatingUiAttribute)?.DisplayMode
+                        ?? (uiAttribute as UiSonMultiChoiceUiAttribute)?.DisplayMode
+                        ?? DisplayMode.Vertial;
+
                     return MakeEncapsulatingView(type,
                                                  autoGenerateMemberAttributes,
                                                  uiAttribute.DisplayPriority,
                                                  name,
                                                  displayMode,
-                                                 isModifiable,
-                                                 includeCollectionMembers,
-                                                 uiAttribute,
                                                  valueMemberInfo);
                 }
+                else
+                {
+                    return new StaticView($"Unable to make encapsulating view (due to lacking a parameterless constructor) from type: {type}", uiAttribute.DisplayPriority, ModuleState.Error, "Failed to make view");
+                }
             }
+            else
+            {
+                var view = new PrimitivishUiValueView(type, uiAttribute.DisplayPriority, name, uiAttribute.Type, valueMemberInfo);
+                return DecorateViewFromAttribute(type, view, uiAttribute, valueMemberInfo);
+            }
+        }
 
-            return new StaticView($"Unhandled type in MakeView: {type}", true, uiAttribute.DisplayPriority);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="collectionType"></param>
+        /// <param name="entryType"></param>
+        /// <param name="displayPriority"></param>
+        /// <param name="name"></param>
+        /// <param name="autoGenerateMemberAttributes"></param>
+        /// <param name="collectionIsModifiable"></param>
+        /// <param name="includeCollectionMembers"></param>
+        /// <param name="displayMode"></param>
+        /// <param name="collectionEntryUiAttribute"></param>
+        /// <param name="valueMemberInfo"></param>
+        /// <returns></returns>
+        private IUiValueView MakeCollectionView(Type collectionType,
+                                                Type entryType,
+                                                int displayPriority,
+                                                string name,
+                                                bool autoGenerateMemberAttributes,
+                                                bool collectionIsModifiable,
+                                                bool includeCollectionMembers,
+                                                DisplayMode displayMode,
+                                                UiSonUiAttribute collectionEntryUiAttribute,
+                                                ValueMemberInfo? valueMemberInfo)
+        {
+            if (collectionEntryUiAttribute is UiSonMultiChoiceUiAttribute multiChoiceUiAttribute)
+            {
+                var optionsArray = _hasProject.Project.Arrays.FirstOrDefault(x => x.Key == multiChoiceUiAttribute.OptionsArrayName).Value;
+
+                if (optionsArray == null)
+                {
+                    return new StaticView($"{nameof(UiSonSelectorUiAttribute)} {name}: {multiChoiceUiAttribute.OptionsArrayName ?? "null"} is not an exsisting {nameof(UiSonArrayAttribute)}.",
+                                          displayPriority,
+                                          ModuleState.Error,
+                                          "Failed to make collection view");
+                }
+                else
+                {
+                    return new NullBufferValueView(displayPriority,
+                                                   name,
+                                                   collectionType,
+                                                   valueMemberInfo,
+                                                   () => {
+                                                       var members = new List<MultiChoiceOptionView>();
+
+                                                       foreach (var option in optionsArray)
+                                                       {
+                                                           members.Add(new MultiChoiceOptionView(option, option?.ToString() ?? "null"));
+                                                       }
+
+                                                       return new MultiChoiceValueView(collectionType,
+                                                                                       entryType,
+                                                                                       displayPriority,
+                                                                                       null,
+                                                                                       multiChoiceUiAttribute.DisplayMode,
+                                                                                       valueMemberInfo,
+                                                                                       members.ToArray());
+                                                   });
+                }
+            }
+            else if (collectionType.IsArray)
+            {
+                return new NullBufferValueView(displayPriority,
+                                               name,
+                                               collectionType,
+                                               valueMemberInfo,
+                                               () => new ArrayValueView(this,
+                                                                        collectionType,
+                                                                        collectionEntryUiAttribute,
+                                                                        collectionIsModifiable,
+                                                                        displayPriority,
+                                                                        name,
+                                                                        displayMode,
+                                                                        valueMemberInfo));
+            }
+            else
+            {
+                return new NullBufferValueView(displayPriority,
+                                              name,
+                                              collectionType,
+                                              valueMemberInfo,
+                                              () => {
+                                                  var view = new CollectionValueView(this,
+                                                                    collectionType,
+                                                                    autoGenerateMemberAttributes,
+                                                                    entryType,
+                                                                    collectionEntryUiAttribute,
+                                                                    collectionIsModifiable,
+                                                                    displayPriority,
+                                                                    null,
+                                                                    displayMode,
+                                                                    valueMemberInfo,
+                                                                    includeCollectionMembers
+                                                                       ? MakeMemberViews(collectionType, autoGenerateMemberAttributes, out _)
+                                                                       : Array.Empty<IReadWriteView>());
+
+                                                  view.TrySetValue(Activator.CreateInstance(collectionType));
+
+                                                  return view;
+                                              });
+            }
         }
 
         /// <summary>
@@ -202,87 +346,62 @@ namespace UiSon.View
         /// </summary>
         /// <param name="type"></param>
         /// <param name="autoGenerateMemberAttributes"></param>
-        /// <param name="tagToView"></param>
+        /// <param name="displayPriority"></param>
+        /// <param name="name"></param>
+        /// <param name="displayMode"></param>
+        /// <param name="valueMemberInfo"></param>
         /// <returns></returns>
         private IUiValueView MakeEncapsulatingView(Type type,
                                                    bool autoGenerateMemberAttributes,
                                                    int displayPriority,
                                                    string name,
                                                    DisplayMode displayMode,
-                                                   bool collectionIsModifiable,
-                                                   bool includeCollectionMembers,
-                                                   UiSonUiAttribute? collectionEntryUiAttribute,
                                                    ValueMemberInfo? valueMemberInfo)
         {
-            // check for collection
-            var collectionInterface = type.GetInterfaces().FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ICollection<>));
+            var nullableUnderlyingType = Nullable.GetUnderlyingType(type);
+            var nonNullableType = nullableUnderlyingType ?? type;
+            var isNullable = type.IsClass || nullableUnderlyingType != null;
 
-            // collections
-            if (collectionInterface != null)
-            {
-                var entryType = collectionInterface.GetGenericArguments().FirstOrDefault();
-
-                return entryType == null
-                    ? new StaticView($"{type}'s entry type was null.", true, displayPriority)
-                    : new NullBufferValueView(displayPriority,
-                                              name,
-                                              valueMemberInfo,
-                                              () => {
-                                                   var view = new CollectionValueView(this,
-                                                                             type,
-                                                                             autoGenerateMemberAttributes,
-                                                                             entryType,
-                                                                             collectionEntryUiAttribute ?? GetDefaultUiAttribute(entryType),
-                                                                             collectionIsModifiable,
-                                                                             displayPriority,
-                                                                             null,
-                                                                             displayMode,
-                                                                             valueMemberInfo,
-                                                                             includeCollectionMembers
-                                                                                ? MakeMemberViews(type, autoGenerateMemberAttributes, out _)
-                                                                                : Array.Empty<IReadWriteView>());
-
-                                                  view.TrySetValue(Activator.CreateInstance(type));
-
-                                                  return view;
-                                              }); 
-            }
-            else if (type.IsValueType)// structs
-            {
-                return new EncapsulatingView(type,
-                                             displayPriority,
-                                             name,
-                                             displayMode,
-                                             valueMemberInfo,
-                                             MakeMemberViews(type, autoGenerateMemberAttributes, out _));
-            }
-            else if (type.IsClass)
+            if (isNullable)
             {
                 return new NullBufferValueView(displayPriority,
                                                name,
+                                               nonNullableType,
                                                valueMemberInfo,
                                                () => {
-                                                   var view = new EncapsulatingView(type,
-                                                                                       displayPriority,
-                                                                                       null,
-                                                                                       displayMode,
-                                                                                       valueMemberInfo,
-                                                                                       MakeMemberViews(type, autoGenerateMemberAttributes, out _));
+                                                   var view = new EncapsulatingView(nonNullableType,
+                                                                                    displayPriority,
+                                                                                    null,
+                                                                                    displayMode,
+                                                                                    valueMemberInfo,
+                                                                                    MakeMemberViews(nonNullableType, autoGenerateMemberAttributes, out _));
 
-                                                   view.TrySetValue(Activator.CreateInstance(type));
+                                                   view.TrySetValue(Activator.CreateInstance(nonNullableType));
 
                                                    return view;
                                                });
             }
-
-            return new StaticView($"Unhandled type in make encapsulating view: {type}.",
-                        true,
-                        displayPriority);
+            else
+            {
+                return new EncapsulatingView(type,
+                         displayPriority,
+                         name,
+                         displayMode,
+                         valueMemberInfo,
+                         MakeMemberViews(type, autoGenerateMemberAttributes, out _));
+            }
         }
 
+        /// <summary>
+        /// Makes views for a type's value members
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="autoGenerateMemberAttributes"></param>
+        /// <param name="tagToView"></param>
+        /// <returns></returns>
         private IReadWriteView[] MakeMemberViews(Type type,
-                                               bool autoGenerateMemberAttributes,
-                                               out Dictionary<string, IUiValueView> tagToView)
+                                                 bool autoGenerateMemberAttributes,
+                                                 out Dictionary<string, IUiValueView> tagToView)
         {
             tagToView = new Dictionary<string, IUiValueView>();
             var members = new List<IReadWriteView>();
@@ -298,7 +417,7 @@ namespace UiSon.View
                 {
                     if (groupAttributesByName.ContainsKey(groupAtt.Name))
                     {
-                        var repeatGroupErrorView = new StaticView($"A group with the name \"{groupAtt.Name}\" has already been defined.", true, groupAtt.Priority);
+                        var repeatGroupErrorView = new StaticView($"A group with the name \"{groupAtt.Name}\" has already been defined.", groupAtt.Priority, ModuleState.Error, "Failed to make group");
 
                         if (string.IsNullOrEmpty(groupAtt.GroupName))
                         {
@@ -331,7 +450,7 @@ namespace UiSon.View
             // add TextBlocks
             foreach (var textBlockAtt in textBlockAttributes)
             {
-                var newTextBlockView = new StaticView(textBlockAtt.Text, false, textBlockAtt.Priority);
+                var newTextBlockView = new StaticView(textBlockAtt.Text, textBlockAtt.Priority, ModuleState.Normal, string.Empty);
 
                 if (string.IsNullOrWhiteSpace(textBlockAtt.GroupName))
                 {
@@ -368,7 +487,7 @@ namespace UiSon.View
                     var newView = MakeView(memberInfo.GetUnderlyingType(),
                                            autoGenerateMemberAttributes,
                                            memberInfo,
-                                           memberUiAttribute ?? GetDefaultUiAttribute(memberInfo.GetUnderlyingType()),
+                                           memberUiAttribute,
                                            memberCollectionAttribute);
 
                     // tags
@@ -377,7 +496,7 @@ namespace UiSon.View
                         tagToView.AddOrReplace(tag.Name, newView);
                     }
 
-                    if ((memberUiAttribute != null)
+                    if ((autoGenerateMemberAttributes || memberUiAttribute != null)
                          &&
                          (collectionInterface == null ? true : memberCollectionAttribute?.IncludeMembers ?? false))
                     {
@@ -416,7 +535,7 @@ namespace UiSon.View
                     var newView = MakeView(memberInfo.GetUnderlyingType(),
                                            autoGenerateMemberAttributes,
                                            memberInfo,
-                                           memberUiAttribute ?? GetDefaultUiAttribute(memberInfo.GetUnderlyingType()),
+                                           memberUiAttribute,
                                            memberCollectionAttribute);
 
                     privateMemberToView.Add(memberInfo, newView);
@@ -463,7 +582,7 @@ namespace UiSon.View
                         members.Add(MakeView(memberInfo.GetUnderlyingType(),
                                              autoGenerateMemberAttributes,
                                              memberInfo,
-                                             GetDefaultUiAttribute(memberInfo.GetUnderlyingType()),
+                                             null,
                                              null));
                     }
                 }
@@ -501,40 +620,46 @@ namespace UiSon.View
         {
             if (Attribute is UiSonSelectorUiAttribute selectorUiAttribute)
             {
-                Map<string, string>? converter = null;
+                Map<string, object>? converter = null;
 
                 if (selectorUiAttribute.OptionsArrayName == null)
                 {
-                    converter = new Map<string, string>();
+                    converter = new Map<string, object>();
                 }
                 else
                 {
                     // converter map
-                    var optionsArray = _hasProject.Project.StringArrays.FirstOrDefault(x => x.Key == selectorUiAttribute.OptionsArrayName).Value;
+                    var optionsArray = _hasProject.Project.Arrays.FirstOrDefault(x => x.Key == selectorUiAttribute.OptionsArrayName).Value;
 
                     if (optionsArray == null)
                     {
-                        return new StaticView($"{nameof(UiSonSelectorUiAttribute)} {info?.Name}: {selectorUiAttribute.OptionsArrayName ?? "null"} is not an exsisting {nameof(UiSonArrayAttribute)}.", true, selectorUiAttribute.DisplayPriority);
+                        return new StaticView($"{nameof(UiSonSelectorUiAttribute)} {info?.Name}: {selectorUiAttribute.OptionsArrayName ?? "null"} is not an exsisting {nameof(UiSonArrayAttribute)}.",
+                                              selectorUiAttribute.DisplayPriority,
+                                              ModuleState.Error,
+                                              "Failed to decorate view");
                     }
 
                     if (selectorUiAttribute.IdentifiersArrayName == null)
                     {
-                        converter = MakeSelectorMap(optionsArray, optionsArray);
+                        converter = MakeSelectorMap(optionsArray.Select(x => x?.ToString() ?? "null"), optionsArray);
                     }
                     else
                     {
-                        var identifiersArray = _hasProject.Project.StringArrays.FirstOrDefault(x => x.Key == selectorUiAttribute.IdentifiersArrayName).Value;
+                        var identifiersArray = _hasProject.Project.Arrays.FirstOrDefault(x => x.Key == selectorUiAttribute.IdentifiersArrayName).Value;
 
                         if (identifiersArray == null)
                         {
-                            return new StaticView($"{nameof(UiSonSelectorUiAttribute)} {info?.Name}: {selectorUiAttribute.IdentifiersArrayName ?? "null"} is not an exsisting {nameof(UiSonArrayAttribute)}.", true, selectorUiAttribute.DisplayPriority);
+                            return new StaticView($"{nameof(UiSonSelectorUiAttribute)} {info?.Name}: {selectorUiAttribute.IdentifiersArrayName ?? "null"} is not an exsisting {nameof(UiSonArrayAttribute)}.", 
+                                                  selectorUiAttribute.DisplayPriority,
+                                                  ModuleState.Error,
+                                                  "Failed to decorate view");
                         }
 
-                        converter = MakeSelectorMap(optionsArray, identifiersArray);
+                        converter = MakeSelectorMap(optionsArray.Select(x => x?.ToString() ?? "null"), identifiersArray);
                     }
                 }
 
-                var selectorView = new SelectorValueView(decorated, converter, info);
+                var selectorView = new SelectorValueView(decorated, info, converter);
 
                 // element selectors
                 if (selectorUiAttribute is UiSonElementSelectorUiAttribute elementSelectorUiAttribute)
@@ -550,25 +675,27 @@ namespace UiSon.View
             }
             else if (Attribute is UiSonSliderUiAttribute sliderUiAttribute)
             {
-                return new RangeUiValueView(decorated,
+                return new RangeUiValueView(decorated, info,
                                             sliderUiAttribute.Min,
                                             sliderUiAttribute.Max,
                                             sliderUiAttribute.Precision,
-                                            sliderUiAttribute.IsVertical,
-                                            info);
+                                            sliderUiAttribute.IsVertical);
             }
             else if (Attribute is UiSonTextEditUiAttribute textEditUiAttribute)
             {
                 if (!string.IsNullOrWhiteSpace(textEditUiAttribute.RegexValidation))
                 {
-                    return new RegexValueView(decorated, textEditUiAttribute.RegexValidation, info);
+                    return new RegexValueView(decorated, info, textEditUiAttribute.RegexValidation);
                 }
             }
             else if (Attribute is UiSonCheckboxUiAttribute checkboxUiAttribute)
             {
                 if (type != typeof(bool) && type != typeof(bool?) && type != typeof(string))
                 {
-                    return new StaticView($"{info?.Name}: {nameof(UiSonCheckboxUiAttribute)} does not support type {type}.", true, checkboxUiAttribute.DisplayPriority);
+                    return new StaticView($"{info?.Name}: {nameof(UiSonCheckboxUiAttribute)} does not support type {type}.",
+                                          checkboxUiAttribute.DisplayPriority,
+                                          ModuleState.Error,
+                                          "Failed to decorate view");
                 }
             }
 
@@ -580,29 +707,22 @@ namespace UiSon.View
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        private UiSonUiAttribute GetDefaultUiAttribute(Type? type)
+        private UiSonUiAttribute GetDefaultUiAttribute(Type type)
         {
             // base attributes on non-nullables.
             type = Nullable.GetUnderlyingType(type) ?? type;
 
-            if (type == typeof(double) || type == typeof(string))
+            if (type == typeof(object))
+            {
+                return new UiSonLabelUiAttribute();
+            }
+            else if (type == typeof(bool))
+            {
+                return new UiSonCheckboxUiAttribute();
+            }
+            else if (type.IsPrimitive || type == typeof(double) || type == typeof(string))
             {
                 return new UiSonTextEditUiAttribute();
-            }
-            if (type.IsPrimitive)
-            {
-                if (type == typeof(object))
-                {
-                    return new UiSonLabelUiAttribute();
-                }
-                else if (type == typeof(bool))
-                {
-                    return new UiSonCheckboxUiAttribute();
-                }
-                else
-                {
-                    return new UiSonTextEditUiAttribute();
-                }
             }
             else 
             {
@@ -610,39 +730,31 @@ namespace UiSon.View
 
                 if (collectionInterface != null)
                 {
-                    var entryType = collectionInterface.GetGenericArguments().FirstOrDefault();
-
-                    return GetDefaultUiAttribute(entryType);
+                    return GetDefaultUiAttribute(collectionInterface.GetGenericArguments().First());
                 }
-
-                if (type.GetConstructor(Array.Empty<Type>()) != null)
+                else if (type.IsValueType || type.GetConstructor(Array.Empty<Type>()) != null)
                 {
-                    return new UiSonMemberElementUiAttribute();
+                    return new UiSonEncapsulatingUiAttribute();
                 }
             }
 
             return new UiSonLabelUiAttribute();
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="options"></param>
-        /// <param name="identifiers"></param>
-        /// <returns></returns>
-        private Map<string, string> MakeSelectorMap(IEnumerable<string> options, IEnumerable<string> identifiers)
+        
+        private Map<string, object> MakeSelectorMap(IEnumerable<string> options, IEnumerable<object> identifiers)
         {
-            var newMap = new Map<string, string>();
+            var newMap = new Map<string, object>();
 
             var optionIt = options.GetEnumerator();
             var idIt = identifiers.GetEnumerator();
 
             while (optionIt.MoveNext() && idIt.MoveNext())
             {
-                if (optionIt.Current != null
-                    && idIt.Current != null)
+                var optionName = optionIt.Current ?? "null";
+
+                if (!newMap.FirstValues.Any(x => x == optionName))
                 {
-                    newMap.Add(optionIt.Current, idIt.Current);
+                    newMap.Add(optionName, idIt.Current);
                 }
             }
 

@@ -26,7 +26,7 @@ namespace UiSon.View
         /// The elements of this manager's type
         /// </summary>
         public IEnumerable<IElementView> Elements => _elements.OrderBy(x => x.Name);
-        private NotifyingCollection<ElementView> _elements = new NotifyingCollection<ElementView>();
+        private NotifyingCollection<IElementView> _elements = new NotifyingCollection<IElementView>();
 
         public Type ElementType => _type;
         private Type _type;
@@ -76,7 +76,7 @@ namespace UiSon.View
         public IElementView NewDefaultElement()
         {
             var newElement = NewElement($"New {ElementName}");
-            newElement.MainView.TrySetValue(Activator.CreateInstance(_type));
+            newElement.MainView.SetValue(Activator.CreateInstance(_type));
             return newElement;
         }
 
@@ -84,7 +84,7 @@ namespace UiSon.View
         /// Removes a specific element
         /// </summary>
         /// <param name="elementVM"></param>
-        public void RemoveElement(ElementView elementVM)
+        public void RemoveElement(IElementView elementVM)
         {
             elementVM.PropertyChanged -= OnElementPropertyChanged;
             _elements.Remove(elementVM);

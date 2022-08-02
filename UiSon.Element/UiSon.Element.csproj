@@ -4,4 +4,8 @@
     <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\UiSon.Attribute\UiSon.Attribute.csproj" />
+  </ItemGroup>
+
 </Project>

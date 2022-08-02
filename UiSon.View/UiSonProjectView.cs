@@ -38,7 +38,7 @@ namespace UiSon.View
         public IEnumerable<IElementManager> ElementManagers => _assemblies.SelectMany(x => x.ElementManagers);
 
         /// <inheritdoc/>
-        public IEnumerable<KeyValuePair<string, string[]>> StringArrays => _assemblies.SelectMany(x => x.StringArrays);
+        public IEnumerable<KeyValuePair<string, object[]>> Arrays => _assemblies.SelectMany(x => x.Arrays);
 
         /// <inheritdoc/>
         public bool HasUnsavedChanges
@@ -64,7 +64,10 @@ namespace UiSon.View
         /// <inheritdoc/>
         public IUiSonProject Project => this;
 
+        /// <inheritdoc/>
+        public ProjectSave ProjectSave => _projectSave;
         private readonly ProjectSave _projectSave;
+
         private readonly INotifier _notifier;
         private readonly ViewFactory _factory;
 
@@ -99,7 +102,7 @@ namespace UiSon.View
             {
                 foreach (var assembly in _projectSave.Assemblies)
                 {
-                    AddAssembly(Path.Combine(SaveFileDirectory, assembly));
+                    AddAssembly(SaveFileDirectory, assembly);
                 }
 
                 var elementValuePairs = new List<KeyValuePair<IElementView, object>>();
@@ -138,7 +141,7 @@ namespace UiSon.View
                 // then init them all.
                 foreach (var pair in elementValuePairs)
                 {
-                    pair.Key.MainView.TrySetValue(pair.Value);
+                    pair.Key.MainView.SetValue(pair.Value);
                 }
             }
         }
@@ -167,25 +170,28 @@ namespace UiSon.View
         }
 
         /// <inheritdoc/>
-        public void AddAssembly(string path)
+        public void AddAssembly(string directory, string relativePath)
         {
-            if (!_assemblies.Any(x => x.Path == path))
+            var fullPath = Path.Combine(directory, relativePath);
+
+            if (!_assemblies.Any(x => x.Path == relativePath))
             {
                 Assembly assembly = null;
 
                 try
                 {
-                    assembly = Assembly.LoadFrom(path);
+                    assembly = Assembly.LoadFrom(fullPath);
                 }
                 catch
                 {
-                    _notifier.Notify($"Unable to load assembly from {path}", "Add Assembly Error");
+                    _notifier.Notify($"Unable to load assembly from {fullPath}", "Add Assembly Error");
                 }
 
                 if (assembly != null)
                 {
                     var newAssemblyView = new AssemblyView(assembly,
-                                                           new Dictionary<string, string[]>(),
+                                                           relativePath,
+                                                           new Dictionary<string, object[]>(),
                                                            _notifier,
                                                            _factory);
 
@@ -196,7 +202,7 @@ namespace UiSon.View
                     HasUnsavedChanges = true;
                     OnPropertyChanged(nameof(Assemblies));
                     OnPropertyChanged(nameof(ElementManagers));
-                    OnPropertyChanged(nameof(StringArrays));
+                    OnPropertyChanged(nameof(Arrays));
                 }
             }
         }
@@ -209,7 +215,7 @@ namespace UiSon.View
 
             OnPropertyChanged(nameof(Assemblies));
             OnPropertyChanged(nameof(ElementManagers));
-            OnPropertyChanged(nameof(StringArrays));
+            OnPropertyChanged(nameof(Arrays));
             HasUnsavedChanges = true;
         }
 
@@ -220,7 +226,7 @@ namespace UiSon.View
 
             ProjectChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Project)));
 
-            newElement.MainView.TrySetValue(value);
+            newElement.MainView.SetValue(value);
         }
     }
 }

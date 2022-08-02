@@ -8,6 +8,6 @@ namespace UiSon.View.Interface
     {
         string Path { get; }
         IEnumerable<IElementManager> ElementManagers { get; }
-        IEnumerable<KeyValuePair<string, string[]>> StringArrays { get; }
+        IEnumerable<KeyValuePair<string, object[]>> Arrays { get; }
     }
 }
