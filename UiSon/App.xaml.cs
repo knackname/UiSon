@@ -34,7 +34,7 @@ namespace UiSon
 
             Resources.MergedDictionaries.Add(skinDict);
 
-            new MainWindow(skinDict, new Notifier(), (e.Args.Length == 1 && Directory.Exists(e.Args[0])) ? e.Args[0] : null).Show();
+            new MainWindow(skinDict, new Notifier(), (e.Args.Length == 1 && File.Exists(e.Args[0])) ? e.Args[0] : null).Show();
         }
     }
 }

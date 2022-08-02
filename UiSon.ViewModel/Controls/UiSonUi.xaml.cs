@@ -115,16 +115,23 @@ namespace UiSon.ViewModel
         /// <summary>
         /// Constructor
         /// </summary>
-        public UiSonUi(ProjectSave projectSave,
-                       INotifier notifier,
+        public UiSonUi(INotifier notifier,
                        DynamicResourceDictionary skinDict,
-                       EditorModuleFactory editorModuleFactory)
+                       EditorModuleFactory editorModuleFactory,
+                       string intialProjectPath)
         {
             _editorModuleFactory = editorModuleFactory ?? throw new ArgumentNullException(nameof(editorModuleFactory));
             _skinDict = skinDict ?? throw new ArgumentNullException(nameof(skinDict));
             _notifier = notifier ?? throw new ArgumentNullException(nameof(notifier));
 
-            Project = new UiSonProjectView(projectSave, _notifier);
+            if (intialProjectPath == null)
+            {
+                NewProject();
+            }
+            else
+            {
+                OpenProjectFromPath(intialProjectPath);
+            }
 
             DataContext = this;
             InitializeComponent();
@@ -162,7 +169,7 @@ namespace UiSon.ViewModel
         /// </summary>
         private void HandleUnsavedChanges()
         {
-            if (_project.HasUnsavedChanges)
+            if (_project?.HasUnsavedChanges ?? false)
             {
                 var result = MessageBox.Show("The current project has unsaved changes, would you like to save?",
                                              "Unsaved Changes",
@@ -201,26 +208,35 @@ namespace UiSon.ViewModel
 
             if (dlg.ShowDialog() ?? false)
             {
-                try
-                {
-                    var projectSave = JsonSerializer.Deserialize<ProjectSave>(File.ReadAllText(dlg.FileName));
+                OpenProjectFromPath(dlg.FileName);
+            }
+        }
 
-                    if (projectSave != null)
-                    {
-                        Project = new UiSonProjectView(projectSave,
-                                                       _notifier,
-                                                       Path.GetFileNameWithoutExtension(dlg.FileName),
-                                                       Path.GetDirectoryName(dlg.FileName));
-                    }
-                    else
-                    {
-                        _notifier.Notify($"{dlg.FileName} could not be read.", "Open Failed");
-                    }
-                }
-                catch (Exception e)
+        /// <summary>
+        /// tries to open the project file at the given path
+        /// </summary>
+        /// <param name="path"></param>
+        private void OpenProjectFromPath(string path)
+        {
+            try
+            {
+                var projectSave = JsonSerializer.Deserialize<ProjectSave>(File.ReadAllText(path));
+
+                if (projectSave != null)
                 {
-                    _notifier.Notify(e.ToString(), "Open Failed");
+                    Project = new UiSonProjectView(projectSave,
+                                                   _notifier,
+                                                   Path.GetFileNameWithoutExtension(path),
+                                                   Path.GetDirectoryName(path));
                 }
+                else
+                {
+                    _notifier.Notify($"{path} could not be read.", "Open Failed");
+                }
+            }
+            catch (Exception e)
+            {
+                _notifier.Notify(e.ToString(), "Open Failed");
             }
         }
 

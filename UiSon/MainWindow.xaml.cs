@@ -2,6 +2,7 @@
 
 using System;
 using System.IO;
+using System.Text;
 using System.Text.Json;
 using System.Windows;
 using UiSon.Element;
@@ -23,57 +24,59 @@ namespace UiSon
         {
             this.Title = $"UiSon {_version}";
 
-            ProjectSave? projectSave = null;
+            //ProjectSave? projectSave = null;
 
-            if (filePath != null)
-            {
-                var serializedSave = File.ReadAllText(filePath);
+            //if (filePath != null)
+            //{
+            //    var serializedSave = File.ReadAllText(filePath);
 
-                if (serializedSave != null)
-                {
-                    projectSave = JsonSerializer.Deserialize<ProjectSave>(serializedSave);
-                }
+            //    if (serializedSave != null)
+            //    {
+            //        projectSave = JsonSerializer.Deserialize<ProjectSave>(serializedSave);
+            //    }
 
-                if (projectSave == null)
-                {
-                    notifier.Notify($"Unable to open {filePath}", "Open Failed");
-                    projectSave = new ProjectSave();
-                }
+            //    if (projectSave == null)
+            //    {
+            //        notifier.Notify($"Unable to open {filePath}", "Open Failed");
+            //        projectSave = new ProjectSave();
+            //    }
 
-                // custom skins
-                var directory = Path.GetDirectoryName(filePath);
+            //    // custom skins
+            //    var directory = Path.GetDirectoryName(filePath);
 
-                foreach (var skin in projectSave.CustomSkins)
-                {
-                    if (!string.IsNullOrWhiteSpace(skin.Value))
-                    {
-                        var skinPath = Path.Combine(directory, skin.Value);
+            //    foreach (var skin in projectSave.CustomSkins)
+            //    {
+            //        if (!string.IsNullOrWhiteSpace(skin.Value))
+            //        {
+            //            var skinPath = Path.Combine(directory, skin.Value);
 
-                        try
-                        {
-                            var uri = new Uri(skinPath);
-                            skinDict.AddSource(skin.Key, uri);
-                        }
-                        catch
-                        {
-                            notifier.Notify($"Unable to open skin {skin.Key} from {skinPath}", "Skin Failed");
-                        }
-                    }
-                }
-            }
-            else
-            {
-                projectSave = new ProjectSave();
-            }
+            //            try
+            //            {
+            //                var uri = new Uri(skinPath);
+            //                skinDict.AddSource(skin.Key, uri);
+            //            }
+            //            catch
+            //            {
+            //                notifier.Notify($"Unable to open skin {skin.Key} from {skinPath}", "Skin Failed");
+            //            }
+            //        }
+            //    }
+            //}
+            //else
+            //{
+            //    projectSave = new ProjectSave();
+            //}
 
-            skinDict.ChangeSource(projectSave.Skin);
+            //skinDict.ChangeSource(projectSave.Skin);
 
             InitializeComponent();
 
-            UiSonUiContainer.Child = new UiSonUi(projectSave,
-                                                 notifier,
+            UiSonUiContainer.Child = new UiSonUi(notifier,
                                                  skinDict,
-                                                 new EditorModuleFactory(new ModuleTemplateSelector(), new ClipBoardManager(notifier), notifier));
+                                                 new EditorModuleFactory(new ModuleTemplateSelector(),
+                                                                         new ClipBoardManager(notifier),
+                                                                         notifier),
+                                                 filePath);
         }
     }
 }

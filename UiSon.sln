@@ -33,6 +33,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UiSon.View.Interface", "UiS
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UiSon.Notify.Interface", "UiSon.Notifier.Interface\UiSon.Notify.Interface.csproj", "{ADE501D7-A28E-4E19-8780-F5033210A7D7}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Uison.Setupx86", "Uison.Setup\Uison.Setup.vdproj", "{30F648F1-4966-49F4-9207-772C54EC81F9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -66,7 +68,6 @@ Global
 		{0DAF4FFF-CD82-4402-BF16-37560BB4AD11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0DAF4FFF-CD82-4402-BF16-37560BB4AD11}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0DAF4FFF-CD82-4402-BF16-37560BB4AD11}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0DAF4FFF-CD82-4402-BF16-37560BB4AD11}.Release|Any CPU.Build.0 = Release|Any CPU
 		{30A0915C-ED7C-4004-B78E-DB9B325F3F7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{30A0915C-ED7C-4004-B78E-DB9B325F3F7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{30A0915C-ED7C-4004-B78E-DB9B325F3F7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -99,6 +100,8 @@ Global
 		{ADE501D7-A28E-4E19-8780-F5033210A7D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ADE501D7-A28E-4E19-8780-F5033210A7D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ADE501D7-A28E-4E19-8780-F5033210A7D7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30F648F1-4966-49F4-9207-772C54EC81F9}.Debug|Any CPU.ActiveCfg = Debug
+		{30F648F1-4966-49F4-9207-772C54EC81F9}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
