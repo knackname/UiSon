@@ -35,7 +35,7 @@ namespace UiSon.ViewModel
             _view.PropertyChanged += OnViewPropertyChanged;
         }
 
-        private void OnViewPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        private void OnViewPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)
             {

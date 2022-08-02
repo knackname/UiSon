@@ -37,7 +37,7 @@ namespace UiSon.ViewModel
             _decorated.PropertyChanged += OnDecoratedPropertyChanged;
         }
 
-        private void OnDecoratedPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        private void OnDecoratedPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)
             {

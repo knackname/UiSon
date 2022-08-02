@@ -55,7 +55,7 @@ namespace UiSon.ViewModel
             _displayMode = displayMode;
         }
 
-        private void OnMemberPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        private void OnMemberPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)
             {

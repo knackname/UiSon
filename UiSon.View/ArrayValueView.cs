@@ -11,12 +11,10 @@ namespace UiSon.View
     public class ArrayValueView : CollectionValueView
     {
         /// <inheritdoc/>
-        public override ModuleState State => _state ?? base.State;
-        private ModuleState? _state;
+        public override ModuleState State => base.State;
 
         /// <inheritdoc/>
-        public override string StateJustification => _stateJustification ?? base.StateJustification;
-        private string? _stateJustification;
+        public override string StateJustification => base.StateJustification;
 
         /// <inheritdoc/>
         public override object? Value

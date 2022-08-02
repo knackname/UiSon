@@ -77,7 +77,7 @@ namespace UiSon.View
                         {
                             _arrays.TryAdd(arrayAtt.Name,
                                            arrayAtt.JsonDeserializeType == null
-                                            ? arrayAtt.Array
+                                            ? arrayAtt.Array.Select(x => x == null ? "null" : x).ToArray()
                                             : arrayAtt.Array.Select(x => JsonConvert.DeserializeObject(x?.ToString() ?? "null", arrayAtt.JsonDeserializeType) ?? "null").ToArray());
                         }
                     }

@@ -12,7 +12,7 @@ namespace UiSon.ViewModel
     {
         private static JsonSerializerOptions options = new JsonSerializerOptions() { IncludeFields = true };
 
-        private object? _value;
+        private object _value;
 
 
         private readonly INotifier _notifier;

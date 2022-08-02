@@ -75,7 +75,7 @@ namespace UiSon.ViewModel
             _clipBoardManager = clipBoardManager ?? throw new ArgumentNullException(nameof(clipBoardManager));
         }
 
-        private void OnViewPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        private void OnViewPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)
             {

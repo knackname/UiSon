@@ -1,5 +1,5 @@
 <p align="center">
-	<img src="https://raw.githubusercontent.com/knackname/UiSon/main/UiSon/Images/logo.png" alt="UiSon" width="180" /><br>
+	<img src="https://raw.githubusercontent.com/knackname/UiSon/main/UiSon/UiSon.ico" alt="UiSon" width="180" /><br>
 	<b>Version 0.1</b><br>
 	A combination attribute library and UI</br>
   for editing json asset files from C# projects

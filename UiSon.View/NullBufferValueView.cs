@@ -89,7 +89,9 @@ namespace UiSon.View
                 _decorated = _makeDecorated.Invoke();
 
                 // make null so it can be cleaned up, will only be called that one time.
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
                 _makeDecorated = null;
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
             }
 
             OnPropertyChanged(nameof(State));

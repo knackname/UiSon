@@ -44,7 +44,7 @@ namespace UiSon.ViewModel
             }
         }
 
-        public void Act(IValueEditorModule source, object? newValue)
+        public void Act(IValueEditorModule source, object newValue)
         {
             if (IsCollecting)
             {

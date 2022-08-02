@@ -176,7 +176,7 @@ namespace UiSon.View
 
             if (!_assemblies.Any(x => x.Path == relativePath))
             {
-                Assembly assembly = null;
+                Assembly? assembly = null;
 
                 try
                 {

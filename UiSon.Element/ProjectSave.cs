@@ -29,7 +29,7 @@ namespace UiSon.Element
         /// The skin used by UiSon for this project.
         /// </summary>
         [UiSonTextEditUi]
-        public string? Skin { get; set; } = "Dark";
+        public string Skin { get; set; } = "Dark";
 
         /// <summary>
         /// Paths realative to the save file's directory to assemblies used by this project.

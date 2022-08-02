@@ -26,13 +26,13 @@ namespace UiSon.ViewModel
     /// </summary>
     public partial class UiSonUi : UserControl, INotifyPropertyChanged
     {
-        public string? ProjectName => _project.HasUnsavedChanges ? _project.Name + "*" : _project.Name;
+        public string ProjectName => _project.HasUnsavedChanges ? _project.Name + "*" : _project.Name;
         public string Description => _project.Description;
         public bool AllowAssemblyMod => _project.AllowAssemblyMod;
         public IEnumerable<IAssemblyView> Assemblies => _project.Assemblies;
         public IEnumerable<IElementManager> ElementManagers => _project.ElementManagers;
         public IEnumerable<string> SkinOptions => _skinDict.Keys;
-        private List<IElementEditorTab> _tabItems = new List<IElementEditorTab>();
+        private readonly List<IElementEditorTab> _tabItems = new();
 
         /// <summary>
         /// The current project
@@ -189,8 +189,10 @@ namespace UiSon.ViewModel
         private void NewProject()
         {
             HandleUnsavedChanges();
-            var newProject = new UiSonProjectView(new ProjectSave(), _notifier);
-            newProject.Skin = _skinDict.Current;
+            var newProject = new UiSonProjectView(new ProjectSave(), _notifier)
+            {
+                Skin = _skinDict.Current
+            };
             Project = newProject;
         }
 
@@ -365,9 +367,6 @@ namespace UiSon.ViewModel
 
         public void CloseTab(IElementEditorTab tab)
         {
-            // get selected tab
-            var selectedTab = this.TabControl.SelectedItem as IElementEditorTab;
-
             // clear tab control binding
             this.TabControl.DataContext = null;
 
@@ -378,7 +377,7 @@ namespace UiSon.ViewModel
             this.TabControl.DataContext = _tabItems;
 
             // select previously selected tab. if that is removed then select first tab
-            if (selectedTab == null || selectedTab.Equals(tab))
+            if (this.TabControl.SelectedItem is not IElementEditorTab selectedTab || selectedTab.Equals(tab))
             {
                 selectedTab = _tabItems.FirstOrDefault();
             }
@@ -416,14 +415,17 @@ namespace UiSon.ViewModel
                 }
             }
 
+            foreach (var tab in closingTabs)
+            {
+                CloseTab(tab);
+            }
+
             Project.RemoveAssembly(assemblyView);
         }
 
         private void ElementOpen_Click(object sender, RoutedEventArgs e)
         {
-            var elementView = ((Button)sender).DataContext as ElementView;
-
-            if (elementView != null)
+            if (((Button)sender).DataContext is ElementView elementView)
             {
                 OpenEditorTab(elementView);
             }
@@ -435,10 +437,12 @@ namespace UiSon.ViewModel
         {
             var elementManager = (ElementManager)((Button)sender).DataContext;
 
-            var dlg = new OpenFileDialog();
-            dlg.DefaultExt = elementManager.Extension;
-            dlg.Filter = $"{elementManager.ElementName}|*{elementManager.Extension}";
-            dlg.CheckFileExists = true;
+            var dlg = new OpenFileDialog
+            {
+                DefaultExt = elementManager.Extension,
+                Filter = $"{elementManager.ElementName}|*{elementManager.Extension}",
+                CheckFileExists = true
+            };
 
             if (dlg.ShowDialog() ?? false)
             {
@@ -484,7 +488,7 @@ namespace UiSon.ViewModel
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public void OnPropertyChanged([CallerMemberName] string? name = null)
+        public void OnPropertyChanged([CallerMemberName] string name = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }

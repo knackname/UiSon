@@ -53,7 +53,7 @@ namespace UiSon.ViewModel
 
         private void CloseButton_Click(object sender, RoutedEventArgs e) => _parent.CloseTab(this);
 
-        private void OnViewPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        private void OnViewPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)
             {
@@ -98,7 +98,7 @@ namespace UiSon.ViewModel
 
         #region INotifyPropertyChanged
 
-        public event PropertyChangedEventHandler? PropertyChanged;
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public void OnPropertyChanged([CallerMemberName] string name = null)
         {

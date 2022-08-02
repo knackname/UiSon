@@ -160,7 +160,7 @@ namespace UiSon.View
 
                     if (type != nonNullableType)
                     {
-                        converter.Add("null", null);
+                        converter.Add("null", "null");
                     }
 
                     var names = Enum.GetNames(nonNullableType);
@@ -501,7 +501,7 @@ namespace UiSon.View
 
                     if ((autoGenerateMemberAttributes || memberUiAttribute != null)
                          &&
-                         (collectionInterface == null ? true : memberCollectionAttribute?.IncludeMembers ?? false))
+                         (collectionInterface == null || (memberCollectionAttribute?.IncludeMembers ?? false)))
                     {
                         if (memberUiAttribute?.GroupName == null)
                         {

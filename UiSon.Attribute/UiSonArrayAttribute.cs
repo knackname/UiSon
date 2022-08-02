@@ -11,7 +11,7 @@ namespace UiSon.Attribute
     /// The array will be available to all UiSon attributes in the assembly,
     /// not just those in the class on which it's defined.
     /// </summary>
-    [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum | AttributeTargets.Interface, AllowMultiple = true)]
     public class UiSonArrayAttribute : System.Attribute
     {
         /// <summary>

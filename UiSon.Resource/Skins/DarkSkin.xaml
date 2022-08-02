@@ -216,6 +216,10 @@
     
     <!--Images-->
 
+    <Image x:Key="poop" Source="logo.png"/>
+
+
+
     <Image x:Key="LogoImage">
         <Image.Source>
             <DrawingImage>

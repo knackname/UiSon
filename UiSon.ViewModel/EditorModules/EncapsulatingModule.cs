@@ -45,7 +45,7 @@ namespace UiSon.ViewModel
             _notifier = notifier ?? throw new ArgumentNullException(nameof(notifier));
         }
 
-        private void OnViewPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        private void OnViewPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)
             {

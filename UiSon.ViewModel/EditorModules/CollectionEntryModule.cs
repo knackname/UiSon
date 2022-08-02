@@ -63,7 +63,7 @@ namespace UiSon.ViewModel
             _parent = parent ?? throw new ArgumentNullException(nameof(parent));
         }
 
-        private void OnDecoratedPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        private void OnDecoratedPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)
             {
